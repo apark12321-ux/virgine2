@@ -1,7 +1,7 @@
 import { db, auth } from "./firebase";
 import { doc, getDoc, getDocs, collection, query, where, documentId, runTransaction } from "firebase/firestore";
 
-enum OperationType {
+export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',
@@ -10,7 +10,7 @@ enum OperationType {
   WRITE = 'write',
 }
 
-interface FirestoreErrorInfo {
+export interface FirestoreErrorInfo {
   error: string;
   operationType: OperationType;
   path: string | null;
@@ -27,7 +27,7 @@ interface FirestoreErrorInfo {
   }
 }
 
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -44,7 +44,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     operationType,
     path
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  console.warn('Firestore Error (Handled): ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
 
@@ -77,7 +77,11 @@ export async function recordView(postId: string): Promise<number | null> {
     
     return newViews;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, `views/${postId}`);
+    try {
+      handleFirestoreError(error, OperationType.WRITE, `views/${postId}`);
+    } catch (thrownError) {
+      console.warn("recordView caught and handled error silently:", thrownError);
+    }
     return null;
   }
 }
@@ -89,32 +93,26 @@ export async function fetchAllViews(ids: string[] = []): Promise<Record<string, 
   try {
     const result: Record<string, number> = {};
     
-    // Document ID 'in' 필터는 최대 30개 컬렉션으로 제한되므로, 30개씩 분할하여 가져옵니다.
-    const chunks: string[][] = [];
-    for (let i = 0; i < ids.length; i += 30) {
-      chunks.push(ids.slice(i, i + 30));
-    }
-    
+    // 개별 문서에 대해 getDoc을 병렬로 수행함으로써 list 쿼리 권한 문제를 피하고 get 권한만 사용합니다.
     await Promise.all(
-      chunks.map(async (chunk) => {
+      ids.map(async (id) => {
         try {
-          const q = query(collection(db, "views"), where(documentId(), "in", chunk));
-          const snap = await getDocs(q);
-          snap.forEach((doc) => {
-            result[doc.id] = doc.data().count || 0;
-          });
+          const docRef = doc(db, "views", id);
+          const snap = await getDoc(docRef);
+          if (snap.exists()) {
+            result[id] = snap.data().count || 0;
+          } else {
+            result[id] = 0;
+          }
         } catch (error) {
-          handleFirestoreError(error, OperationType.LIST, "views");
+          try {
+            handleFirestoreError(error, OperationType.GET, `views/${id}`);
+          } catch (thrownError) {
+            console.warn(`fetchAllViews individual document fetch error on ${id} handled gracefully:`, thrownError);
+          }
         }
       })
     );
-    
-    // 가져오지 못한 id들에 대해서는 기본값 0 채우기
-    ids.forEach((id) => {
-      if (!(id in result)) {
-        result[id] = 0;
-      }
-    });
     
     return result;
   } catch (error) {
@@ -130,7 +128,11 @@ export async function fetchView(postId: string): Promise<number | null> {
     const snap = await getDoc(doc(db, "views", postId));
     return snap.exists() ? (snap.data().count || 0) : 0;
   } catch (error) {
-    handleFirestoreError(error, OperationType.GET, `views/${postId}`);
+    try {
+      handleFirestoreError(error, OperationType.GET, `views/${postId}`);
+    } catch (thrownError) {
+      console.warn("fetchView caught and handled error silently:", thrownError);
+    }
     return null;
   }
 }

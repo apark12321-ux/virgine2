@@ -10,7 +10,7 @@ import { Post } from "./types";
 import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
-import { recordView, fetchAllViews, fetchView, formatViews } from "./lib/views";
+import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { calculateReadTime, slugify, stripHtml } from "./lib/utils";
@@ -215,7 +215,11 @@ export default function App() {
       })) as Post[];
       setRealPosts(posts);
     }, (error) => {
-      console.error("Firestore Error:", error);
+      try {
+        handleFirestoreError(error, OperationType.GET, "posts");
+      } catch (err) {
+        console.warn("Handled posts onSnapshot error gracefully:", err);
+      }
     });
     return () => unsubscribe();
   }, []);

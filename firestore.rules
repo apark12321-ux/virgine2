@@ -1,37 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Global safety net: deny all writes and reads by default
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     // Helper functions for validation
     function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    function isValidView(data) {
+      return data.keys().hasAll(['count']) &&
+             data.keys().size() == 1 &&
+             data.count is int &&
+             data.count >= 0;
     }
 
     // Articles/Posts collection rules
     match /posts/{postId} {
       allow read: if true;
-      allow write: if false; // Writes (creating/modifying posts) is done from Admin console only
+      allow write: if false;
     }
 
     // Views tracker collection rules
     match /views/{postId} {
       allow read: if true;
-      // Allow creation/increment from client side under strict safety conditions (Zero-Trust)
-      allow create: if isValidId(postId) &&
-                    request.resource.data.keys().hasAll(['count']) &&
-                    request.resource.data.keys().size() == 1 &&
-                    request.resource.data.count is int &&
-                    request.resource.data.count >= 0;
-
-      allow update: if isValidId(postId) &&
-                    request.resource.data.keys().hasAll(['count']) &&
-                    request.resource.data.keys().size() == 1 &&
-                    request.resource.data.count is int &&
+      allow create: if isValidId(postId) && isValidView(request.resource.data);
+      allow update: if isValidId(postId) && isValidView(request.resource.data) &&
                     request.resource.data.count == resource.data.count + 1;
     }
   }
 }
+
