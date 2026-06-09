@@ -428,7 +428,7 @@ export function DidimdolCalculator() {
             <a href="https://irds.molit.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">부동산거래 전자계약시스템</a>
           </p>
           <p className="text-[12px] text-[#8A87A0] pt-2">
-            홈코노미뉴스 편집부 · 최종 갱신 2026.05.31
+            버진로드 편집부 · 최종 갱신 2026.05.31
           </p>
         </div>
       </section>

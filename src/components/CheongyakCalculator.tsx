@@ -413,7 +413,7 @@ export function CheongyakCalculator() {
             <a href="https://www.molit.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">국토교통부 신혼부부 특별공급 운영지침</a>
           </p>
           <p className="text-[12px] text-[#8A87A0] pt-2">
-            홈코노미뉴스 편집부 · 최종 갱신 2026.05.31
+            버진로드 편집부 · 최종 갱신 2026.05.31
           </p>
         </div>
       </section>

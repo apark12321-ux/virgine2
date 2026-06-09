@@ -63,20 +63,20 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "" }: NavbarProps) 
               onClick={goHome}
               className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
               id="site-logo"
-              aria-label="홈코노미뉴스 홈"
+              aria-label="버진로드 홈"
             >
               <LogoIcon className="w-8 h-8 shrink-0" />
               <div className="flex flex-col items-start leading-none">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-[17px] font-bold tracking-[-0.02em] text-[#1E1B2E]">
-                    홈코노미뉴스
+                    버진로드
                   </span>
                   <span className="text-[10px] font-medium text-[#E8745F] tracking-[0.1em] uppercase">
-                    Homeconomy News
+                    Virginroad
                   </span>
                 </div>
                 <span className="text-[10px] font-medium text-[#8A87A0] mt-1">
-                  가정경제·생활정책 전문 미디어
+                  결혼 준비 & 신혼 금융 생활 백서
                 </span>
               </div>
             </button>

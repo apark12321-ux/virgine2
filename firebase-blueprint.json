@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "A blog post or news article.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "author": { "type": "string" },
+        "date": { "type": "string" },
+        "updated": { "type": "string" },
+        "image": { "type": "string" },
+        "readTime": { "type": "string" },
+        "hashtags": { "type": "array" }
+      },
+      "required": ["title", "excerpt", "content", "category", "author", "date", "image", "readTime"]
+    },
+    "View": {
+      "title": "View",
+      "description": "Views count tracker for post.",
+      "type": "object",
+      "properties": {
+        "count": { "type": "integer" }
+      },
+      "required": ["count"]
+    }
+  },
+  "firestore": {
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Collection of blog/news posts."
+    },
+    "/views/{postId}": {
+      "schema": "View",
+      "description": "Collection of post views."
+    }
+  }
+}

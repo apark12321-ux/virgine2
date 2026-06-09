@@ -34,20 +34,19 @@ export function Footer({ onNavigate }: FooterProps) {
               <div className="flex flex-col items-start leading-none">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-[18px] font-bold tracking-[-0.02em] text-[#1E1B2E]">
-                    홈코노미뉴스
+                    버진로드
                   </span>
                   <span className="text-[11px] font-medium text-[#E8745F] tracking-[0.1em] uppercase">
-                    Homeconomy News
+                    Virginroad
                   </span>
                 </div>
                 <span className="text-[11px] font-medium text-[#8A87A0] mt-1.5">
-                  가정경제·생활정책 전문 미디어
+                  결혼 준비 & 신혼 금융 생활 백서
                 </span>
               </div>
             </button>
             <p className="text-[13px] leading-[1.7] text-[#3F3D56] max-w-md break-keep">
-              신혼·출산·주거·세금 정책부터 가정 재무까지, 가정의 의사결정에 필요한 정보를
-              정부·공공기관 자료에 근거해 전합니다. 평균값이 아닌 본인 가구 기준의 답을 함께 찾습니다.
+              결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서, 버진로드입니다.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="badge-coral">정부·공공기관 자료 기반</span>
@@ -153,7 +152,7 @@ export function Footer({ onNavigate }: FooterProps) {
                 </a>
               </p>
               <p className="text-[11px] text-[#8A87A0] pt-2">
-                © {currentYear} Homeconomy News · 상상아트. All rights reserved.
+                © {currentYear} Virginroad · 상상아트. All rights reserved.
               </p>
             </div>
             <div className="flex items-center gap-5">
