@@ -22,9 +22,9 @@ service cloud.firestore {
     // Views tracker collection rules
     match /views/{postId} {
       allow read: if true;
-      allow create: if isValidId(postId) && isValidView(request.resource.data);
-      allow update: if isValidId(postId) && isValidView(request.resource.data) &&
-                    request.resource.data.count == resource.data.count + 1;
+      allow create, update: if postId is string && postId.size() <= 128 &&
+                            request.resource.data.count is int &&
+                            request.resource.data.count >= 0;
     }
   }
 }

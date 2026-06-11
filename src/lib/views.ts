@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase";
-import { doc, getDoc, getDocs, collection, query, where, documentId, runTransaction } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, query, where, documentId, runTransaction, setDoc, increment } from "firebase/firestore";
 
 export enum OperationType {
   CREATE = 'create',
@@ -60,10 +60,10 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 export async function recordView(postId: string): Promise<number | null> {
   if (!postId) return null;
 
+  const docRef = doc(db, "views", postId);
+
+  // 1. First, attempt a light transaction to securely increase count
   try {
-    const docRef = doc(db, "views", postId);
-    
-    // Firestore 트랜잭션을 사용하여 안전하게 1을 증가시키고 최신값을 즉시 반환받습니다.
     const newViews = await runTransaction(db, async (transaction) => {
       const sfDoc = await transaction.get(docRef);
       if (!sfDoc.exists()) {
@@ -77,12 +77,21 @@ export async function recordView(postId: string): Promise<number | null> {
     
     return newViews;
   } catch (error) {
+    console.warn("Transaction failed in recordView, attempting highly robust fallback with increment(1):", error);
+    
+    // 2. High-resiliency fallback: write increment(1) with merge and fetch updated value
     try {
-      handleFirestoreError(error, OperationType.WRITE, `views/${postId}`);
-    } catch (thrownError) {
-      console.warn("recordView caught and handled error silently:", thrownError);
+      await setDoc(docRef, { count: increment(1) }, { merge: true });
+      const snap = await getDoc(docRef);
+      return snap.exists() ? (snap.data().count || 1) : 1;
+    } catch (fallbackError) {
+      try {
+        handleFirestoreError(fallbackError, OperationType.WRITE, `views/${postId}`);
+      } catch (thrownError) {
+        console.warn("recordView robust fallback caught error silently:", thrownError);
+      }
+      return null;
     }
-    return null;
   }
 }
 

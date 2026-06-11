@@ -304,6 +304,13 @@ export default function App() {
   useEffect(() => {
     if (!currentPost) return;
     const id = currentPost.id;
+    
+    // 로컬 상태 즉시 증가 (Optimistic Update)
+    setViews((prev) => {
+      const currentVal = prev[id] || 0;
+      return { ...prev, [id]: currentVal + 1 };
+    });
+
     recordView(id).then((next) => {
       if (typeof next === "number") {
         setViews((prev) => ({ ...prev, [id]: next }));
