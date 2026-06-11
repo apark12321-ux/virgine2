@@ -162,6 +162,7 @@ export default function App() {
   const [, setUser] = useState<User | null>(null);
   const [views, setViews] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
+  const [adSensePreviewMode, setAdSensePreviewMode] = useState<boolean>(false);
 
   useEffect(() => {
     const onPopState = () => {
@@ -1191,31 +1192,68 @@ export default function App() {
 
                   {/* AdSense Top Banner */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="bg-[#FAFAFA] border border-[#ECECEC] rounded-lg p-4 mb-8 relative overflow-hidden group shadow-sm">
-                      <div className="absolute top-0 right-0 bg-[#E2EAF4] text-[#7F8D9E] text-[9px] font-bold px-2 py-0.5 rounded-bl">
-                        SPONSOR AD (AdSense)
+                    <div className={`rounded-xl p-5 mb-8 relative overflow-hidden shadow-sm transition-all duration-300 ${adSensePreviewMode ? "bg-[#FAFAFA] border border-[#ECECEC]" : "bg-gradient-to-br from-[#FAF9FF] to-[#EFF6FF] border border-[#C7D2FE]"}`}>
+                      <div className="absolute top-0 right-0 flex items-center">
+                        <div className={`text-[9px] font-bold px-2.5 py-1 rounded-bl transition-all duration-200 ${adSensePreviewMode ? "bg-[#E2EAF4] text-[#7F8D9E]" : "bg-[#4F46E5]/10 text-[#4F46E5]"}`}>
+                          {adSensePreviewMode ? "SPONSOR AD (AdSense)" : "💡 에디터 맞춤정보 제휴 안내"}
+                        </div>
                       </div>
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
-                        <div className="text-left">
-                          <div className="text-[10px] text-[#4F46E5] font-semibold tracking-wider uppercase mb-1">RECOMMENDED FOR YOU</div>
-                          <h4 className="text-[14px] font-bold text-[#1E1B2E] hover:text-[#4F46E5] transition-colors leading-[1.4] break-keep">
+                      
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2">
+                        <div className="text-left max-w-xl">
+                          <div className="text-[10px] text-[#4F46E5] font-bold tracking-wider uppercase mb-1">
+                            {adSensePreviewMode ? "RECOMMENDED AD CONTENT" : "RECOMMENDED FOR YOU"}
+                          </div>
+                          <h4 className="text-[14px] font-bold text-[#1E1B2E] leading-[1.4] break-keep">
                             {POST_EXTRA_MAP[currentPost.id].adsName}
                           </h4>
-                          <p className="text-[12px] text-[#64748B] mt-0.5 break-keep">내 요건에 부합하는 {POST_EXTRA_MAP[currentPost.id].adsKeyword} 맞춤형 정보 탐색 및 수수료 절약</p>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
-                              handleNavigate("tools-didimdol");
-                            } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
-                              handleNavigate("tools-cheongyak");
-                            } else {
-                              alert("버진로드 파트너 가계 지원 제휴처 페이지로 즉각 연결됩니다.");
+                          <p className="text-[12.5px] text-[#475569] mt-1 break-keep">
+                            {adSensePreviewMode 
+                              ? `기사 주제와 긴밀히 연계된 ${POST_EXTRA_MAP[currentPost.id].adsKeyword} 관련 구글 검색 추천 광고가 승인 이후 실제 연동됩니다.`
+                              : `내 여건에 부합하는 ${POST_EXTRA_MAP[currentPost.id].adsKeyword} 가계 지원 서비스 및 모의 계산을 즉시 매칭합니다.`
                             }
-                          }}
-                          className="bg-[#1E1B2E] hover:bg-[#4F46E5] text-white text-[11px] font-bold px-3.5 py-2 rounded transition-colors whitespace-nowrap inline-flex items-center gap-1 cursor-pointer"
+                          </p>
+                        </div>
+                        <div className="flex flex-col sm:items-end gap-3 shrink-0 w-full sm:w-auto">
+                          <button 
+                            onClick={() => {
+                              if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
+                                handleNavigate("tools-didimdol");
+                              } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
+                                handleNavigate("tools-cheongyak");
+                              } else {
+                                alert("버진로드 파트너 가계 지원 제휴처 페이지로 즉각 연결됩니다.");
+                              }
+                            }}
+                            className="bg-[#1E1B2E] hover:bg-[#4F46E5] text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap inline-flex items-center justify-center gap-1 cursor-pointer w-full sm:w-auto shadow-sm"
+                          >
+                            자세히 알아보기 <ArrowUpRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Small inline preview controller showing we understand approval process */}
+                      <div className="mt-4 pt-3.5 border-t border-dashed border-[#E2E8F0] flex items-center justify-between flex-wrap gap-2 text-[11px] text-[#64748B]">
+                        <span className="flex items-center gap-1 text-left">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                          <span>
+                            {adSensePreviewMode 
+                              ? "⚠️ 애드센스 심사전이라면 이와 같이 투명하게 광고 레이아웃 배치 시연을 진행할 수 있습니다."
+                              : "🔔 현재 애드센스 심사 전 검수 최적화를 위해 고품격 파트너 추천 레이아웃으로 안심 대체 작동 중입니다."
+                            }
+                          </span>
+                        </span>
+                        <button
+                          onClick={() => setAdSensePreviewMode(!adSensePreviewMode)}
+                          className="flex items-center gap-1.5 text-[#4F46E5] hover:text-[#3730A3] font-bold cursor-pointer transition-colors"
                         >
-                          알아보기 <ArrowUpRight className="w-3.5 h-3.5" />
+                          <input 
+                            type="checkbox" 
+                            checked={adSensePreviewMode} 
+                            onChange={() => {}} 
+                            className="w-3.5 h-3.5 accent-[#4F46E5] cursor-pointer"
+                          />
+                          애드센스 광고배너 미리보기 {adSensePreviewMode ? "끄기" : "켜기"}
                         </button>
                       </div>
                     </div>
@@ -1295,15 +1333,23 @@ export default function App() {
 
                   {/* AdSense Bottom Banner */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="bg-[#FAF9FF] border border-[#E4E2F6] rounded-lg p-5 mt-8 relative overflow-hidden group shadow-sm text-center">
-                      <div className="absolute top-0 right-0 bg-[#E9E4F8] text-[#8676B0] text-[9px] font-bold px-2 py-0.5 rounded-bl">
-                        IN-ARTICLE SPONSOR AD
+                    <div className={`rounded-xl p-5 mt-8 relative overflow-hidden shadow-sm text-center transition-all duration-300 ${adSensePreviewMode ? "bg-[#FAF9FF] border border-[#E2E1F5]" : "bg-gradient-to-br from-[#F0FDF4] to-[#EFF6FF] border border-[#C6EDD2]"}`}>
+                      <div className="absolute top-0 right-0 bg-[#E9E4F8] text-[#8676B0] text-[9px] font-bold px-3 py-0.5 rounded-bl">
+                        {adSensePreviewMode ? "IN-ARTICLE SPONSOR AD" : "🛠️ 버진로드 추천 스마트 툴"}
                       </div>
                       <div className="py-2">
-                        <div className="text-[10px] text-[#4F46E5] font-semibold tracking-wider uppercase mb-1">INTERESTED IN THIS TOPIC?</div>
-                        <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-3 leading-[1.4] break-keep">
+                        <div className="text-[10px] text-[#4F46E5] font-bold tracking-wider uppercase mb-1">
+                          {adSensePreviewMode ? "INTERESTED IN THIS TOPIC?" : "CONNECTED VALUE TOOL"}
+                        </div>
+                        <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-2 leading-[1.4] break-keep">
                           {POST_EXTRA_MAP[currentPost.id].adsName}
                         </h4>
+                        <p className="text-[12.5px] text-[#475569] max-w-xl mx-auto mb-4 break-keep">
+                          {adSensePreviewMode 
+                            ? `이 기사 하단의 애드센스 구글 정밀 타겟팅 영역에는 연동 후 무주택 기간, 대출금 이자 감면 등을 매칭해 주는 ${POST_EXTRA_MAP[currentPost.id].adsKeyword} 광고가 실시간 자동 고정 노출됩니다.`
+                            : "버진로드가 제공하는 초정밀 가점 진단기 및 가계 예산 디딤돌 시뮬레이터를 활용해 예비 가계 자금을 아끼고 똑똑하게 설계해보세요."
+                          }
+                        </p>
                         <button 
                           onClick={() => {
                             if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
@@ -1314,9 +1360,9 @@ export default function App() {
                               alert("버진로드 파트너 가계 지원 제휴처 페이지로 전이합니다.");
                             }
                           }}
-                          className="bg-[#4F46E5] hover:bg-[#3730A3] text-white text-[11px] font-bold px-4 py-2 rounded transition-colors inline-flex items-center gap-1 cursor-pointer"
+                          className={`${adSensePreviewMode ? "bg-[#4F46E5] hover:bg-[#3730A3]" : "bg-[#10B981] hover:bg-[#059669]"} text-white text-[11px] font-bold px-4 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-sm`}
                         >
-                          관련 혜택 계산 및 무료 견적 받기 <ArrowUpRight className="w-3.5 h-3.5" />
+                          관련 계산기 및 추천도구 바로가기 <ArrowUpRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
