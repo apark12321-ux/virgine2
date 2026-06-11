@@ -231,7 +231,13 @@ export default function App() {
     // 덮어쓰기 우선: 이전 DB에 꼬여있거나 빈약해진 글들이 있을 때, 개정 완료된 고품격 로컬 MOCK_POSTS를 최우선 덮어쓰고, 신규 DB 글만 살려 귀속합니다.
     const combined = [...MOCK_POSTS];
     realPosts.forEach(real => {
-      if (!combined.find(p => p.id === real.id)) {
+      // 만약 ID가 같거나 제목이 완전히 일치하거나 slug가 같은 글이 이미 존재한다면, 고품질 보증된 로컬 MOCK_POSTS를 최우선 채용하고 해당 DB 글은 배제합니다.
+      const isDuplicate = combined.some(p => 
+        p.id === real.id || 
+        p.title.trim() === real.title?.trim() || 
+        slugify(p.title) === slugify(real.title || "")
+      );
+      if (!isDuplicate) {
         combined.push(real as Post);
       }
     });
