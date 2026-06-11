@@ -433,7 +433,7 @@ export const MOCK_POSTS: Post[] = [
     category: "신혼가전",
     author: "버진로드 편집부",
     date: "2026-03-31",
-    image: "https://images.unsplash.com/photo-1556909172-89c5a4a9e0c2?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["빌트인가전", "신혼인테리어", "식기세척기"]
   },
