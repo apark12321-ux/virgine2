@@ -6,6 +6,7 @@ import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
+import { POST_EXTRA_MAP } from "./postMeta";
 import { Post } from "./types";
 import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -160,6 +161,7 @@ export default function App() {
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [, setUser] = useState<User | null>(null);
   const [views, setViews] = useState<Record<string, number>>({});
+  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const onPopState = () => {
@@ -225,10 +227,11 @@ export default function App() {
   }, []);
 
   const allPosts = useMemo(() => {
-    const combined = [...realPosts];
-    MOCK_POSTS.forEach(mock => {
-      if (!combined.find(p => p.id === mock.id)) {
-        combined.push(mock as Post);
+    // 덮어쓰기 우선: 이전 DB에 꼬여있거나 빈약해진 글들이 있을 때, 개정 완료된 고품격 로컬 MOCK_POSTS를 최우선 덮어쓰고, 신규 DB 글만 살려 귀속합니다.
+    const combined = [...MOCK_POSTS];
+    realPosts.forEach(real => {
+      if (!combined.find(p => p.id === real.id)) {
+        combined.push(real as Post);
       }
     });
     // Dynamically sanitize any fallback branding to 버진로드 (Virginroad)
@@ -276,6 +279,10 @@ export default function App() {
     }
     return null;
   }, [currentPage, allPosts]);
+
+  useEffect(() => {
+    setOpenFaqIdx(null);
+  }, [currentPost]);
 
   useEffect(() => {
     if (!currentPost) return;
@@ -1156,10 +1163,164 @@ export default function App() {
                     />
                   </div>
 
+                  {/* Persona Card */}
+                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
+                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 mb-8 flex items-start gap-4">
+                      <img
+                        src={POST_EXTRA_MAP[currentPost.id].persona.avatar}
+                        alt={POST_EXTRA_MAP[currentPost.id].persona.name}
+                        referrerPolicy="no-referrer"
+                        className="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span className="text-[14px] font-bold text-[#1E1B2E]" id={`persona-name-${currentPost.id}`}>{POST_EXTRA_MAP[currentPost.id].persona.name}</span>
+                          <span className="text-[11px] font-medium text-[#4F46E5] bg-[#EEF2FF] px-2.5 py-0.5 rounded-full border border-[#C7D2FE]">
+                            {POST_EXTRA_MAP[currentPost.id].persona.role}
+                          </span>
+                          <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                            {POST_EXTRA_MAP[currentPost.id].persona.badge}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-[#475569] leading-relaxed break-keep">
+                          &ldquo;{POST_EXTRA_MAP[currentPost.id].persona.message}&rdquo;
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AdSense Top Banner */}
+                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
+                    <div className="bg-[#FAFAFA] border border-[#ECECEC] rounded-lg p-4 mb-8 relative overflow-hidden group shadow-sm">
+                      <div className="absolute top-0 right-0 bg-[#E2EAF4] text-[#7F8D9E] text-[9px] font-bold px-2 py-0.5 rounded-bl">
+                        SPONSOR AD (AdSense)
+                      </div>
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                        <div className="text-left">
+                          <div className="text-[10px] text-[#4F46E5] font-semibold tracking-wider uppercase mb-1">RECOMMENDED FOR YOU</div>
+                          <h4 className="text-[14px] font-bold text-[#1E1B2E] hover:text-[#4F46E5] transition-colors leading-[1.4] break-keep">
+                            {POST_EXTRA_MAP[currentPost.id].adsName}
+                          </h4>
+                          <p className="text-[12px] text-[#64748B] mt-0.5 break-keep">내 요건에 부합하는 {POST_EXTRA_MAP[currentPost.id].adsKeyword} 맞춤형 정보 탐색 및 수수료 절약</p>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
+                              handleNavigate("tools-didimdol");
+                            } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
+                              handleNavigate("tools-cheongyak");
+                            } else {
+                              alert("버진로드 파트너 가계 지원 제휴처 페이지로 즉각 연결됩니다.");
+                            }
+                          }}
+                          className="bg-[#1E1B2E] hover:bg-[#4F46E5] text-white text-[11px] font-bold px-3.5 py-2 rounded transition-colors whitespace-nowrap inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          알아보기 <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div
                     className="article-body"
                     dangerouslySetInnerHTML={{ __html: currentPost.content }}
                   />
+
+                  {/* GEO Official Source Card */}
+                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
+                    <div className="mt-10 p-5 bg-[#EEF2F6] border border-[#D0D7DE] rounded-xl" id={`geo-source-${currentPost.id}`}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
+                        <h4 className="text-[14px] font-bold text-[#1E1B2E] flex items-center gap-1.5">
+                          🏛️ GEO 오피셜 신뢰 기관 및 정책 근거 정보
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-[12px] text-[#475569]">
+                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
+                          <div className="text-[11px] text-[#8A87A0] mb-0.5">배포 및 보장 기구</div>
+                          <div className="font-semibold text-[#1E1B2E] break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.agency}</div>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
+                          <div className="text-[11px] text-[#8A87A0] mb-0.5">법적/행정적 근거 고시</div>
+                          <div className="font-semibold text-[#1E1B2E] leading-normal break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.basis}</div>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
+                          <div className="text-[11px] text-[#8A87A0] mb-0.5">적용 유효 지자체 범위</div>
+                          <div className="font-semibold text-[#1E1B2E] break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.region}</div>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0] flex items-center justify-between">
+                          <div>
+                            <div className="text-[11px] text-[#8A87A0] mb-0.5">정보 공신력 판정 지수</div>
+                            <div className="font-bold text-[#10B981]">{POST_EXTRA_MAP[currentPost.id].geoSource.trustIndex}</div>
+                          </div>
+                          <span className="text-[10px] font-extrabold text-white bg-[#10B981] px-2 py-0.5 rounded shrink-0">공인인증</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AEO FAQ Accordion */}
+                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
+                    <div className="mt-8 p-5 bg-white border border-[#E2E4F0] rounded-xl shadow-sm" id={`aeo-faq-${currentPost.id}`}>
+                      <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-4 flex items-center gap-1.5">
+                        💬 AEO 원 포인트 자격 Q&A (통합 AI 검색 정합성 보증)
+                      </h4>
+                      <div className="space-y-2.5">
+                        {POST_EXTRA_MAP[currentPost.id].aeoFaq.map((faq, idx) => {
+                          const isOpen = openFaqIdx === idx;
+                          return (
+                            <div key={idx} className="border border-[#EEF0FB] rounded-lg overflow-hidden">
+                              <button
+                                onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
+                                className="w-full flex items-center justify-between p-3.5 text-left bg-[#F8FAFD] hover:bg-[#EEF0FB] transition-colors cursor-pointer"
+                              >
+                                <span className="text-[13px] font-bold text-[#1E1B2E] leading-relaxed flex items-start gap-1.5 break-keep">
+                                  <span className="text-[#4F46E5] font-extrabold shrink-0">Q.</span> {faq.q}
+                                </span>
+                                <span className="text-[11px] text-[#4F46E5] font-semibold shrink-0 ml-2 whitespace-nowrap">
+                                  {isOpen ? "해설 닫기 ▲" : "해설 해부 ▼"}
+                                </span>
+                              </button>
+                              {isOpen && (
+                                <div className="p-4 bg-white border-t border-[#EEF0FB] text-[13px] text-[#3F3D56] leading-[1.7] break-keep">
+                                  <strong className="text-[#10B981] font-extrabold mr-1">A.</strong> {faq.a}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AdSense Bottom Banner */}
+                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
+                    <div className="bg-[#FAF9FF] border border-[#E4E2F6] rounded-lg p-5 mt-8 relative overflow-hidden group shadow-sm text-center">
+                      <div className="absolute top-0 right-0 bg-[#E9E4F8] text-[#8676B0] text-[9px] font-bold px-2 py-0.5 rounded-bl">
+                        IN-ARTICLE SPONSOR AD
+                      </div>
+                      <div className="py-2">
+                        <div className="text-[10px] text-[#4F46E5] font-semibold tracking-wider uppercase mb-1">INTERESTED IN THIS TOPIC?</div>
+                        <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-3 leading-[1.4] break-keep">
+                          {POST_EXTRA_MAP[currentPost.id].adsName}
+                        </h4>
+                        <button 
+                          onClick={() => {
+                            if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
+                              handleNavigate("tools-didimdol");
+                            } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
+                              handleNavigate("tools-cheongyak");
+                            } else {
+                              alert("버진로드 파트너 가계 지원 제휴처 페이지로 전이합니다.");
+                            }
+                          }}
+                          className="bg-[#4F46E5] hover:bg-[#3730A3] text-white text-[11px] font-bold px-4 py-2 rounded transition-colors inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          관련 혜택 계산 및 무료 견적 받기 <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {currentPost.hashtags && currentPost.hashtags.length > 0 && (
                     <div className="mt-12 pt-8 border-t border-[#D5D8E8]">

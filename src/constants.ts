@@ -505,7 +505,7 @@ export const MOCK_POSTS: Post[] = [
     excerpt: "전통적인 '신랑 집·신부 혼수' 공식이 깨졌어요. 균등 분담 42%로 1위, 항목별 31%, 소득 비례 18% 순. 양가 갈등 없이 분담을 정하는 대화법을 정리했어요.",
     content: `
       <div class="toc">
-        <p><strong>목case</strong></p>
+        <p><strong>목차</strong></p>
         <ul>
           <li><a href="#sec1">1. 50대50 합리적 균등 분담 방식의 급격한 확산</a></li>
           <li><a href="#sec2">2. 항목분할 방식 vs 소득 및 저축액 비례 투입 전략</a></li>
