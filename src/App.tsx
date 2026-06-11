@@ -1160,6 +1160,7 @@ export default function App() {
                     <img
                       src={currentPost.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
                       alt={currentPost.title}
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
                   </div>
