@@ -632,7 +632,7 @@ export default function App() {
                             >
                               <div className="aspect-[5/3] overflow-hidden bg-[#F5F6FD] relative">
                                 <img
-                                  src={finPosts[0].image}
+                                  src={finPosts[0].image || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800"}
                                   alt={finPosts[0].title}
                                   referrerPolicy="no-referrer"
                                   loading="lazy"
@@ -1150,7 +1150,7 @@ export default function App() {
                 <div className="lg:col-span-8 min-w-0">
                   <div className="aspect-[16/10] overflow-hidden mb-10 bg-[#F1F3F9] rounded-lg">
                     <img
-                      src={currentPost.image}
+                      src={currentPost.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
                       alt={currentPost.title}
                       className="w-full h-full object-cover"
                     />

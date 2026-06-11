@@ -30,7 +30,7 @@ export function PostCard({ post, onClick, views }: PostCardProps) {
       {/* Image */}
       <div className="relative aspect-[5/4] overflow-hidden bg-[#F5F6FD]">
         <img
-          src={post.image}
+          src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
           alt={post.title}
           referrerPolicy="no-referrer"
           loading="lazy"
