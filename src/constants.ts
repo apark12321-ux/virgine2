@@ -80,7 +80,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼금융",
     author: "버진로드 편집부",
-    date: "2026-06-01",
+    date: "2026-06-04",
     image: "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800",
     readTime: "9분",
     hashtags: ["디딤돌대출", "신혼부부", "우대금리", "실제후기", "시뮬레이션", "내집마련", "1.2%금리", "주택금융공사"]
@@ -125,7 +125,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼금융",
     author: "버진로드 편집부",
-    date: "2026-06-02",
+    date: "2026-06-05",
     image: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800",
     readTime: "7분",
     hashtags: ["신혼부부특별공급", "청약개편", "소득기준완화", "부부중복청약", "출산가구특공", "생애최초", "민영주택", "내집마련"]
@@ -199,7 +199,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼금융",
     author: "버진로드 편집부",
-    date: "2026-06-04",
+    date: "2026-06-02",
     image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
     readTime: "6분",
     hashtags: ["공공임대", "신혼부부주택", "청년주택", "행복주택", "국민임대", "매입임대", "LH청약", "2026공급확대"]
@@ -234,7 +234,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼금융",
     author: "버진로드 편집부",
-    date: "2026-06-05",
+    date: "2026-06-01",
     image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
     readTime: "6분",
     hashtags: ["청년월세지원", "상시신청", "주거비지원", "신혼부부주거", "무주택청년", "2026정책", "복지로", "마이홈"]
@@ -273,7 +273,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼금융",
     author: "버진로드 편집부",
-    date: "2026-06-06",
+    date: "2026-03-15",
     image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800",
     readTime: "6분",
     hashtags: ["디딤돌대출", "보금자리론", "신생아특례", "신혼부부", "주택구입자금", "정책대출", "내집마련"]
@@ -308,7 +308,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼가전",
     author: "버진로드 편집부",
-    date: "2026-06-07",
+    date: "2026-06-10",
     image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["혼수가전", "분할구매", "혼수리스트", "신혼가전", "가전세일", "필수가전", "예산관리", "신혼집"]
@@ -339,7 +339,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼가전",
     author: "버진로드 편집부",
-    date: "2026-06-08",
+    date: "2026-06-07",
     image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["인테리어트렌드", "2026인테리어", "소프트미니멀리즘", "바이오필릭", "신혼집인테리어"]
@@ -370,7 +370,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼가전",
     author: "버진로드 편집부",
-    date: "2026-06-09",
+    date: "2026-03-17",
     image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["신혼가전", "삼성가전", "LG가전", "혼수가전", "졸업패키지"]
@@ -401,7 +401,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼가전",
     author: "버진로드 편집부",
-    date: "2026-06-10",
+    date: "2026-03-24",
     image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["가전사이즈", "신혼집평수", "TV사이즈", "냉장고용량"]
@@ -432,7 +432,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼가전",
     author: "버진로드 편집부",
-    date: "2026-06-11",
+    date: "2026-03-31",
     image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["빌트인가전", "신혼인테리어", "식기세척기"]
@@ -463,7 +463,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "신혼가전",
     author: "버진로드 편집부",
-    date: "2026-06-12",
+    date: "2026-06-11",
     image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["신혼집트렌드", "2인최적화", "신혼인테리어"]
@@ -494,7 +494,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "결혼준비",
     author: "버진로드 편집부",
-    date: "2026-06-13",
+    date: "2026-06-06",
     image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["평일결혼식", "비성수기", "결혼식절약", "스몰웨딩", "결혼비용절감"]
@@ -525,7 +525,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "결혼준비",
     author: "버진로드 편집부",
-    date: "2026-06-14",
+    date: "2026-03-25",
     image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["결혼비용분담", "양가분담", "균등분담", "결혼준비"]
@@ -556,7 +556,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "결혼준비",
     author: "버진로드 편집부",
-    date: "2026-06-15",
+    date: "2026-06-09",
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["결혼예산", "결혼비용관리", "엑셀가계부", "결혼준비"]
@@ -587,7 +587,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "결혼준비",
     author: "버진로드 편집부",
-    date: "2026-06-16",
+    date: "2026-03-19",
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["스드메", "웨딩촬영", "웨딩드레스", "신부메이크업"]
@@ -618,7 +618,7 @@ export const MOCK_POSTS: Post[] = [
     `,
     category: "결혼준비",
     author: "버진로드 편집부",
-    date: "2026-06-17",
+    date: "2026-06-08",
     image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800",
     readTime: "5분",
     hashtags: ["웨딩홀", "호텔웨딩", "컨벤션웨딩", "하우스웨딩"]
