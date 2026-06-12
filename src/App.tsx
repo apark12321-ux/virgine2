@@ -163,6 +163,7 @@ export default function App() {
   const [views, setViews] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
   const [adSensePreviewMode, setAdSensePreviewMode] = useState<boolean>(false);
+  const [shareSuccess, setShareSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     const onPopState = () => {
@@ -557,7 +558,6 @@ export default function App() {
                     <a
                       key={link.title}
                       href={link.url}
-                      target="_blank"
                       rel="noopener noreferrer"
                       className="group flex items-center gap-3 bg-white border border-[#E2E4F0] hover:border-[#FFD2BD] hover:bg-[#F5F6FD] rounded-xl p-4 transition-all"
                     >
@@ -875,7 +875,7 @@ export default function App() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-5 lg:px-6 py-12 lg:py-20 article-body bg-white border border-[#E2E4F0] rounded-2xl shadow-sm mt-8"
+              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
             >
               <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
                 버진로드 소개
@@ -908,7 +908,7 @@ export default function App() {
                 <li><strong>사업자등록번호:</strong> 272-14-01256</li>
                 <li><strong>통신판매업 신고번호:</strong> 제2023-화성동탄-1098호</li>
                 <li><strong>문의 이메일:</strong> <a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a></li>
-                <li><strong>대표 사이트:</strong> <a href="https://virginroad.kr" target="_blank" rel="noopener noreferrer">https://virginroad.kr</a></li>
+                <li><strong>대표 사이트:</strong> <a href="https://virginroad.kr" rel="noopener noreferrer">https://virginroad.kr</a></li>
               </ul>
             </motion.div>
           )}
@@ -919,7 +919,7 @@ export default function App() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-5 lg:px-6 py-12 lg:py-20 article-body bg-white border border-[#E2E4F0] rounded-2xl shadow-sm mt-8"
+              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
             >
               <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
                 개인정보 처리방침
@@ -956,8 +956,8 @@ export default function App() {
               <h2>제5조 (쿠키 및 구글 애드센스 광고에 관한 고지)</h2>
               <p>1. 본 서비스는 구글 주식회사(Google Inc.)가 제공하는 웹 광고 분석 기술 서비스인 Google AdSense를 탑재하여 연동 작동하고 있습니다.<br />
               2. Google은 사용자가 이전 방문 이력을 기반으로 본 사이트 및 기타 제3자 웹사이트에 맞는 온라인 맞춤 배너 광고를 게재하기 위해 쿠키(Cookie)를 활용할 수 있습니다.<br />
-              3. Google의 광고 및 콘텐츠 네트워크 개인정보 보호정책에 관한 보다 상세한 데이터 활용 양식과 지침은 구글 개인정보처리약관 페이지(<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline hov:text-[#1E1B2E]">https://policies.google.com/privacy</a>)에서 확인할 수 있습니다.<br />
-              4. <strong>쿠키 설치 허용 여부에 관한 제어 수단:</strong> 이용자는 언제든 사용하는 웹 브라우저의 옵션을 조절하여 쿠키 저장을 거부하거나 경고를 받도록 처리할 수 있습니다. 예를 들어, 구글 맞춤 설정 페이지(<a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline hover:text-[#1E1B2E]">https://adssettings.google.com</a>)에서 맞춤 광고 게재 비활성화와 같은 직접 제어가 가능합니다.</p>
+              3. Google의 광고 및 콘텐츠 네트워크 개인정보 보호정책에 관한 보다 상세한 데이터 활용 양식과 지침은 구글 개인정보처리약관 페이지(<a href="https://policies.google.com/privacy" rel="noopener noreferrer" className="text-[#D45A45] underline hover:text-[#1E1B2E]">https://policies.google.com/privacy</a>)에서 확인할 수 있습니다.<br />
+              4. <strong>쿠키 설치 허용 여부에 관한 제어 수단:</strong> 이용자는 언제든 사용하는 웹 브라우저의 옵션을 조절하여 쿠키 저장을 거부하거나 경고를 받도록 처리할 수 있습니다. 예를 들어, 구글 맞춤 설정 페이지(<a href="https://adssettings.google.com" rel="noopener noreferrer" className="text-[#D45A45] underline hover:text-[#1E1B2E]">https://adssettings.google.com</a>)에서 맞춤 광고 게재 비활성화와 같은 직접 제어가 가능합니다.</p>
 
               <h2>제6조 (정보주체의 권리·의무 및 그 행사방법)</h2>
               <p>1. 이용자는 회사에 대해 언제든지 개인정보의 열람, 정정, 삭제, 처리정지 요구 등의 권리를 신속히 행사할 수 있습니다.<br />
@@ -991,7 +991,7 @@ export default function App() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-5 lg:px-6 py-12 lg:py-20 article-body bg-white border border-[#E2E4F0] rounded-2xl shadow-sm mt-8"
+              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
             >
               <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
                 이용약관
@@ -1049,7 +1049,7 @@ export default function App() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-5 lg:px-6 py-12 lg:py-20 article-body bg-white border border-[#E2E4F0] rounded-2xl shadow-sm mt-8"
+              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
             >
               <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
                 공지사항
@@ -1074,7 +1074,7 @@ export default function App() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-5 lg:px-6 py-12 lg:py-20 article-body bg-white border border-[#E2E4F0] rounded-2xl shadow-sm mt-8"
+              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
             >
               <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
                 제휴 및 비즈니스 문의
@@ -1092,7 +1092,7 @@ export default function App() {
               initial={{ y: 12, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1400px] mx-auto px-5 lg:px-10 py-10 lg:py-16 bg-white border border-[#E2E4F0] rounded-2xl shadow-sm mt-6"
+              className="max-w-[1400px] mx-auto px-5 lg:px-10 py-10 lg:py-16 bg-white min-h-screen mt-4"
             >
               <div className="lg:max-w-[860px]">
                 {/* Breadcrumb */}
@@ -1138,17 +1138,26 @@ export default function App() {
                       <Eye className="w-3.5 h-3.5" /> {(views[currentPost.id] || 0).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex items-center gap-2">
+                    {shareSuccess && (
+                      <span className="text-[12px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 animate-pulse">
+                        주소가 복사되었습니다!
+                      </span>
+                    )}
                     <button
-                      className="w-9 h-9 rounded-md text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors cursor-pointer"
+                      className={`w-9 h-9 rounded-md flex items-center justify-center transition-all cursor-pointer ${
+                        shareSuccess ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9]"
+                      }`}
                       title="공유"
                       aria-label="이 글 공유하기"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(window.location.href);
-                          alert("주소가 클립보드에 복사되었습니다.");
+                          setShareSuccess(true);
+                          setTimeout(() => setShareSuccess(false), 2000);
                         } catch {
-                          window.prompt("이 주소를 복사해 공유하세요:", window.location.href);
+                          setShareSuccess(true);
+                          setTimeout(() => setShareSuccess(false), 2000);
                         }
                       }}
                     >
@@ -1236,7 +1245,7 @@ export default function App() {
                               } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
                                 handleNavigate("tools-cheongyak");
                               } else {
-                                alert("버진로드 파트너 가계 지원 제휴처 페이지로 즉각 연결됩니다.");
+                                handleNavigate("partnership");
                               }
                             }}
                             className="bg-[#1E1B2E] hover:bg-[#4F46E5] text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap inline-flex items-center justify-center gap-1 cursor-pointer w-full sm:w-auto shadow-sm"
@@ -1371,7 +1380,7 @@ export default function App() {
                             } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
                               handleNavigate("tools-cheongyak");
                             } else {
-                              alert("버진로드 파트너 가계 지원 제휴처 페이지로 전이합니다.");
+                              handleNavigate("partnership");
                             }
                           }}
                           className={`${adSensePreviewMode ? "bg-[#4F46E5] hover:bg-[#3730A3]" : "bg-[#10B981] hover:bg-[#059669]"} text-white text-[11px] font-bold px-4 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-sm`}

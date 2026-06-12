@@ -159,7 +159,6 @@ export function PolicyHub({ compact = false, onNavigate }: PolicyHubProps) {
                   </span>
                   <a
                     href={p.source}
-                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-[12px] font-semibold text-[#E8745F] hover:text-[#B0432F] inline-flex items-center gap-1"
                   >

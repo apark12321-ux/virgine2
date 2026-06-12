@@ -421,11 +421,11 @@ export function DidimdolCalculator() {
           </p>
           <p className="pt-2">
             <strong className="text-[#3F3D56]">참고 출처:</strong>{" "}
-            <a href="https://www.hf.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">한국주택금융공사 디딤돌대출 금리안내</a>
+            <a href="https://www.hf.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">한국주택금융공사 디딤돌대출 금리안내</a>
             {" · "}
-            <a href="https://nhuf.molit.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">주택도시기금포털</a>
+            <a href="https://nhuf.molit.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">주택도시기금포털</a>
             {" · "}
-            <a href="https://irds.molit.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">부동산거래 전자계약시스템</a>
+            <a href="https://irds.molit.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">부동산거래 전자계약시스템</a>
           </p>
           <p className="text-[12px] text-[#8A87A0] pt-2">
             버진로드 편집부 · 최종 갱신 2026.05.31

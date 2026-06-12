@@ -406,11 +406,11 @@ export function CheongyakCalculator() {
           </p>
           <p className="pt-2">
             <strong className="text-[#3F3D56]">참고 출처:</strong>{" "}
-            <a href="https://www.applyhome.co.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">청약홈(applyhome.co.kr) 공식 가점 계산기</a>
+            <a href="https://www.applyhome.co.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">청약홈(applyhome.co.kr) 공식 가점 계산기</a>
             {" · "}
-            <a href="https://www.law.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">주택공급에 관한 규칙(법제처)</a>
+            <a href="https://www.law.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">주택공급에 관한 규칙(법제처)</a>
             {" · "}
-            <a href="https://www.molit.go.kr" target="_blank" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">국토교통부 신혼부부 특별공급 운영지침</a>
+            <a href="https://www.molit.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">국토교통부 신혼부부 특별공급 운영지침</a>
           </p>
           <p className="text-[12px] text-[#8A87A0] pt-2">
             버진로드 편집부 · 최종 갱신 2026.05.31
