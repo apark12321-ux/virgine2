@@ -17,9 +17,8 @@ export interface Post {
 export type Category = Post["category"];
 
 const FINANCE_IMAGES = [
-  "1554224128-3c7f3edcc69f", // calculator & cash
-  "1611974789855-9c2a0a7236a3", // stock candlestick chart
   "1554224155-1696413565d3", // tax form
+  "1611974789855-9c2a0a7236a3", // stock candlestick chart
   "1560518883-ce09059eeffa", // house keys modern
   "1554224155-6726b3ff858f", // work budget spreadsheet
   "1486406146926-c627a92ad1ab", // financial district skyscraper
@@ -30,46 +29,32 @@ const FINANCE_IMAGES = [
   "1556742044-3c52d6e88c62", // paying cash check
   "1511556532299-8f662fc26c06", // accounting ledger paper
   "1517248135467-4c7edcad34c4", // co-working laptop
-  "1520607117406-8ae21c9c41e8", // financial paperwork
-  "1541888941-2c02f297b18a", // housing construction checklist
   "1555421689-491a97ff2040", // documents checklist
-  "1450633301379-8497495555e3", // piggy savings box envelope
   "1461151304267-38535e780c79", // tablet investment charts
-  "1487014679447-9f8e5d8434df", // planning spreadsheet laptop
   "1501167786227-4cba60f6d58f", // bank neoclassical building
   "1516321318423-f06f85e504b3", // graph analysis display
-  "1518173946637-40d9350749e8", // piggy bank brass coins
-  "1533750516646-d2422b9a12f7", // team presentation metrics
-  "1542751371082-67cf8cefc8cf", // corporate financial forecast
-  "1553835973004-10bc4a1d48c8"  // auditing book logs
+  "1526304640581-d334cdbbf45e", // dollar cash
+  "1579621970563-ebec7560ff3e", // money plant pig
+  "1502920917128-1aa500764cbd", // budget
+  "1591696205602-2f950c417cb9"  // statistics
 ];
 
 const APPLIANCE_IMAGES = [
   "1556909114-f6e7ad7d3136", // kitchen stove & oven cooking
   "1505693416388-ac5ce068fe85", // living room sofa couch
   "1556911220-e15b29be8c8f", // kitchen clean baking table
-  "1581577211533-082261d2e4e2", // modern dining interior
   "1512917774080-9991f1c4c750", // modern kitchen countertop & chairs
   "1600585154340-be6161a56a0c", // interior design kitchen room
   "1441986300917-64674bd600d8", // walk-in closet cabinet dressroom
-  "1512428559047-f627c735956c", // decorating picture frame
-  "1512756290457-41a4574944ec", // interior design botanical shelf
-  "1513519245088-0f12902e5a38", // fireplace cozy living room
-  "1515826645371-29e24ff713a3", // dining table plates fork
-  "1517713982991-a615d124b837", // modern wooden armchair
-  "1519167758481-837559e86111", // mood light glowing room
-  "1523275335684-185127a58710", // cozy bedroom neat bedding
-  "1525230023222-11e74be04a4e", // home balcony garden plants
-  "1556155096-728f2819cd01", // living room styling decoration pillows
-  "1557800634-8c650cfdf125", // green couch elegant interior
+  "1583847268964-b28dc8f51f92", // stylish refrigerator kitchen
   "1584622650111-993a426fbf0a", // modern home washing machine laundry
   "1616486338812-3dadae4b4ace", // modern kitchen cabinetry
-  "1616046229478-9901c5536a4a", // living room cupboard/bookshelf
-  "1583847268964-b28dc8f51f92", // stylish refrigerator kitchen
-  "1507089947337-f94357c33b2a", // elegant tea cups kitchen
-  "1588854337236-6889d631aff8", // smart robot vacuum cleaner
-  "1595515106967-dfc87f17b7f5", // water purifier faucet kitchen
-  "1615529182906-bab97cac689d"  // cozy study desk room
+  "1586023492125-27b2c045efd7", // modern living room
+  "1522771739844-6a9f6d5f14af", // aesthetic single room
+  "1616594039964-ae9021a400a0", // bedroom interior
+  "1502672260266-1c1ef2d93688", // living room bento style
+  "1484154218962-a197022b5858", // bright kitchen
+  "1556911220-e15b29be8c8f"  // baking
 ];
 
 const WEDDING_IMAGES = [
@@ -81,7 +66,6 @@ const WEDDING_IMAGES = [
   "1516450360452-9312f5e86fc7", // dancing wedding party celebration
   "1515934751635-c81c6bc9a2d8", // groom & bride forest photoshoot
   "1502082553048-f009c37129b9", // married couple sunset fields
-  "1503174971373-b1f69850baf4", // outdoor wedding ceremony flowers
   "1504917595217-d4dc5ebe6122", // couple cuddling lifestyle
   "1507679799987-c73779587ccf", // bride bridal prep detail
   "1511285560929-80b456fea0bc", // wedding couple first dance
@@ -90,14 +74,12 @@ const WEDDING_IMAGES = [
   "1522673607200-164d1b6ce486", // bride dress veil wind
   "1607190074257-dd4b7af0309f", // white wedding gown bridal
   "1603561591411-07134e71a2a9", // gorgeous multi-tier wedding cake
-  "1529636798458-921a2262484e", // couple walking holding hands
   "1549417229-aa67d3263c09", // wedding table floral reception
   "1544551763-46a013bb70d5", // bride delicate veil close-up
-  "1591604466107-ec97de577fad", // groom vest suit detail
   "1518156677180-95a2893f3e9f", // sparkling diamond ring macro
-  "1510076857179-b342518b5322", // elegant wedding crowd clapping
   "1532712938310-34cb3982ef74", // wedding gold bands macro
-  "1523438885200-e635ba2c371e"  // wedding guest banquet layout
+  "1523438885200-e635ba2c371e", // wedding guest banquet layout
+  "1511795409834-ef04bbd61622"  // happy married couple
 ];
 
 const ORIGINAL_17 = [
