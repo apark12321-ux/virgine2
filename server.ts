@@ -141,6 +141,59 @@ function saveLocalPosts(posts: any[]) {
   }
 }
 
+function getRequestBaseUrl(req: express.Request): string {
+  const forwardedHost = req.headers["x-forwarded-host"] || req.headers["X-Forwarded-Host"];
+  const host = forwardedHost || req.get("host") || "virginroad.kr";
+  const scheme = req.headers["x-forwarded-proto"] || req.protocol || "https";
+  return `${scheme}://${host}`;
+}
+
+function escapeXml(unsafe: string): string {
+  if (!unsafe) return "";
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+}
+
+function extractChannelId(req: express.Request): string {
+  // 1. From body
+  if (req.body) {
+    if (typeof req.body.channelId === "string" && req.body.channelId.trim()) return req.body.channelId.trim();
+    if (typeof req.body.channel_id === "string" && req.body.channel_id.trim()) return req.body.channel_id.trim();
+    if (typeof req.body.channelID === "string" && req.body.channelID.trim()) return req.body.channelID.trim();
+    if (typeof req.body.channel === "string" && req.body.channel.trim()) return req.body.channel.trim();
+    if (req.body.channel && typeof req.body.channel.id === "string" && req.body.channel.id.trim()) return req.body.channel.id.trim();
+    if (req.body.channel && typeof req.body.channel.channelId === "string" && req.body.channel.channelId.trim()) return req.body.channel.channelId.trim();
+    if (req.body.channel && typeof req.body.channel.channel_id === "string" && req.body.channel.channel_id.trim()) return req.body.channel.channel_id.trim();
+    if (typeof req.body.id === "string" && req.body.id.trim()) return req.body.id.trim();
+  }
+  // 2. From query
+  if (req.query) {
+    if (typeof req.query.channelId === "string" && req.query.channelId.trim()) return req.query.channelId.trim();
+    if (typeof req.query.channel_id === "string" && req.query.channel_id.trim()) return req.query.channel_id.trim();
+    if (typeof req.query.channelID === "string" && req.query.channelID.trim()) return req.query.channelID.trim();
+    if (typeof req.query.channel === "string" && req.query.channel.trim()) return req.query.channel.trim();
+    if (typeof req.query.id === "string" && req.query.id.trim()) return req.query.id.trim();
+  }
+  // 3. From headers
+  const headerKeys = ["x-channel-id", "x-channel", "x-channelid", "X-Channel-Id", "X-Channel-ID"];
+  for (const key of headerKeys) {
+    const val = req.headers[key] || req.headers[key.toLowerCase()];
+    if (typeof val === "string" && val.trim()) return val.trim();
+    if (Array.isArray(val) && val.length > 0 && typeof val[0] === "string" && val[0].trim()) return val[0].trim();
+  }
+  
+  // Default fallback
+  return "virginroad";
+}
+
 async function fetchFirestorePosts(): Promise<any[]> {
   const projectId = "gen-lang-client-0326874047";
   const databaseId = "ai-studio-9ae01718-7459-4ac4-90d0-d2a27c2a0cc1";
@@ -385,17 +438,23 @@ async function startServer() {
   app.get("/api/posts", async (req, res) => {
     try {
       const posts = await fetchMergedPosts();
-      const reqChannelId = req.query.channelId || req.query.channel_id || req.headers["x-channel-id"] || "virginroad";
+      const reqChannelId = extractChannelId(req);
+      const hostUrl = getRequestBaseUrl(req);
       
-      const postsWithChannel = posts.map(p => ({
-        ...p,
-        channelId: reqChannelId,
-        channel_id: reqChannelId,
-        channel: {
-          id: reqChannelId,
-          name: "버진로드"
-        }
-      }));
+      const postsWithChannel = posts.map(p => {
+        const slug = slugify(p.title) || p.id;
+        return {
+          ...p,
+          url: `${hostUrl}/post/${slug}`,
+          channelId: reqChannelId,
+          channel_id: reqChannelId,
+          channel: {
+            id: reqChannelId,
+            name: "버진로드",
+            url: `${hostUrl}/`
+          }
+        };
+      });
 
       // Robust headers matching the expected channel validations
       res.setHeader("X-Channel-ID", String(reqChannelId));
@@ -411,23 +470,113 @@ async function startServer() {
     }
   });
 
+  // RSS Feed XML generator: Supporting Toss Feed Studio and other RSS blog syndication integrations
+  const handleRssFeed = async (req: express.Request, res: express.Response) => {
+    try {
+      const posts = await fetchMergedPosts();
+      const hostUrl = getRequestBaseUrl(req);
+      const channelId = extractChannelId(req);
+      
+      const xmlItems = posts.map((post) => {
+        const slug = slugify(post.title) || post.id;
+        const postUrl = `${hostUrl}/post/${slug}`;
+        const escapedTitle = escapeXml(post.title || "무제");
+        const escapedExcerpt = escapeXml(post.excerpt || "");
+        const escapedAuthor = escapeXml(post.author || "버진로드 에디터");
+        const escapedCategory = escapeXml(post.category || "결혼준비");
+        
+        let pubDateStr = new Date().toUTCString();
+        if (post.date) {
+          try {
+            pubDateStr = new Date(post.date).toUTCString();
+          } catch (e) {}
+        }
+
+        return `    <item>
+      <title>${escapedTitle}</title>
+      <link>${postUrl}</link>
+      <guid isPermaLink="true">${postUrl}</guid>
+      <description>${escapedExcerpt}</description>
+      <content:encoded><![CDATA[${post.content || post.excerpt || ""}]]></content:encoded>
+      <pubDate>${pubDateStr}</pubDate>
+      <dc:creator>${escapedAuthor}</dc:creator>
+      <category>${escapedCategory}</category>
+      <enclosure url="${post.image || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"}" length="0" type="image/jpeg" />
+    </item>`;
+      }).join("\n");
+
+      const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" 
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+  xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+  <channel>
+    <title>버진로드</title>
+    <atom:link href="${hostUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <link>${hostUrl}/</link>
+    <description>결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서</description>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <language>ko-KR</language>
+    <sy:updatePeriod>hourly</sy:updatePeriod>
+    <sy:updateFrequency>1</sy:updateFrequency>
+    <generator>Virginroad RSS Engine v1.0</generator>
+    <image>
+      <url>https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&amp;fit=crop&amp;q=80&amp;w=120</url>
+      <title>버진로드</title>
+      <link>${hostUrl}/</link>
+    </image>
+${xmlItems}
+  </channel>
+</rss>`;
+
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      res.setHeader("X-Channel-ID", String(channelId));
+      res.setHeader("X-Channel-Id", String(channelId));
+      res.setHeader("x-channel-id", String(channelId));
+      
+      logWebhookRequest(req, undefined, { count: posts.length, format: "rss-xml" });
+      return res.status(200).send(rssXml);
+    } catch (err: any) {
+      console.error("Failed to generate RSS feed XML:", err);
+      logWebhookRequest(req, `RSS Error: ${err.message}`);
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      return res.status(500).send("Failed to generate RSS feed XML");
+    }
+  };
+
   // GET /api/blogstudio-webhook: Responding to connectivity tests from Blog Studio
   const handleChannelPing = (req: express.Request, res: express.Response) => {
-    const channelId = req.query.channelId || req.query.channel_id || req.body.channelId || req.headers["x-channel-id"] || req.headers["X-Channel-ID"] || "virginroad";
+    const channelId = extractChannelId(req);
+    const hostUrl = getRequestBaseUrl(req);
+    
     const responsePayload = {
       status: "success",
       message: "Channel verification successful. Ready to receive posts.",
-      url: "https://virginroad.kr/",
+      url: `${hostUrl}/`,
       id: channelId,
       channelId: channelId,
       channel_id: channelId,
+      channel: {
+        id: channelId,
+        name: "버진로드",
+        url: `${hostUrl}/`
+      },
       data: {
-        url: "https://virginroad.kr/",
+        url: `${hostUrl}/`,
         channelId: channelId,
         channel_id: channelId,
-        id: channelId
+        id: channelId,
+        channel: {
+          id: channelId,
+          name: "버진로드",
+          url: `${hostUrl}/`
+        }
       }
     };
+    
     res.setHeader("X-Channel-ID", String(channelId));
     res.setHeader("X-Channel-Id", String(channelId));
     res.setHeader("x-channel-id", String(channelId));
@@ -438,6 +587,7 @@ async function startServer() {
   // POST webhook endpoints for Blog Studio: supporting root POST / and specific endpoints /api/posts & /api/blogstudio-webhook
   const handleIncomingPost = async (req: express.Request, res: express.Response) => {
     const rawApiKey = req.headers["x-api-key"] || req.headers["X-API-Key"] || req.query.key || req.query.apiKey;
+    const hostUrl = getRequestBaseUrl(req);
     console.log(`Received incoming blog post webhook. API Key header/query: "${rawApiKey || "none"}"`);
     console.log("Request Body:", JSON.stringify(req.body, null, 2));
     
@@ -448,22 +598,32 @@ async function startServer() {
     const seoDescription = req.body.seoDescription || req.body.excerpt || req.body.summary || "";
     
     // Support and capture channel IDs from request body, query or headers to pass verification
-    const channelId = req.body.channelId || req.body.channel_id || req.body.channelID || req.query.channelId || req.headers["x-channel-id"] || req.headers["X-Channel-ID"] || "virginroad";
+    const channelId = extractChannelId(req);
     
     if (!rawTitle || typeof rawTitle !== "string") {
       console.log("No title found in incoming webhook request. Treating as a connection test / ping.");
       const responseBody = {
         status: "success",
         message: "Connection test successful. Ready to receive posts.",
-        url: "https://virginroad.kr/",
+        url: `${hostUrl}/`,
         id: channelId,
         channelId: channelId,
         channel_id: channelId,
+        channel: {
+          id: channelId,
+          name: "버진로드",
+          url: `${hostUrl}/`
+        },
         data: {
-          url: "https://virginroad.kr/",
+          url: `${hostUrl}/`,
           channelId: channelId,
           channel_id: channelId,
-          id: channelId
+          id: channelId,
+          channel: {
+            id: channelId,
+            name: "버진로드",
+            url: `${hostUrl}/`
+          }
         }
       };
       res.setHeader("X-Channel-ID", String(channelId));
@@ -531,7 +691,7 @@ async function startServer() {
       }
       saveLocalPosts(localPosts);
       console.log(`Saved post locally to posts-local.json: ${postId}`);
-
+ 
       // 8. ALSO write to Firestore asynchronously so the database syncs if the rules permit
       const apiKey = "AIzaSyDneiaJczNqU2Od6c0lMe3AdSQKar5yGA4";
       const firestoreUrl = `https://firestore.googleapis.com/v1/projects/gen-lang-client-0326874047/databases/ai-studio-9ae01718-7459-4ac4-90d0-d2a27c2a0cc1/documents/posts/${postId}?key=${apiKey}`;
@@ -565,7 +725,7 @@ async function startServer() {
       .catch(err => {
         console.warn(`Firestore dual-write background warning for ${postId}:`, err.message);
       });
-
+ 
       // 9. Return structured success matching Blog Studio's required output
       const successResponse = {
         status: "success",
@@ -574,13 +734,18 @@ async function startServer() {
         postId: postId,
         channelId: channelId,
         channel_id: channelId,
-        url: `https://virginroad.kr/post/${postId}`,
+        url: `${hostUrl}/post/${postId}`,
         data: {
-          url: `https://virginroad.kr/post/${postId}`,
+          url: `${hostUrl}/post/${postId}`,
           postId: postId,
           id: postId,
           channelId: channelId,
-          channel_id: channelId
+          channel_id: channelId,
+          channel: {
+            id: channelId,
+            name: "버진로드",
+            url: `${hostUrl}/`
+          }
         }
       };
       logWebhookRequest(req, undefined, successResponse);
@@ -591,10 +756,17 @@ async function startServer() {
       res.status(500).json({ error: "Failed to publish post", details: e.message });
     }
   };
-
+ 
   // Listen to GET requests for validation & configuration checks from Blog Studio
   app.get("/api/blogstudio-webhook", handleChannelPing);
   app.get("/api/posts-ping", handleChannelPing);
+ 
+  // Serve standard RSS XML fields on multiple standard locations
+  app.get("/rss.xml", handleRssFeed);
+  app.get("/rss", handleRssFeed);
+  app.get("/feed.xml", handleRssFeed);
+  app.get("/feed", handleRssFeed);
+  app.get("/api/posts/rss", handleRssFeed);
 
   // Intellectual Root level interceptor:
   // If the request contains Blog Studio verification markers (such as query channelId or JSON accept headers)
