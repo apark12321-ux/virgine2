@@ -188,6 +188,14 @@ async function fetchMergedPosts(): Promise<any[]> {
       combined.push(fp);
     }
   });
+
+  // Merge in high-quality default MOCK_POSTS so the REST api feed is never blank
+  MOCK_POSTS.forEach(mp => {
+    if (!combined.some(p => p.id === mp.id || p.title.trim() === mp.title.trim() || slugify(p.title) === slugify(mp.title))) {
+      combined.push(mp);
+    }
+  });
+
   return combined;
 }
 
@@ -398,12 +406,22 @@ async function startServer() {
     const status = req.body.status || req.body.postStatus || "published";
     const seoDescription = req.body.seoDescription || req.body.excerpt || req.body.summary || "";
     
+    // Support and capture channel IDs from request body, query or headers to pass verification
+    const channelId = req.body.channelId || req.body.channel_id || req.body.channelID || req.query.channelId || req.headers["x-channel-id"] || "";
+    
     if (!rawTitle || typeof rawTitle !== "string") {
       console.log("No title found in incoming webhook request. Treating as a connection test / ping.");
       const responseBody = {
         status: "success",
         message: "Connection test successful. Ready to receive posts.",
-        url: "https://virginroad.kr/"
+        url: "https://virginroad.kr/",
+        id: channelId || "virginroad-api",
+        channelId: channelId,
+        channel_id: channelId,
+        data: {
+          url: "https://virginroad.kr/",
+          channelId: channelId
+        }
       };
       logWebhookRequest(req, "No title found. connection test.", responseBody);
       return res.status(200).json(responseBody);
@@ -507,9 +525,16 @@ async function startServer() {
         status: "success",
         message: "Post published successfully",
         id: postId,
+        postId: postId,
+        channelId: channelId,
+        channel_id: channelId,
         url: `https://virginroad.kr/post/${postId}`,
         data: {
-          url: `https://virginroad.kr/post/${postId}`
+          url: `https://virginroad.kr/post/${postId}`,
+          postId: postId,
+          id: postId,
+          channelId: channelId,
+          channel_id: channelId
         }
       };
       logWebhookRequest(req, undefined, successResponse);
