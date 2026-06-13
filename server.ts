@@ -381,18 +381,59 @@ async function startServer() {
     }
   });
 
-  // GET /api/posts: Serving merged dynamic posts (Local file + Firestore database posts)
+  // GET /api/posts: Serving merged dynamic posts (Local file + Firestore database posts with channelId tracking)
   app.get("/api/posts", async (req, res) => {
     try {
       const posts = await fetchMergedPosts();
-      logWebhookRequest(req, undefined, { count: posts.length });
-      res.json(posts);
+      const reqChannelId = req.query.channelId || req.query.channel_id || req.headers["x-channel-id"] || "virginroad";
+      
+      const postsWithChannel = posts.map(p => ({
+        ...p,
+        channelId: reqChannelId,
+        channel_id: reqChannelId,
+        channel: {
+          id: reqChannelId,
+          name: "버진로드"
+        }
+      }));
+
+      // Robust headers matching the expected channel validations
+      res.setHeader("X-Channel-ID", String(reqChannelId));
+      res.setHeader("X-Channel-Id", String(reqChannelId));
+      res.setHeader("x-channel-id", String(reqChannelId));
+      
+      logWebhookRequest(req, undefined, { count: postsWithChannel.length });
+      res.json(postsWithChannel);
     } catch (err: any) {
       console.error("Failed to serve merged posts:", err);
       logWebhookRequest(req, err.message);
       res.status(500).json({ error: "Failed to fetch posts" });
     }
   });
+
+  // GET /api/blogstudio-webhook: Responding to connectivity tests from Blog Studio
+  const handleChannelPing = (req: express.Request, res: express.Response) => {
+    const channelId = req.query.channelId || req.query.channel_id || req.body.channelId || req.headers["x-channel-id"] || req.headers["X-Channel-ID"] || "virginroad";
+    const responsePayload = {
+      status: "success",
+      message: "Channel verification successful. Ready to receive posts.",
+      url: "https://virginroad.kr/",
+      id: channelId,
+      channelId: channelId,
+      channel_id: channelId,
+      data: {
+        url: "https://virginroad.kr/",
+        channelId: channelId,
+        channel_id: channelId,
+        id: channelId
+      }
+    };
+    res.setHeader("X-Channel-ID", String(channelId));
+    res.setHeader("X-Channel-Id", String(channelId));
+    res.setHeader("x-channel-id", String(channelId));
+    logWebhookRequest(req, "GET Ping connection test", responsePayload);
+    return res.status(200).json(responsePayload);
+  };
 
   // POST webhook endpoints for Blog Studio: supporting root POST / and specific endpoints /api/posts & /api/blogstudio-webhook
   const handleIncomingPost = async (req: express.Request, res: express.Response) => {
@@ -407,7 +448,7 @@ async function startServer() {
     const seoDescription = req.body.seoDescription || req.body.excerpt || req.body.summary || "";
     
     // Support and capture channel IDs from request body, query or headers to pass verification
-    const channelId = req.body.channelId || req.body.channel_id || req.body.channelID || req.query.channelId || req.headers["x-channel-id"] || "";
+    const channelId = req.body.channelId || req.body.channel_id || req.body.channelID || req.query.channelId || req.headers["x-channel-id"] || req.headers["X-Channel-ID"] || "virginroad";
     
     if (!rawTitle || typeof rawTitle !== "string") {
       console.log("No title found in incoming webhook request. Treating as a connection test / ping.");
@@ -415,14 +456,19 @@ async function startServer() {
         status: "success",
         message: "Connection test successful. Ready to receive posts.",
         url: "https://virginroad.kr/",
-        id: channelId || "virginroad-api",
+        id: channelId,
         channelId: channelId,
         channel_id: channelId,
         data: {
           url: "https://virginroad.kr/",
-          channelId: channelId
+          channelId: channelId,
+          channel_id: channelId,
+          id: channelId
         }
       };
+      res.setHeader("X-Channel-ID", String(channelId));
+      res.setHeader("X-Channel-Id", String(channelId));
+      res.setHeader("x-channel-id", String(channelId));
       logWebhookRequest(req, "No title found. connection test.", responseBody);
       return res.status(200).json(responseBody);
     }
@@ -545,6 +591,27 @@ async function startServer() {
       res.status(500).json({ error: "Failed to publish post", details: e.message });
     }
   };
+
+  // Listen to GET requests for validation & configuration checks from Blog Studio
+  app.get("/api/blogstudio-webhook", handleChannelPing);
+  app.get("/api/posts-ping", handleChannelPing);
+
+  // Intellectual Root level interceptor:
+  // If the request contains Blog Studio verification markers (such as query channelId or JSON accept headers)
+  // we return the channel verification JSON immediately instead of rendering the SPA html representation.
+  app.get("/", (req, res, next) => {
+    const isBotOrValidation = 
+      req.query.channelId || 
+      req.query.channel_id || 
+      req.headers["x-channel-id"] || 
+      req.headers["X-Channel-ID"] ||
+      (req.headers["accept"] && req.headers["accept"].includes("application/json"));
+      
+    if (isBotOrValidation) {
+      return handleChannelPing(req, res);
+    }
+    next();
+  });
 
   // Listen to POST requests across all possible configurations of endpoints
   app.post("/", handleIncomingPost);
