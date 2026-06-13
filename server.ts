@@ -43,14 +43,105 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
-interface FirestorePost {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
+function classifyCategory(title: string, content: string): "신혼금융" | "신혼가전" | "결혼준비" {
+  const combined = (title + " " + content).toLowerCase();
+  
+  // 1. 신혼금융 Keywords (Finances, Loans, Rates, savings, taxes, etc.)
+  if (
+    combined.includes("대출") || 
+    combined.includes("금리") || 
+    combined.includes("금융") || 
+    combined.includes("예금") || 
+    combined.includes("적금") || 
+    combined.includes("청약") || 
+    combined.includes("재테크") || 
+    combined.includes("지원") || 
+    combined.includes("소득") || 
+    combined.includes("월세") || 
+    combined.includes("isa") || 
+    combined.includes("절세") || 
+    combined.includes("부동산") ||
+    combined.includes("디딤돌") ||
+    combined.includes("보험") ||
+    combined.includes("자금") ||
+    combined.includes("세금") ||
+    combined.includes("지원금") ||
+    combined.includes("주택") ||
+    combined.includes("전세") ||
+    combined.includes("은행") ||
+    combined.includes("투자") ||
+    combined.includes("자산") ||
+    combined.includes("연금") ||
+    combined.includes("카드")
+  ) {
+    return "신혼금융";
+  }
+  
+  // 2. 신혼가전 Keywords (Appliances, Furniture, Interior, Brands, etc.)
+  if (
+    combined.includes("가전") || 
+    combined.includes("인테리어") || 
+    combined.includes("삼성") || 
+    combined.includes("lg") || 
+    combined.includes("빌트인") || 
+    combined.includes("가구") || 
+    combined.includes("청정") || 
+    combined.includes("에어컨") || 
+    combined.includes("스타일러") || 
+    combined.includes("정수기") || 
+    combined.includes("냉장고") || 
+    combined.includes("조명") ||
+    combined.includes("세탁기") ||
+    combined.includes("건조기") ||
+    combined.includes("비스포크") ||
+    combined.includes("오브제") ||
+    combined.includes("식기세척기") ||
+    combined.includes("식세기") ||
+    combined.includes("인덕션") ||
+    combined.includes("티비") ||
+    combined.includes("tv") ||
+    combined.includes("소파") ||
+    combined.includes("침대") ||
+    combined.includes("시공") ||
+    combined.includes("리모델링") ||
+    combined.includes("커튼") ||
+    combined.includes("매트리스")
+  ) {
+    return "신혼가전";
+  }
+  
+  // Default fallback: 결혼준비 (Wedding Prep)
+  return "결혼준비";
 }
 
-async function fetchFirestorePosts(): Promise<FirestorePost[]> {
+function extractFirstImage(content: string): string | null {
+  const imgRegex = /<img[^>]+src=["']([^"']+)["']/i;
+  const match = content.match(imgRegex);
+  return match ? match[1] : null;
+}
+
+const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
+
+function loadLocalPosts(): any[] {
+  try {
+    if (fs.existsSync(LOCAL_POSTS_FILE)) {
+      return JSON.parse(fs.readFileSync(LOCAL_POSTS_FILE, "utf-8"));
+    }
+  } catch (e) {
+    console.error("Failed to read local posts:", e);
+  }
+  return [];
+}
+
+function saveLocalPosts(posts: any[]) {
+  try {
+    fs.writeFileSync(LOCAL_POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Failed to write local posts:", e);
+  }
+}
+
+async function fetchFirestorePosts(): Promise<any[]> {
   const projectId = "gen-lang-client-0326874047";
   const databaseId = "ai-studio-9ae01718-7459-4ac4-90d0-d2a27c2a0cc1";
   const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents/posts`;
@@ -66,8 +157,14 @@ async function fetchFirestorePosts(): Promise<FirestorePost[]> {
       const id = doc.name.split("/").pop() || "";
       const title = fields.title?.stringValue || "";
       const excerpt = fields.excerpt?.stringValue || "";
+      const content = fields.content?.stringValue || "";
+      const category = fields.category?.stringValue || "결혼준비";
+      const author = fields.author?.stringValue || "버진로드 에디터";
+      const date = fields.date?.stringValue || new Date().toISOString().split("T")[0];
       const image = fields.image?.stringValue || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
-      return { id, title, excerpt, image };
+      const readTime = fields.readTime?.stringValue || "3분";
+      const hashtags = fields.hashtags?.arrayValue?.values?.map((v: any) => v.stringValue).filter(Boolean) || [];
+      return { id, title, excerpt, content, category, author, date, image, readTime, hashtags };
     }).filter((p: any) => p.title && p.id);
   } catch (e) {
     console.error("fetchFirestorePosts error:", e);
@@ -75,11 +172,42 @@ async function fetchFirestorePosts(): Promise<FirestorePost[]> {
   }
 }
 
+async function fetchMergedPosts(): Promise<any[]> {
+  const localPosts = loadLocalPosts();
+  let firestorePosts: any[] = [];
+  try {
+    firestorePosts = await fetchFirestorePosts();
+  } catch (err) {
+    console.error("Failed to fetch firestore posts:", err);
+  }
+  
+  const combined = [...localPosts];
+  firestorePosts.forEach(fp => {
+    // Prevent duplicated items across files and DB
+    if (!combined.some(p => p.id === fp.id || p.title.trim() === fp.title.trim() || slugify(p.title) === slugify(fp.title))) {
+      combined.push(fp);
+    }
+  });
+  return combined;
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  // Custom CORS headers middleware to allow preflight and data transfer from Blog Studio
+  app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization");
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+    }
+    next();
+  });
 
   // API Route: sitemap.xml (supports both manual, mock, and real-time Firestore database posts)
   app.get("/sitemap.xml", async (req, res) => {
@@ -103,7 +231,7 @@ async function startServer() {
       ];
       
       const postUrls: string[] = [];
-      const firestorePosts = await fetchFirestorePosts();
+      const firestorePosts = await fetchMergedPosts();
       
       // 1. Add firestore raw dynamic posts
       firestorePosts.forEach((post) => {
@@ -199,6 +327,152 @@ async function startServer() {
     res.json({ views });
   });
 
+  // GET /api/posts: Serving merged dynamic posts (Local file + Firestore database posts)
+  app.get("/api/posts", async (req, res) => {
+    try {
+      const posts = await fetchMergedPosts();
+      res.json(posts);
+    } catch (err) {
+      console.error("Failed to serve merged posts:", err);
+      res.status(500).json({ error: "Failed to fetch posts" });
+    }
+  });
+
+  // POST webhook endpoints for Blog Studio: supporting root POST / and specific endpoints /api/posts & /api/blogstudio-webhook
+  const handleIncomingPost = async (req: express.Request, res: express.Response) => {
+    const rawApiKey = req.headers["x-api-key"] || req.headers["X-API-Key"] || req.query.key || req.query.apiKey;
+    console.log(`Received incoming blog post webhook. API Key header/query: "${rawApiKey || "none"}"`);
+    console.log("Request Body:", JSON.stringify(req.body, null, 2));
+    
+    // Support multiple incoming field mappings to ensure the payload parses successfully
+    const rawTitle = req.body.title || req.body.subject || req.body.header || req.body.name;
+    const rawContent = req.body.content || req.body.body || req.body.text || req.body.description || req.body.desc;
+    const status = req.body.status || req.body.postStatus || "published";
+    const seoDescription = req.body.seoDescription || req.body.excerpt || req.body.summary || "";
+    
+    if (!rawTitle || typeof rawTitle !== "string") {
+      console.log("No title found in incoming webhook request. Treating as a connection test / ping.");
+      return res.status(200).json({
+        status: "success",
+        message: "Connection test successful. Ready to receive posts.",
+        url: "https://virginroad.kr/"
+      });
+    }
+    
+    const title = rawTitle.trim();
+    const content = typeof rawContent === "string" ? rawContent : "";
+    
+    try {
+      // 1. Sluggify and sanitize IDs
+      const rawSlug = slugify(title);
+      const postId = rawSlug || `post-${Date.now()}`;
+      
+      // 2. Classify Category automatically based on the content and title keywords
+      const category = classifyCategory(title, content);
+      console.log(`Automatically classified blog category: "${category}" for title: "${title}"`);
+      
+      // 3. Extract first image from HTML body, or assign high-quality category default illustrations
+      let image = extractFirstImage(content);
+      if (!image) {
+        if (category === "신혼금융") {
+          image = "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800";
+        } else if (category === "신혼가전") {
+          image = "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800";
+        } else {
+          image = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800";
+        }
+      }
+      
+      // 4. Calculate reading time (approx 500 characters per minute)
+      const plainText = stripHtml(content);
+      const readTime = `${Math.max(1, Math.ceil(plainText.length / 500))}분`;
+      
+      // 5. Excerpt extraction fallback
+      const excerpt = seoDescription.trim() || (plainText.slice(0, 140) + (plainText.length > 140 ? "..." : ""));
+      
+      // 6. Assemble beautiful Post object using Korea Standard Time (KST, UTC+9)
+      const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split("T")[0];
+      
+      const newPost = {
+        id: postId,
+        title,
+        excerpt: excerpt.trim(),
+        content,
+        category,
+        author: "버진로드 에디터",
+        date: kstDate,
+        image,
+        readTime,
+        hashtags: [category, "결혼꿀팁", "버진로드"]
+      };
+      
+      // 7. Save to local posts file (keeps persistent and immediate listing in app)
+      const localPosts = loadLocalPosts();
+      // Avoid duplicate post ID or completely identical title
+      const existingIdx = localPosts.findIndex(p => p.id === postId || p.title === newPost.title);
+      if (existingIdx !== -1) {
+        localPosts[existingIdx] = newPost; // Update existing post
+      } else {
+        localPosts.unshift(newPost); // Insert as the newest item
+      }
+      saveLocalPosts(localPosts);
+      console.log(`Saved post locally to posts-local.json: ${postId}`);
+
+      // 8. ALSO write to Firestore asynchronously so the database syncs if the rules permit
+      const apiKey = "AIzaSyDneiaJczNqU2Od6c0lMe3AdSQKar5yGA4";
+      const firestoreUrl = `https://firestore.googleapis.com/v1/projects/gen-lang-client-0326874047/databases/ai-studio-9ae01718-7459-4ac4-90d0-d2a27c2a0cc1/documents/posts/${postId}?key=${apiKey}`;
+      const firestoreBody = {
+        fields: {
+          title: { stringValue: newPost.title },
+          excerpt: { stringValue: newPost.excerpt },
+          content: { stringValue: newPost.content },
+          category: { stringValue: newPost.category },
+          author: { stringValue: newPost.author },
+          date: { stringValue: newPost.date },
+          image: { stringValue: newPost.image },
+          readTime: { stringValue: newPost.readTime },
+          hashtags: {
+            arrayValue: {
+              values: newPost.hashtags.map(t => ({ stringValue: t }))
+            }
+          },
+          secretToken: { stringValue: "virginroad-secure-secret-token-2026" }
+        }
+      };
+      
+      fetch(firestoreUrl, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(firestoreBody)
+      })
+      .then(res => {
+        console.log(`Firestore dual-write status for ${postId}:`, res.status);
+      })
+      .catch(err => {
+        console.warn(`Firestore dual-write background warning for ${postId}:`, err.message);
+      });
+
+      // 9. Return structured success matching Blog Studio's required output
+      res.json({
+        status: "success",
+        message: "Post published successfully",
+        id: postId,
+        url: `https://virginroad.kr/post/${postId}`,
+        data: {
+          url: `https://virginroad.kr/post/${postId}`
+        }
+      });
+    } catch (e: any) {
+      console.error("Error processing incoming webhook:", e);
+      res.status(500).json({ error: "Failed to publish post", details: e.message });
+    }
+  };
+
+  // Listen to POST requests across all possible configurations of endpoints
+  app.post("/", handleIncomingPost);
+  app.post("/api/posts", handleIncomingPost);
+  app.post("/api/blogstudio-webhook", handleIncomingPost);
+
   // Vite middleware for development vs routing configuration for production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -225,7 +499,7 @@ async function startServer() {
         let html = fs.readFileSync(htmlPath, "utf-8");
 
         // Gather list of both Mock posts and Firestore dynamic db posts
-        const firestorePosts = await fetchFirestorePosts();
+        const firestorePosts = await fetchMergedPosts();
         
         const combined = [...firestorePosts, ...MOCK_POSTS];
         const post = combined.find(

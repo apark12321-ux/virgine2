@@ -211,18 +211,40 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // 1. Fetch from our backend REST API which merges local & cloud posts
+    fetch("/api/posts")
+      .then(res => {
+        if (!res.ok) throw new Error("API response error");
+        return res.json();
+      })
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          setRealPosts(data);
+        }
+      })
+      .catch(err => console.error("Failed to fetch merged API posts:", err));
+
+    // 2. Fallback live subscription to Firestore posts if connection is active
     const q = query(collection(db, "posts"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const posts = snapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id
       })) as Post[];
-      setRealPosts(posts);
+      setRealPosts(prev => {
+        const merged = [...prev];
+        posts.forEach(p => {
+          if (!merged.some(m => m.id === p.id)) {
+            merged.push(p);
+          }
+        });
+        return merged;
+      });
     }, (error) => {
       try {
         handleFirestoreError(error, OperationType.GET, "posts");
       } catch (err) {
-        console.warn("Handled posts onSnapshot error gracefully:", err);
+        console.warn("Handled posts onSnapshot warning gracefully:", err);
       }
     });
     return () => unsubscribe();

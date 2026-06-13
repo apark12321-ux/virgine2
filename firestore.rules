@@ -16,7 +16,8 @@ service cloud.firestore {
     // Articles/Posts collection rules
     match /posts/{postId} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if request.resource.data.secretToken == "virginroad-secure-secret-token-2026";
+      allow delete: if false;
     }
 
     // Views tracker collection rules
