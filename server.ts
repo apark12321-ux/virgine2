@@ -327,13 +327,61 @@ async function startServer() {
     res.json({ views });
   });
 
+  const DEBUG_LOG_FILE = path.join(process.cwd(), "webhook-debug.json");
+
+  const logWebhookRequest = (req: express.Request, errorMsg?: string, responseSent?: any) => {
+    try {
+      let logs: any[] = [];
+      if (fs.existsSync(DEBUG_LOG_FILE)) {
+        try {
+          logs = JSON.parse(fs.readFileSync(DEBUG_LOG_FILE, "utf-8"));
+        } catch (e) {
+          logs = [];
+        }
+      }
+      logs.push({
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.originalUrl,
+        headers: req.headers,
+        query: req.query,
+        body: req.body,
+        error: errorMsg || null,
+        responseSent: responseSent || null
+      });
+      // Limit to last 50 logs
+      if (logs.length > 50) {
+        logs = logs.slice(logs.length - 50);
+      }
+      fs.writeFileSync(DEBUG_LOG_FILE, JSON.stringify(logs, null, 2), "utf-8");
+    } catch (err) {
+      console.error("Failed to log webhook debug info:", err);
+    }
+  };
+
+  // GET /api/webhook-debug: Endpoint to examine incoming webhook payload structures
+  app.get("/api/webhook-debug", (req, res) => {
+    try {
+      if (fs.existsSync(DEBUG_LOG_FILE)) {
+        const fileContent = fs.readFileSync(DEBUG_LOG_FILE, "utf-8");
+        res.setHeader("Content-Type", "application/json");
+        return res.send(fileContent);
+      }
+      return res.json({ message: "No webhook traffic logged yet. Trigger a connection test." });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to read debug log", details: err.message });
+    }
+  });
+
   // GET /api/posts: Serving merged dynamic posts (Local file + Firestore database posts)
   app.get("/api/posts", async (req, res) => {
     try {
       const posts = await fetchMergedPosts();
+      logWebhookRequest(req, undefined, { count: posts.length });
       res.json(posts);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to serve merged posts:", err);
+      logWebhookRequest(req, err.message);
       res.status(500).json({ error: "Failed to fetch posts" });
     }
   });
@@ -352,11 +400,13 @@ async function startServer() {
     
     if (!rawTitle || typeof rawTitle !== "string") {
       console.log("No title found in incoming webhook request. Treating as a connection test / ping.");
-      return res.status(200).json({
+      const responseBody = {
         status: "success",
         message: "Connection test successful. Ready to receive posts.",
         url: "https://virginroad.kr/"
-      });
+      };
+      logWebhookRequest(req, "No title found. connection test.", responseBody);
+      return res.status(200).json(responseBody);
     }
     
     const title = rawTitle.trim();
@@ -453,7 +503,7 @@ async function startServer() {
       });
 
       // 9. Return structured success matching Blog Studio's required output
-      res.json({
+      const successResponse = {
         status: "success",
         message: "Post published successfully",
         id: postId,
@@ -461,9 +511,12 @@ async function startServer() {
         data: {
           url: `https://virginroad.kr/post/${postId}`
         }
-      });
+      };
+      logWebhookRequest(req, undefined, successResponse);
+      res.json(successResponse);
     } catch (e: any) {
       console.error("Error processing incoming webhook:", e);
+      logWebhookRequest(req, e.message, { error: "Failed to publish post" });
       res.status(500).json({ error: "Failed to publish post", details: e.message });
     }
   };
