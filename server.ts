@@ -262,8 +262,8 @@ async function startServer() {
   // Custom CORS headers middleware to allow preflight and data transfer from Blog Studio
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, DELETE");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-Key, x-api-key, Authorization, X-Channel-ID, X-Channel-Id, x-channel-id, Accept, Origin");
     if (req.method === "OPTIONS") {
       return res.sendStatus(200);
     }
