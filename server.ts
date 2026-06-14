@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import { MOCK_POSTS } from "./src/constants";
+import { expandContentIfNeeded } from "./src/lib/contentExpander";
 
 const VIEWS_FILE = path.join(process.cwd(), "views.json");
 
@@ -251,7 +252,14 @@ async function fetchMergedPosts(): Promise<any[]> {
     }
   });
 
-  return combined;
+  return combined.map(post => {
+    const hashtags = post.hashtags || [];
+    const expandedContent = expandContentIfNeeded(post.title, post.category, hashtags, post.content || "");
+    return {
+      ...post,
+      content: expandedContent
+    };
+  });
 }
 
 async function startServer() {
@@ -667,8 +675,11 @@ ${xmlItems}
         }
       }
       
+      const hashtags = [category, "결혼꿀팁", "버진로드"];
+      const finalContent = expandContentIfNeeded(title, category, hashtags, content);
+
       // 4. Calculate reading time (approx 500 characters per minute)
-      const plainText = stripHtml(content);
+      const plainText = stripHtml(finalContent);
       const readTime = `${Math.max(1, Math.ceil(plainText.length / 500))}분`;
       
       // 5. Excerpt extraction fallback
@@ -681,13 +692,13 @@ ${xmlItems}
         id: postId,
         title,
         excerpt: excerpt.trim(),
-        content,
+        content: finalContent,
         category,
         author: "버진로드 에디터",
         date: kstDate,
         image,
         readTime,
-        hashtags: [category, "결혼꿀팁", "버진로드"]
+        hashtags
       };
       
       // 7. Save to local posts file (keeps persistent and immediate listing in app)

@@ -1,3 +1,5 @@
+import { expandContentIfNeeded } from "./lib/contentExpander";
+
 export const CATEGORIES = ["신혼금융", "신혼가전", "결혼준비"] as const;
 
 export interface Post {
@@ -481,7 +483,8 @@ const buildPosts = (): Post[] => {
   }
 
   return postsList.map(post => {
-    post.content = generateCustomContent(post);
+    const rawContent = generateCustomContent(post);
+    post.content = expandContentIfNeeded(post.title, post.category, post.hashtags, rawContent);
     return post;
   });
 };
