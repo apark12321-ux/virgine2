@@ -144,7 +144,9 @@ function saveLocalPosts(posts: any[]) {
 function getRequestBaseUrl(req: express.Request): string {
   const forwardedHost = req.headers["x-forwarded-host"] || req.headers["X-Forwarded-Host"];
   const host = forwardedHost || req.get("host") || "virginroad.kr";
-  const scheme = req.headers["x-forwarded-proto"] || req.protocol || "https";
+  // Force HTTPS for non-localhost environments because Cloud Run forwards requests via HTTP internally
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes("3000");
+  const scheme = isLocal ? "http" : "https";
   return `${scheme}://${host}`;
 }
 
@@ -600,8 +602,16 @@ ${xmlItems}
     // Support and capture channel IDs from request body, query or headers to pass verification
     const channelId = extractChannelId(req);
     
-    if (!rawTitle || typeof rawTitle !== "string") {
-      console.log("No title found in incoming webhook request. Treating as a connection test / ping.");
+    const isTestPlaceholder = 
+      !rawTitle || 
+      typeof rawTitle !== "string" || 
+      rawTitle.trim() === "" || 
+      rawTitle.includes("{{title}}") || 
+      rawTitle.trim().toLowerCase() === "test" || 
+      rawTitle.trim().toLowerCase() === "ping";
+
+    if (isTestPlaceholder) {
+      console.log("Empty or template placeholder title found. Treating as a connection test / ping.");
       const responseBody = {
         status: "success",
         message: "Connection test successful. Ready to receive posts.",
@@ -629,7 +639,7 @@ ${xmlItems}
       res.setHeader("X-Channel-ID", String(channelId));
       res.setHeader("X-Channel-Id", String(channelId));
       res.setHeader("x-channel-id", String(channelId));
-      logWebhookRequest(req, "No title found. connection test.", responseBody);
+      logWebhookRequest(req, "No title found or template placeholder. connection test.", responseBody);
       return res.status(200).json(responseBody);
     }
     
