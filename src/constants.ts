@@ -482,9 +482,49 @@ const buildPosts = (): Post[] => {
     }
   }
 
+  // Append local/Vercel static custom posts for June 13, 14, 15 to make sure they are included in static builds
+  postsList.push(
+    {
+      id: "wed-local-0613",
+      title: "2026년 하반기 결혼식 비성수기 예약 꿀팁 및 식대 30% 감면 가이드",
+      excerpt: "봄과 가을의 치열한 골든타임을 피해 한여름과 주말 야간 시간을 활용해 최대 1,000만원 이상의 비용을 세이브하는 현실적인 컨벤션 웨딩 홀 예약 협상 전략.",
+      content: "<h3>1. 하반기 비성수기 웨딩홀 공략으로 시작하는 비용 절감</h3><p>결혼을 앞둔 신혼부부에게 가장 큰 과제는 아무래도 결혼 비용의 효율적인 통제입니다. 특히 7~8월의 혹서기나 1~2월의 한파기, 혹은 주말이 아닌 평일 저녁이나 일요일 오후 타임 등을 조준해 틈새 시장을 공략하면 어마어마한 할인 혜택이 주어집니다. 본 매뉴얼에서는 식장 대관료 면제와 식대 협상 기법을 구체적으로 가이드해 드립니다.</p><p>수많은 커뮤니티 정보 속에 갈피를 잡지 못하는 예비 부부를 위해, 버진로드 편집부에서 꼼꼼하게 정리한 정밀 예산 배분 가이드와 섭외 요령을 안내합니다.</p>",
+      category: "결혼준비",
+      author: "버진로드 에디터",
+      date: "2026-06-13",
+      image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
+      readTime: "12분",
+      hashtags: ["결혼준비", "웨딩홀할인", "비성수기예약", "예산절약"]
+    },
+    {
+      id: "app-local-0614",
+      title: "삼성 비스포크 vs LG 오브제컬렉션 2026년 패키지 스펙 비교 및 가전 졸업 요령",
+      excerpt: "대표 가전 2대 산맥의 컴프레서 모터 기술력 성능 비교와 하반기 오프라인 오픈 매장 투어를 통한 현찰 상품권 및 웨딩 캐시백 최대 환급 방법 대조 분석.",
+      content: "<h3>1. 가전 졸업 패키지의 양대 산맥 비교</h3><p>한 번 구매하면 최소 10년 이상을 일상 속에서 동고동락해야 하는 가전제품들은 라이프스타일과 평면 최적화를 최우선으로 결정해야 합니다. 가전의 핵심 모터 및 에코 인버터 기술력을 자랑하는 LG 오브제컬렉션과, 감성적인 공간 피팅 미학과 풍부한 스마트 장치 연동성을 지닌 삼성 비스포크 중 우리 부부에게 딱 맞는 구성을 분석해 드립니다.</p><p>통합 할인을 극대화하기 위한 백화점 오프라인 오픈 대리점 연대 팁과 체계적인 조견표를 공개합니다.</p>",
+      category: "신혼가전",
+      author: "버진로드 에디터",
+      date: "2026-06-14",
+      image: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800",
+      readTime: "11분",
+      hashtags: ["신혼가전", "삼성비스포크", "LG오브제", "가전졸업"]
+    },
+    {
+      id: "fin-local-0615",
+      title: "2026 최신 대출 우대금리 로드맵 — 청약 가점 연계 디딤돌 혜택 10단계 매뉴얼",
+      excerpt: "정부 공식 한국주택금융공사 공시 기준으로 우대이자율을 끌어내려 가계 금융 부담을 극소화하는 맞춤형 자산 형성 및 대출 실행 프로세스 대공개.",
+      content: "<h3>1. 청약 가점과 연계하여 금리 하한선 달성하기</h3><p>신혼 가계의 튼튼한 주춧돌을 마련하기 위한 가장 확실한 대안은 단연 저렴한 이율의 주택도시기금 정책 금융 대출입니다. 2026년에 소득 경계선과 대환 조건이 대폭 완화된 디딤돌 대출, 혹은 신생아 특례 자금 조달에 있어 청약 종합 저축 유지 기간 및 혼인 관계 유지 비율에 따른 금리 특별 우대 요건들을 꼼꼼하게 매치해 보겠습니다.</p><p>실제 한도 및 자산 심사가 거절되었을 때의 대처 이율 조치 단계와 핵심 마일스톤 가이드를 확인하세요.</p>",
+      category: "신혼금융",
+      author: "버진로드 에디터",
+      date: "2026-06-15",
+      image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
+      readTime: "13분",
+      hashtags: ["디딤돌대출", "신혼부부금융", "우대금리", "청약계정"]
+    }
+  );
+
   return postsList.map(post => {
-    const rawContent = generateCustomContent(post);
-    post.content = expandContentIfNeeded(post.title, post.category, post.hashtags, rawContent);
+    const rawContent = post.content || generateCustomContent(post);
+    post.content = expandContentIfNeeded(post.title, post.category, post.hashtags || [], rawContent);
     return post;
   });
 };
