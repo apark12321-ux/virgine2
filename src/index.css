@@ -104,6 +104,9 @@
     word-break: keep-all;
     overflow-wrap: break-word;
   }
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 .text-coral { color: #E8745F; }
@@ -447,3 +450,39 @@
   border-radius: 999px;
   letter-spacing: 0.05em;
 }
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E2E4F0;
+  border-radius: 5px;
+  border: 2px solid #FAFBFF;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B5B3C8;
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* 본문 내 계산기 바로가기 CTA (프리렌더/정적용) */
+.article-body .calc-cta {
+  margin: 32px 0;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #EEF0FB 0%, #F5F6FD 100%);
+  border: 1px solid #D5D8E8;
+  border-radius: 12px;
+  text-align: center;
+}
+.article-body .calc-cta a {
+  color: #312E81;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+.article-body .calc-cta a:hover { text-decoration: underline; }

@@ -1,5 +1,16 @@
 import { useState, useMemo } from "react";
 
+/**
+ * 디딤돌대출 우대금리 계산기
+ *
+ * 한국주택금융공사 2026.05.01 공시 기준 + 주택도시기금 디딤돌대출 안내.
+ * 사용자가 가구 조건을 입력하면 단계별 우대금리 적용 과정을 시뮬레이션해 보여줍니다.
+ *
+ * 면책: 본 계산기는 자금 계획 참고용입니다. 실제 적용 금리·한도는 신용평점·담보 평가·소득
+ * 산정에 따라 다르며, 정책 변경 시 즉시 반영되지 않을 수 있습니다.
+ * 정확한 정보는 한국주택금융공사(hf.go.kr)와 주택도시기금포털(nhuf.molit.go.kr)을 확인하세요.
+ */
+
 type IncomeBand = "low" | "mid" | "high";
 
 interface CalcInput {
@@ -28,11 +39,13 @@ const initialInput: CalcInput = {
 
 // 한국주택금융공사 2026.05.01 공시 기준 (참고용 추정 구간)
 function getBaseRate(income: IncomeBand, term: number): number {
+  // 소득·만기에 따른 기본금리 (단순화 — 실제는 더 세분화됨)
   const base: Record<IncomeBand, number> = {
     low: 2.6, // 소득 4천만원 이하
     mid: 3.1, // 소득 4천~7천
     high: 3.45, // 소득 7천~8.5천
   };
+  // 만기가 길수록 약간 가산
   const termAdj = term <= 15 ? -0.1 : term <= 20 ? 0 : term <= 30 ? 0.1 : 0.2;
   return Math.round((base[income] + termAdj) * 100) / 100;
 }
@@ -68,6 +81,7 @@ function getJeongyakDiscount(years: number, months: number): { rate: number; rea
 }
 
 function fmtMoney(won: number): string {
+  // 입력은 만원 단위
   if (won >= 10000) {
     const eok = Math.floor(won / 10000);
     const rem = won % 10000;
@@ -99,8 +113,7 @@ export function DidimdolCalculator() {
     const totalDiscount =
       Math.round((childPart.rate + jyPart.rate + ePart + u30Part) * 100) / 100;
     let finalRate = Math.round((baseRate - totalDiscount) * 100) / 100;
-    
-    //하한선 1.2% 가정
+    // 하한선 1.2% 가정
     const hitFloor = finalRate < 1.2;
     if (hitFloor) finalRate = 1.2;
 
@@ -126,7 +139,7 @@ export function DidimdolCalculator() {
   }, [input]);
 
   return (
-    <div className="max-w-[1400px] mx-auto px-5 lg:px-10 py-8 sm:py-10 bg-white">
+    <div className="max-w-[1400px] mx-auto px-5 lg:px-10 py-8 sm:py-10">
       <header className="mb-8">
         <span className="badge-coral mb-3">실용 도구</span>
         <h1 className="text-[26px] sm:text-[32px] font-bold tracking-[-0.025em] text-[#151320] leading-[1.25] mt-3">
@@ -159,7 +172,7 @@ export function DidimdolCalculator() {
                     key={v}
                     type="button"
                     onClick={() => setInput({ ...input, income: v })}
-                    className={`py-2.5 text-[13px] font-medium rounded-[8px] border transition-colors cursor-pointer ${
+                    className={`py-2.5 text-[13px] font-medium rounded-[8px] border transition-colors ${
                       input.income === v
                         ? "bg-[#E8745F] border-[#E8745F] text-white"
                         : "bg-white border-[#E2E4F0] text-[#3F3D56] hover:border-[#FFD2BD]"
@@ -200,7 +213,7 @@ export function DidimdolCalculator() {
                     key={y}
                     type="button"
                     onClick={() => setInput({ ...input, loanTerm: y })}
-                    className={`py-2 text-[13px] font-medium rounded-[8px] border transition-colors cursor-pointer ${
+                    className={`py-2 text-[13px] font-medium rounded-[8px] border transition-colors ${
                       input.loanTerm === y
                         ? "bg-[#E8745F] border-[#E8745F] text-white"
                         : "bg-white border-[#E2E4F0] text-[#3F3D56] hover:border-[#FFD2BD]"
@@ -222,7 +235,7 @@ export function DidimdolCalculator() {
                     key={c}
                     type="button"
                     onClick={() => setInput({ ...input, children: c as 0 | 1 | 2 | 3 })}
-                    className={`py-2 text-[13px] font-medium rounded-[8px] border transition-colors cursor-pointer ${
+                    className={`py-2 text-[13px] font-medium rounded-[8px] border transition-colors ${
                       input.children === c
                         ? "bg-[#E8745F] border-[#E8745F] text-white"
                         : "bg-white border-[#E2E4F0] text-[#3F3D56] hover:border-[#FFD2BD]"
@@ -257,12 +270,13 @@ export function DidimdolCalculator() {
                   [1, "1~3년"],
                   [2, "3~5년"],
                   [3, "5~10년"],
-                ] as const).map(([v, label]) => (
+                  [4, "10년+"],
+                ] as const).slice(0, 4).map(([v, label]) => (
                   <button
                     key={v}
                     type="button"
                     onClick={() => setInput({ ...input, jeongyak: v as 0 | 1 | 2 | 3 })}
-                    className={`py-2 text-[12.5px] font-medium rounded-[8px] border transition-colors cursor-pointer ${
+                    className={`py-2 text-[12.5px] font-medium rounded-[8px] border transition-colors ${
                       input.jeongyak === v
                         ? "bg-[#E8745F] border-[#E8745F] text-white"
                         : "bg-white border-[#E2E4F0] text-[#3F3D56] hover:border-[#FFD2BD]"
@@ -421,14 +435,14 @@ export function DidimdolCalculator() {
           </p>
           <p className="pt-2">
             <strong className="text-[#3F3D56]">참고 출처:</strong>{" "}
-            <a href="https://www.hf.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">한국주택금융공사 디딤돌대출 금리안내</a>
+            <a href="https://www.hf.go.kr" className="text-[#D45A45] underline underline-offset-2">한국주택금융공사 디딤돌대출 금리안내</a>
             {" · "}
-            <a href="https://nhuf.molit.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">주택도시기금포털</a>
+            <a href="https://nhuf.molit.go.kr" className="text-[#D45A45] underline underline-offset-2">주택도시기금포털</a>
             {" · "}
-            <a href="https://irds.molit.go.kr" rel="noopener noreferrer" className="text-[#D45A45] underline underline-offset-2">부동산거래 전자계약시스템</a>
+            <a href="https://irds.molit.go.kr" className="text-[#D45A45] underline underline-offset-2">부동산거래 전자계약시스템</a>
           </p>
           <p className="text-[12px] text-[#8A87A0] pt-2">
-            버진로드 편집부 · 최종 갱신 2026.05.31
+            홈코노미뉴스 편집부 · 최종 갱신 2026.05.31
           </p>
         </div>
       </section>
