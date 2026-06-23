@@ -264,12 +264,12 @@ export default function App() {
         combined.push(real as Post);
       }
     });
-    // Dynamically sanitize any fallback branding to 버진로드 (Virginroad)
+    // Dynamically sanitize any fallback branding to 버진로드 (Virginroad) with safety guards
     const sanitized = combined.map(p => {
-      const author = p.author === "홈코노미뉴스 편집부" ? "버진로드 편집부" : p.author;
-      const title = p.title.replace(/홈코노미뉴스/g, "버진로드");
-      const excerpt = p.excerpt.replace(/홈코노미뉴스/g, "버진로드");
-      const content = p.content.replace(/홈코노미뉴스/g, "버진로드");
+      const author = p.author === "홈코노미뉴스 편집부" ? "버진로드 편집부" : (p.author || "버진로드 에디터");
+      const title = (p.title || "").replace(/홈코노미뉴스/g, "버진로드");
+      const excerpt = (p.excerpt || "").replace(/홈코노미뉴스/g, "버진로드");
+      const content = (p.content || "").replace(/홈코노미뉴스/g, "버진로드");
       return { ...p, author, title, excerpt, content };
     });
     return sanitized.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
