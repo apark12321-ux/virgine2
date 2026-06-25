@@ -33,7 +33,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "김민용 에디터",
       role: "3년 차 실생활 신혼 금융 전문가",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=120",
       badge: "직접실행",
       message: "수도권 5억 아파트 매수한 뒤 디딤돌 우대금리를 1원까지 악착같이 챙겼던 생생한 노하우를 바탕으로 정리했습니다!"
     },
@@ -64,7 +64,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "이지현 청약 멘토",
       role: "7전 8기 청약 컨설턴트 (강남/위례 전문)",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=120",
       badge: "청약만점",
       message: "결혼하면서 연봉이 늘어 특공에서 탈락하셨던 과천, 분당 지역 고소득 맞벌이 부부들에게 특별히 추천하는 핵심 전략서입니다!"
     },
@@ -91,7 +91,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "전지은 자산관리사",
       role: "가정 재무 포트폴리오 분석 수석위원",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1582610283033-f248222110b9?auto=format&fit=crop&q=80&w=120",
       badge: "재테크달인",
       message: "신혼디딤돌과 신생아특례 사이에서 갈등하는 가구들을 위해 30년 이자 총액 비교표를 기준으로 이득이 극대화되는 시점을 분해했습니다."
     },
@@ -118,7 +118,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "최규호 공공임대 연구가",
       role: "LH/SH 전국 현장 투어 마이크로 블로거",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
       badge: "임대명인",
       message: "위례, 하남 등 인기 택지지구의 알짜 임대단지들을 직장인 소득 세전 기준으로 안전하게 진입하기 위한 원스톱 체크리스트입니다."
     },
@@ -145,7 +145,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "한영찬 청년복지 활동가",
       role: "행정복지센터 제휴 청년 혜택 발굴자",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1507398941214-572c25f4b1dc?auto=format&fit=crop&q=80&w=120",
       badge: "복지수첩",
       message: "새롭게 상시 신청으로 풀려 수수료/시기 구걸 없이 언제든 타 먹는 월 20만원 월세 지원 혜택을 놓치지 않게 정리했습니다!"
     },
@@ -172,7 +172,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "백마크 수석 금융 에디터",
       role: "버진로드 투자금융 전략 수석",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=120",
       badge: "금융석학",
       message: "디딤돌과 보금자리론, 그리고 신생아 특례까지 3대 메이저 대출의 연 한도 및 중도 해지 리스크를 깔끔하게 일표로 요약했습니다."
     },
@@ -195,7 +195,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "정혜선 리빙 칼럼니스트",
       role: "5년 차 미니멀라이프 인플루언서",
-      avatar: "https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120",
       badge: "미니멀",
       message: "백화점에서 '한 번에 패키지로 싹 긁어가야 제일 싸다'는 매니저의 영업 카드를 멋지게 거부하고 실제 살면서 후회율 0%로 가전을 구비해 낸 수기입니다."
     },
@@ -218,7 +218,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "윤수경 홈 디자이너",
       role: "바이오필릭 수석 공간 인테리어 디렉터",
-      avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1516534775068-ba3e84589d90?auto=format&fit=crop&q=80&w=120",
       badge: "가구대장",
       message: "자연을 담은 원목 질감과 소프트 미니멀리즘이 조화된 2026 신혼집 거실 레이아웃 도면을 바탕으로 설계된 럭셔리 인테리어를 소개합니다."
     },
@@ -241,7 +241,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "송혁재 가전 전 점장",
       role: "삼성/LG 디지털프라자 10년 경력의 베테랑",
-      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
       badge: "가전졸업",
       message: "체감 할인 늪에 빠져 영혼까지 털리던 신혼부부들을 구해주려, 삼성 비스포크와 LG 오브제 컬렉션의 핵심 모터 특허와 고품질 사후 마진을 속속들이 밝힙니다."
     },
@@ -264,7 +264,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "임성태 공간 디렉터",
       role: "실내건축기사 소속 3D 도면 설계 수석",
-      avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=120",
       badge: "공간확보",
       message: "거실 안목치수를 고려하지 않은 충동적 대형 TV 매입은 전면 벽을 가려 주거 시각 피로를 폭증시킵니다. 평수별 적합 피트를 정리했습니다."
     },
@@ -287,7 +287,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "강준성 하자/보수 기사",
       role: "수도권 리모델링 가구 시공 15년 장인",
-      avatar: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1507398941214-572c25f4b1dc?auto=format&fit=crop&q=80&w=120",
       badge: "싱크장인",
       message: "주방 빌트인은 틈새 먼지는 막지만 고장 교체비가 일반형 프리스탠딩 가전의 이중 가산으로 청구됩니다. 후회 없는 유지보수 비용을 귀띔해 드립니다."
     },
@@ -310,7 +310,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "조하은 라이프 플래너",
       role: "수면 장애 극복 및 린 라이프 연구소 대표",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=120",
       badge: "꿀잠의정",
       message: "결혼이라고 무조건 소음과 수면 리듬을 하나에 비빌 필요는 없으며, 안락한 싱글 트윈 침대 가구 배치를 통한 부부 행복 사수법을 추천합니다."
     },
@@ -333,7 +333,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "남지수 결혼계획 위원",
       role: "웨딩 거품 파괴 세무 상담사",
-      avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=120",
       badge: "마치기금",
       message: "남들 눈치 때문에 골든타임 뷔페 보증금 날리느니, 금요일 퇴근길 저녁이나 7~8월 한여름 결혼식으로 1,000만원 대출 원금 상환해 버린 소신 영웅담입니다."
     },
@@ -356,7 +356,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "강민아 연애금융 작가",
       role: "연애 재무관리 베스트셀러 작가",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1516534775068-ba3e84589d90?auto=format&fit=crop&q=80&w=120",
       badge: "반반결혼",
       message: "아파트는 전세 부채도 함께 가므로 공동 명의 등록과 공동 저축 통장 마련이 왜 반반 결혼의 갈등 제로 가이드인지 해법을 찾았습니다."
     },
@@ -379,7 +379,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "오도진 스프레드시트 기사",
       role: "공인회계사이자 스프레더블 데이터 관리소 대표",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=120",
       badge: "엑셀도사",
       message: "웨딩 박람회에서 정신을 잃고 쏟아지는 플래너 추가 청구서를 받을 때, 엑셀 3열 수치 감지 기능으로 새어 나가던 통장 잔고 500만원을 원천 마크한 비급서입니다."
     },
@@ -402,7 +402,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "안소영 전 웨딩 수석 플래너",
       role: "대형 웨딩 기획 실장 출신의 양심 컨설턴트",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=120",
       badge: "수요해킹",
       message: "박람회에서 당일 계약을 외치는 플래너의 감성적 가스라이팅을 넘겨내고 드레스 투어, 메이크업 원본비의 진실을 정확히 가리게 이끕니다."
     },
@@ -425,7 +425,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "한윤수 웨딩홀 프로 투어러",
       role: "전국 웨딩홀 방문 조사만 30회 완료한 유저",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
       badge: "홀박람가",
       message: "단순히 이쁜 홀 전경에 무작정 가계약하기 전에 하객 동선과 보증 인원 대비 뷔페 회전율을 계산하는 법을 이 글로 이성 조율해 드립니다."
     },
@@ -448,7 +448,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "신지은",
       role: "웨딩 디렉터",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=120",
       badge: "베뉴마스터",
       message: "계약 후 꽃장식이나 대관 옵션을 필수로 추가해야 하는 웨딩홀의 교묘한 관행을 한눈에 구별하고 사전에 수백만 원 예산을 세이브하게 돕겠습니다."
     },
@@ -471,7 +471,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "김경민",
       role: "신혼 공간 홈퍼니싱 디자이너",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
       badge: "빌트인마스터",
       message: "싱크대 깊이와 걸레받이 높이를 규격화하지 않고 무작정 식기세척기만 주문했다간 하부장 전면 절단 등 심각한 미관 손상이 발생하니 가이드를 참고하세요."
     },
@@ -494,7 +494,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "이수현",
       role: "주택 기금 전문 여신 상담사",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1507398941214-572c25f4b1dc?auto=format&fit=crop&q=80&w=120",
       badge: "기금조율사",
       message: "양가 고소득 맞벌이라 해도 비과세 공제액과 육아휴직에 따른 환산급 적용 여부를 파악하면 극적으로 버팀목대출의 낮은 고정금리 혜택을 사수할 수 있습니다."
     },
@@ -517,7 +517,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "유다윤",
       role: "메리앤코 모바일 아트 에디터",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1582610283033-f248222110b9?auto=format&fit=crop&q=80&w=120",
       badge: "청첩연구가",
       message: "축의금 계좌번호 세팅 시 하객들의 심리적 장벽을 낮추기 위해서는, 정중한 인사말 뒤에 아코디언 토글로 숨기는 세련된 예절 레이아웃 배치가 최고의 격식입니다."
     },
@@ -540,7 +540,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "최진호",
       role: "LG/삼성 스마트가전 수석 전문 상담관",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=120",
       badge: "화질마스터",
       message: "거실 평수에 가구 깊이까지 반영한 실사용 거리가 2.5m 이하인 20평대 보금자리에는 65인치를, 3.5m 이상의 넓은 광폭 거실에는 77인치 이상을 추천해 드립니다."
     },
@@ -563,7 +563,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "정태화",
       role: "가족 자산 승계 전문 세무사",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=120",
       badge: "절세공학자",
       message: "직계부모 1.5억 및 양가 부부 합산 3억 무실적 자금 지원은 신혼부부만이 누리는 귀중한 특례 세무 혜택입니다. 자금 소명서 대조 신고 기간을 단 하루도 놓쳐선 안 됩니다."
     },
@@ -586,7 +586,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "유현우",
       role: "SEO 및 테크니컬 마케터",
-      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=120",
       badge: "색인전문가",
       message: "수동 등록 후에도 색인이 되지 않으면 검색 트래픽 유입에 치명적입니다. Google Indexing API를 탑재해 즉각적인 색인을 보장하는 시스템을 정립해야 합니다."
     },
@@ -609,7 +609,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "최하은",
       role: "신혼 침구 인테리어 어드바이저",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=120",
       badge: "숙면마스터",
       message: "서로 다른 수면 패턴과 수면 온도 감수성을 가진 신혼부부라면, 킹보다는 트윈 매트리스나 독립 스프링 제품을 골라야 서로 편안한 수면 밤을 지킬 수 있습니다."
     },
@@ -632,7 +632,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "백설아",
       role: "상견례 격식 전문 프리미엄 디렉터",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1582610283033-f248222110b9?auto=format&fit=crop&q=80&w=120",
       badge: "예의조율사",
       message: "상견례 자리에서 돈이나 집 장만 이야기를 예비 부부가 미리 조율해 두지 않은 채 무작정 꺼냈다간 부모님 간의 감정 마찰로 번지기 쉬우니 주의해야 합니다."
     },
@@ -655,7 +655,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "서민우",
       role: "신혼 맞벌이 자산관리 전문 파트너",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
       badge: "환급공학자",
       message: "총급여 차이에 따라 신용카드와 체크카드, 전통시장 소득공제를 누가 몰아서 받아야 이득인지가 완벽히 달라집니다. 모의 산정표로 절세액을 극대화해 드리겠습니다."
     },
