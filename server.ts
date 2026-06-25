@@ -811,6 +811,100 @@ ${xmlItems}
   app.post("/api/posts", handleIncomingPost);
   app.post("/api/blogstudio-webhook", handleIncomingPost);
 
+  // Dynamic Robots.txt generator pointing to the sitemap.xml
+  app.get("/robots.txt", (req, res) => {
+    const hostUrl = getRequestBaseUrl(req);
+    res.type("text/plain");
+    res.send(`User-agent: *
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+Sitemap: ${hostUrl}/sitemap.xml
+`);
+  });
+
+  // Dynamic Sitemap.xml generator mapping all static routes, categories, and posts
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const hostUrl = getRequestBaseUrl(req);
+      const posts = await fetchMergedPosts();
+      
+      const staticPages = [
+        { path: "/", priority: "1.0", changefreq: "daily" },
+        { path: "/about", priority: "0.5", changefreq: "weekly" },
+        { path: "/privacy", priority: "0.5", changefreq: "monthly" },
+        { path: "/partnership", priority: "0.6", changefreq: "weekly" },
+        { path: "/announcement", priority: "0.6", changefreq: "weekly" },
+        { path: "/terms", priority: "0.3", changefreq: "monthly" },
+        { path: "/policy", priority: "0.8", changefreq: "daily" },
+        { path: "/tools/didimdol", priority: "0.9", changefreq: "weekly" },
+        { path: "/tools/cheongyak", priority: "0.9", changefreq: "weekly" },
+      ];
+
+      const categories = [
+        "신혼금융",
+        "신혼가전",
+        "결혼준비"
+      ];
+
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+      xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+
+      // 1. Static Pages
+      staticPages.forEach((p) => {
+        xml += `  <url>\n`;
+        xml += `    <loc>${hostUrl}${p.path}</loc>\n`;
+        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += `    <changefreq>${p.changefreq}</changefreq>\n`;
+        xml += `    <priority>${p.priority}</priority>\n`;
+        xml += `  </url>\n`;
+      });
+
+      // 2. Categories
+      categories.forEach((cat) => {
+        xml += `  <url>\n`;
+        xml += `    <loc>${hostUrl}/category/${encodeURIComponent(cat)}</loc>\n`;
+        xml += `    <lastmod>${currentDate}</lastmod>\n`;
+        xml += `    <changefreq>daily</changefreq>\n`;
+        xml += `    <priority>0.7</priority>\n`;
+        xml += `  </url>\n`;
+      });
+
+      // 3. Blog Posts (Dynamic + Mock combined)
+      posts.forEach((post) => {
+        const slug = slugify(post.title) || post.id;
+        let lastModDate = currentDate;
+        if (post.updated || post.date) {
+          try {
+            const d = new Date(post.updated || post.date);
+            if (!isNaN(d.getTime())) {
+              lastModDate = d.toISOString().split("T")[0];
+            }
+          } catch (e) {}
+        }
+        
+        xml += `  <url>\n`;
+        xml += `    <loc>${hostUrl}/post/${slug}</loc>\n`;
+        xml += `    <lastmod>${lastModDate}</lastmod>\n`;
+        xml += `    <changefreq>weekly</changefreq>\n`;
+        xml += `    <priority>0.8</priority>\n`;
+        xml += `  </url>\n`;
+      });
+
+      xml += `</urlset>`;
+
+      res.type("application/xml");
+      res.send(xml);
+    } catch (err: any) {
+      console.error("Failed to generate sitemap.xml:", err);
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
   // Vite middleware for development vs routing configuration for production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
