@@ -432,7 +432,7 @@ const buildPosts = (): Post[] => {
     return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&q=80&w=800`;
   };
 
-  for (let i = 0; i < 61; i++) {
+  for (let i = 0; i < 73; i++) {
     const dateStr = `2026-0${currentMonth}-${currentDate < 10 ? '0' + currentDate : currentDate}`;
     
     if (i < ORIGINAL_17.length) {
@@ -478,6 +478,9 @@ const buildPosts = (): Post[] => {
     currentDate++;
     if (currentMonth === 4 && currentDate > 30) {
       currentMonth = 5;
+      currentDate = 1;
+    } else if (currentMonth === 5 && currentDate > 31) {
+      currentMonth = 6;
       currentDate = 1;
     }
   }
@@ -603,6 +606,42 @@ const buildPosts = (): Post[] => {
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
       readTime: "8분",
       hashtags: ["구글색인", "IndexingAPI", "애드센스승인", "선택과집중"]
+    },
+    {
+      id: "app-local-0623",
+      title: "신혼집 인테리어의 꽃, 침실 침대 매트리스 사이즈와 프레임 선정법 — 킹 vs 라지킹 vs 트윈 매트리스 선택 가이드",
+      excerpt: "서로 다른 수면 스타일과 온도 체질을 지닌 신혼부부가 안성맞춤 숙면을 지킬 수 있는 매트리스 브랜드별 규격 대칭과 신혼부부 전용 트윈 침대 가구 인테리어 배치안.",
+      content: "<h3>1. 신혼 침대 매트리스 규격 선정의 중요성</h3><p>평생을 따로 자오던 두 사람이 한 침대를 쓰게 되면서 겪는 첫 트러블 중 하나는 뜻밖에도 '수면 분리 및 방해'입니다. 파트너의 미세한 뒤척임 진동이나 수면 도중 덮치는 이불 온도 격차는 만성 피로의 원흉이 됩니다. 이에 따라 최근 신혼 가구 인테리어의 꽃은 넉넉한 킹(K)이나 라지킹(LK) 사이즈를 고르거나, 아예 독립된 매트리스 싱글(S) 두 개를 나란히 배치해 프레임만 하나로 묶는 '트윈형 매트리스 배치'가 폭발적인 트렌드로 정착하고 있습니다.</p>",
+      category: "신혼가전",
+      author: "버진로드 에디터",
+      date: "2026-06-23",
+      image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=800",
+      readTime: "10분",
+      hashtags: ["신혼침대", "매트리스사이즈", "침실인테리어", "수면습관"]
+    },
+    {
+      id: "wed-local-0624",
+      title: "양가 갈등 없는 상견례 예약 명당 및 대화 예절 매너 에티켓 가이드 — 선물부터 대화 금기사항까지",
+      excerpt: "양가 부모님이 처음 정식으로 대면하는 긴장된 상견례 자리를 원만하고 품격 있게 이끌어가는 정갈한 한정식/일식 룸 식당 예약 포인트와 첫 만남 대화 코칭 매뉴얼.",
+      content: "<h3>1. 상견례 성공을 가르는 예약 명당과 메뉴 선정</h3><p>상견례는 양가의 결혼 생활 철학과 가치관이 최초로 교차하는 조심스럽고도 중대한 자리입니다. 가급적 양가의 중간 지리적 거리에 위치하면서 소음이 완전히 차단되는 독채형 프리미엄 룸 식당을 섭외하는 것이 첫 단계입니다. 코스 요리 간격이 적절히 20~30분 단위로 서빙되어 침묵이 이어질 때 자연스러운 화제 전환 트리거를 유도하는 한정식이나 정돈된 일식당이 대단히 유리합니다.</p>",
+      category: "결혼준비",
+      author: "버진로드 에디터",
+      date: "2026-06-24",
+      image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
+      readTime: "11분",
+      hashtags: ["상견례예약", "상견례예절", "양가첫만남", "결혼준비"]
+    },
+    {
+      id: "fin-local-0625",
+      title: "2026년 하반기 기준 신혼부부 맞벌이 연말정산 환급액 극대화 요령 — 부부 소득세 소득공제 몰아주기 및 카드 실적 조율법",
+      excerpt: "서로 다른 연봉 총급여를 수령하는 맞벌이 부부 가구가 소득세 환급금을 영리하게 2배로 불릴 수 있는 부양가족 공제 몰아주기와 연간 카드 지출 최적화 시뮬레이션.",
+      content: "<h3>1. 맞벌이 부부 연말정산의 핵심: '소득 문턱'과 '명의 몰아주기'</h3><p>결혼 후 처음 맞이하는 세무 정산 시기에 많은 신혼 맞벌이 부부들이 무작정 연봉이 높은 사람에게 지출을 몰아주는 단순 실수를 저지릅니다. 하지만 신용카드 소득공제는 본인 총급여액의 25%를 초과 사용한 금액부터 공제 비중이 발생하기 때문에, 때로는 연봉이 상대적으로 낮은 배우자의 카드를 우선 집중 사용하여 공제 문턱을 조기에 해킹하는 것이 환급액 수치를 비약적으로 불려주는 핵심 절세 룰이 됩니다.</p>",
+      category: "신혼금융",
+      author: "버진로드 에디터",
+      date: "2026-06-25",
+      image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
+      readTime: "12분",
+      hashtags: ["연말정산", "맞벌이부부", "소득공제", "신혼금융"]
     }
   );
 
