@@ -91,7 +91,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "전지은 자산관리사",
       role: "가정 재무 포트폴리오 분석 수석위원",
-      avatar: "https://images.unsplash.com/photo-1582610283033-f248222110b9?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=120",
       badge: "재테크달인",
       message: "신혼디딤돌과 신생아특례 사이에서 갈등하는 가구들을 위해 30년 이자 총액 비교표를 기준으로 이득이 극대화되는 시점을 분해했습니다."
     },
@@ -517,7 +517,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "유다윤",
       role: "메리앤코 모바일 아트 에디터",
-      avatar: "https://images.unsplash.com/photo-1582610283033-f248222110b9?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=120",
       badge: "청첩연구가",
       message: "축의금 계좌번호 세팅 시 하객들의 심리적 장벽을 낮추기 위해서는, 정중한 인사말 뒤에 아코디언 토글로 숨기는 세련된 예절 레이아웃 배치가 최고의 격식입니다."
     },
@@ -632,7 +632,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
     persona: {
       name: "백설아",
       role: "상견례 격식 전문 프리미엄 디렉터",
-      avatar: "https://images.unsplash.com/photo-1582610283033-f248222110b9?auto=format&fit=crop&q=80&w=120",
+      avatar: "https://images.unsplash.com/photo-1598550476439-6847785fce6e?auto=format&fit=crop&q=80&w=120",
       badge: "예의조율사",
       message: "상견례 자리에서 돈이나 집 장만 이야기를 예비 부부가 미리 조율해 두지 않은 채 무작정 꺼냈다간 부모님 간의 감정 마찰로 번지기 쉬우니 주의해야 합니다."
     },
