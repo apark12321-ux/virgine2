@@ -642,6 +642,18 @@ const buildPosts = (): Post[] => {
       image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
       readTime: "12분",
       hashtags: ["연말정산", "맞벌이부부", "소득공제", "신혼금융"]
+    },
+    {
+      id: "app-local-0626",
+      title: "신혼집 스마트 홈 가전 100% 활용하기 — 스마트싱스 vs LG 씽큐 스마트 홈 IoT 연동 자동화 시나리오",
+      excerpt: "단순 원격 제어를 넘어 세탁이 끝나면 TV 화면에 알림이 뜨고 퇴근 거리에 맞춰 에어컨이 켜지는 최신 가전 자동화 팁과 실시간 전력 사용량 모니터링 꿀팁 대공개.",
+      content: "<h3>1. 스마트 가전의 단순 연결을 넘어선 '시나리오 자동화'</h3><p>최근 신혼 가전 트렌드는 개별 가전의 브랜드를 맞추는 것을 넘어, 스마트 홈 IoT 생태계를 구축하여 생활의 질을 극적으로 높이는 데 집중되어 있습니다. 삼성의 <strong>SmartThings (스마트싱스)</strong>와 LG의 <strong>ThinQ (씽큐)</strong>는 모두 강력한 IoT 홈 자동화 플랫폼을 제공하며, 각자의 개성과 장단점을 명확하게 보여줍니다.</p><p>단순히 스마트폰 앱으로 세탁기나 로봇청소기를 원격 제어하는 것에서 나아가, 센서나 시간, 또는 사용자의 스마트폰 위치 정보(Geofencing)와 연동하여 자동으로 움직이는 '공간 제어 시나리오'를 설계하는 방법과 브랜드별 에코 시스템 매칭 팁을 제안합니다.</p>",
+      category: "신혼가전",
+      author: "버진로드 에디터",
+      date: "2026-06-26",
+      image: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&q=80&w=800",
+      readTime: "11분",
+      hashtags: ["스마트홈", "스마트싱스", "LG씽큐", "IoT가전", "가전졸업"]
     }
   );
 
