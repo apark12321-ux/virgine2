@@ -123,8 +123,8 @@
 .border-coral { border-color: #E8745F; }
 
 .article-body {
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 19px;
+  line-height: 1.85;
   color: #151320;
 }
 .article-body .toc {
@@ -241,14 +241,14 @@
   margin: 40px 0 16px;
 }
 .article-body h4 {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.015em;
   color: #151320;
   margin: 30px 0 12px;
 }
 .article-body p {
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.85;
   color: #1E1B2E;
   margin-bottom: 20px;
@@ -268,7 +268,7 @@
   gap: 13px;
 }
 .article-body ul:not(.toc ul) li {
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.7;
   color: #1E1B2E;
   padding-left: 26px;
@@ -354,46 +354,78 @@
   letter-spacing: -0.012em;
 }
 
-/* 모바일 반응형 — 본문 가독성 최적화 */
+/* 모바일 반응형 — 본문 가독성 및 UI 폰트 최적화 */
 @media (max-width: 640px) {
+  /* 글로벌 본문 기본 서체 스케일업 */
+  body {
+    font-size: 16.5px;
+  }
+
+  /* 일반 Tailwind 표준 및 임의 픽셀 폰트 클래스 모바일 최적화 스케일업 */
+  .text-\[11px\] { font-size: 13px !important; }
+  .text-\[12px\], .text-xs { font-size: 14px !important; }
+  .text-\[13px\], .text-sm { font-size: 15px !important; }
+  .text-\[14px\], .text-base { font-size: 16px !important; }
+  .text-\[15px\] { font-size: 16.5px !important; }
+  .text-\[16px\] { font-size: 17.5px !important; }
+  .text-\[17px\] { font-size: 18.5px !important; }
+  .text-\[18px\], .text-lg { font-size: 19.5px !important; }
+  .text-\[19px\] { font-size: 20px !important; }
+  .text-\[20px\], .text-xl { font-size: 21.5px !important; }
+  .text-\[21px\] { font-size: 22px !important; }
+  .text-\[22px\] { font-size: 23.5px !important; }
+  .text-\[23px\] { font-size: 24px !important; }
+  .text-\[24px\], .text-2xl { font-size: 25.5px !important; }
+  .text-\[26px\] { font-size: 27px !important; }
+  .text-\[28px\] { font-size: 29px !important; }
+  .text-\[30px\] { font-size: 31px !important; }
+  .text-\[32px\] { font-size: 33px !important; }
+  .text-\[34px\] { font-size: 35px !important; }
+  .text-\[36px\] { font-size: 37px !important; }
+  .text-\[40px\] { font-size: 41px !important; }
+  .text-\[42px\] { font-size: 43px !important; }
+
+  /* 기사 본문 영역 (article-body) 정밀 모바일 가독성 튜닝 */
   .article-body {
-    font-size: 17px;
-    line-height: 1.78;
+    font-size: 19px;
+    line-height: 1.85;
   }
   .article-body h2 {
-    font-size: 24px;
-    margin: 44px 0 16px;
+    font-size: 26px;
+    margin: 40px 0 16px;
+    line-height: 1.35;
   }
   .article-body h3 {
-    font-size: 20px;
-    margin: 32px 0 14px;
+    font-size: 22px;
+    margin: 30px 0 14px;
+    line-height: 1.4;
   }
   .article-body h4 {
-    font-size: 17px;
+    font-size: 19px;
   }
   .article-body p {
-    font-size: 17px;
-    line-height: 1.8;
+    font-size: 19px;
+    line-height: 1.85;
     margin-bottom: 18px;
   }
   .article-body ul:not(.toc ul) li {
-    font-size: 17px;
-    line-height: 1.7;
+    font-size: 18.5px;
+    line-height: 1.75;
   }
   .article-body .toc {
-    padding: 20px 22px;
+    padding: 22px 24px;
     margin: 28px 0 40px;
   }
   .article-body .toc li {
-    font-size: 14.5px;
+    font-size: 16px;
   }
   .article-body blockquote {
-    font-size: 17px;
+    font-size: 19px;
     padding: 12px 0 12px 20px;
     margin: 28px 0;
   }
   .article-body table {
-    font-size: 14px;
+    font-size: 15px;
   }
 }
 
