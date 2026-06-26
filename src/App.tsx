@@ -162,7 +162,6 @@ export default function App() {
   const [, setUser] = useState<User | null>(null);
   const [views, setViews] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
-  const [adSensePreviewMode, setAdSensePreviewMode] = useState<boolean>(false);
   const [shareSuccess, setShareSuccess] = useState<boolean>(false);
 
   useEffect(() => {
@@ -1235,28 +1234,25 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* AdSense Top Banner */}
+                  {/* Partnership/Recommendation Card */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className={`rounded-xl p-5 mb-8 relative overflow-hidden shadow-sm transition-all duration-300 ${adSensePreviewMode ? "bg-[#FAFAFA] border border-[#ECECEC]" : "bg-gradient-to-br from-[#FAF9FF] to-[#EFF6FF] border border-[#C7D2FE]"}`}>
+                    <div className="rounded-xl p-5 mb-8 relative overflow-hidden shadow-sm bg-gradient-to-br from-[#FAF9FF] to-[#EFF6FF] border border-[#C7D2FE]">
                       <div className="absolute top-0 right-0 flex items-center">
-                        <div className={`text-[9px] font-bold px-2.5 py-1 rounded-bl transition-all duration-200 ${adSensePreviewMode ? "bg-[#E2EAF4] text-[#7F8D9E]" : "bg-[#4F46E5]/10 text-[#4F46E5]"}`}>
-                          {adSensePreviewMode ? "SPONSOR AD (AdSense)" : "💡 에디터 맞춤정보 제휴 안내"}
+                        <div className="text-[9px] font-bold px-2.5 py-1 rounded-bl bg-[#4F46E5]/10 text-[#4F46E5]">
+                          💡 에디터 맞춤정보 제휴 안내
                         </div>
                       </div>
                       
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2">
                         <div className="text-left max-w-xl">
                           <div className="text-[10px] text-[#4F46E5] font-bold tracking-wider uppercase mb-1">
-                            {adSensePreviewMode ? "RECOMMENDED AD CONTENT" : "RECOMMENDED FOR YOU"}
+                            RECOMMENDED FOR YOU
                           </div>
                           <h4 className="text-[14px] font-bold text-[#1E1B2E] leading-[1.4] break-keep">
                             {POST_EXTRA_MAP[currentPost.id].adsName}
                           </h4>
                           <p className="text-[12.5px] text-[#475569] mt-1 break-keep">
-                            {adSensePreviewMode 
-                              ? `기사 주제와 긴밀히 연계된 ${POST_EXTRA_MAP[currentPost.id].adsKeyword} 관련 구글 검색 추천 광고가 승인 이후 실제 연동됩니다.`
-                              : `내 여건에 부합하는 ${POST_EXTRA_MAP[currentPost.id].adsKeyword} 가계 지원 서비스 및 모의 계산을 즉시 매칭합니다.`
-                            }
+                            내 여건에 부합하는 {POST_EXTRA_MAP[currentPost.id].adsKeyword} 가계 지원 서비스 및 모의 계산을 즉시 매칭합니다.
                           </p>
                         </div>
                         <div className="flex flex-col sm:items-end gap-3 shrink-0 w-full sm:w-auto">
@@ -1275,31 +1271,6 @@ export default function App() {
                             자세히 알아보기 <ArrowUpRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                      </div>
-
-                      {/* Small inline preview controller showing we understand approval process */}
-                      <div className="mt-4 pt-3.5 border-t border-dashed border-[#E2E8F0] flex items-center justify-between flex-wrap gap-2 text-[11px] text-[#64748B]">
-                        <span className="flex items-center gap-1 text-left">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                          <span>
-                            {adSensePreviewMode 
-                              ? "⚠️ 애드센스 심사전이라면 이와 같이 투명하게 광고 레이아웃 배치 시연을 진행할 수 있습니다."
-                              : "🔔 현재 애드센스 심사 전 검수 최적화를 위해 고품격 파트너 추천 레이아웃으로 안심 대체 작동 중입니다."
-                            }
-                          </span>
-                        </span>
-                        <button
-                          onClick={() => setAdSensePreviewMode(!adSensePreviewMode)}
-                          className="flex items-center gap-1.5 text-[#4F46E5] hover:text-[#3730A3] font-bold cursor-pointer transition-colors"
-                        >
-                          <input 
-                            type="checkbox" 
-                            checked={adSensePreviewMode} 
-                            onChange={() => {}} 
-                            className="w-3.5 h-3.5 accent-[#4F46E5] cursor-pointer"
-                          />
-                          애드센스 광고배너 미리보기 {adSensePreviewMode ? "끄기" : "켜기"}
-                        </button>
                       </div>
                     </div>
                   )}
@@ -1376,24 +1347,21 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* AdSense Bottom Banner */}
+                  {/* Tool Integration Card */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className={`rounded-xl p-5 mt-8 relative overflow-hidden shadow-sm text-center transition-all duration-300 ${adSensePreviewMode ? "bg-[#FAF9FF] border border-[#E2E1F5]" : "bg-gradient-to-br from-[#F0FDF4] to-[#EFF6FF] border border-[#C6EDD2]"}`}>
-                      <div className="absolute top-0 right-0 bg-[#E9E4F8] text-[#8676B0] text-[9px] font-bold px-3 py-0.5 rounded-bl">
-                        {adSensePreviewMode ? "IN-ARTICLE SPONSOR AD" : "🛠️ 버진로드 추천 스마트 툴"}
+                    <div className="rounded-xl p-5 mt-8 relative overflow-hidden shadow-sm text-center bg-gradient-to-br from-[#F0FDF4] to-[#EFF6FF] border border-[#C6EDD2]">
+                      <div className="absolute top-0 right-0 bg-[#E8F8EE] text-[#10B981] text-[9px] font-bold px-3 py-0.5 rounded-bl">
+                        🛠️ 버진로드 추천 스마트 툴
                       </div>
                       <div className="py-2">
-                        <div className="text-[10px] text-[#4F46E5] font-bold tracking-wider uppercase mb-1">
-                          {adSensePreviewMode ? "INTERESTED IN THIS TOPIC?" : "CONNECTED VALUE TOOL"}
+                        <div className="text-[10px] text-[#10B981] font-bold tracking-wider uppercase mb-1">
+                          CONNECTED VALUE TOOL
                         </div>
                         <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-2 leading-[1.4] break-keep">
                           {POST_EXTRA_MAP[currentPost.id].adsName}
                         </h4>
                         <p className="text-[12.5px] text-[#475569] max-w-xl mx-auto mb-4 break-keep">
-                          {adSensePreviewMode 
-                            ? `이 기사 하단의 애드센스 구글 정밀 타겟팅 영역에는 연동 후 무주택 기간, 대출금 이자 감면 등을 매칭해 주는 ${POST_EXTRA_MAP[currentPost.id].adsKeyword} 광고가 실시간 자동 고정 노출됩니다.`
-                            : "버진로드가 제공하는 초정밀 가점 진단기 및 가계 예산 디딤돌 시뮬레이터를 활용해 예비 가계 자금을 아끼고 똑똑하게 설계해보세요."
-                          }
+                          버진로드가 제공하는 초정밀 가점 진단기 및 가계 예산 디딤돌 시뮬레이터를 활용해 예비 가계 자금을 아끼고 똑똑하게 설계해보세요.
                         </p>
                         <button 
                           onClick={() => {
@@ -1405,7 +1373,7 @@ export default function App() {
                               handleNavigate("partnership");
                             }
                           }}
-                          className={`${adSensePreviewMode ? "bg-[#4F46E5] hover:bg-[#3730A3]" : "bg-[#10B981] hover:bg-[#059669]"} text-white text-[11px] font-bold px-4 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-sm`}
+                          className="bg-[#10B981] hover:bg-[#059669] text-white text-[11px] font-bold px-4 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-sm"
                         >
                           관련 계산기 및 추천도구 바로가기 <ArrowUpRight className="w-3.5 h-3.5" />
                         </button>
