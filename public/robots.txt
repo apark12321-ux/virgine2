@@ -1,7 +1,10 @@
-User-agent: *
+User-agent: Mediapartners-Google
 Allow: /
 
-User-agent: Mediapartners-Google
+User-agent: Googlebot
+Allow: /ads.txt
+
+User-agent: *
 Allow: /
 
 Sitemap: https://virginroad.kr/sitemap.xml
