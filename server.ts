@@ -811,14 +811,47 @@ ${xmlItems}
   app.post("/api/posts", handleIncomingPost);
   app.post("/api/blogstudio-webhook", handleIncomingPost);
 
+  // Serve ads.txt with correct content-type and headers
+  app.get("/ads.txt", (req, res) => {
+    const adsTxtPath = path.join(process.cwd(), "public", "ads.txt");
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    
+    if (fs.existsSync(adsTxtPath)) {
+      try {
+        const content = fs.readFileSync(adsTxtPath, "utf-8");
+        return res.send(content);
+      } catch (err) {
+        // Fallback to default
+      }
+    }
+    res.send("google.com, pub-9552509372228899, DIRECT, f08c47fec0942fa0");
+  });
+
   // Dynamic Robots.txt generator pointing to the sitemap.xml
   app.get("/robots.txt", (req, res) => {
     const hostUrl = getRequestBaseUrl(req);
-    res.type("text/plain");
-    res.send(`User-agent: *
+    const robotsTxtPath = path.join(process.cwd(), "public", "robots.txt");
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    
+    if (fs.existsSync(robotsTxtPath)) {
+      try {
+        let content = fs.readFileSync(robotsTxtPath, "utf-8");
+        // Update sitemap placeholder with current hostUrl if needed
+        content = content.replace(/https:\/\/virginroad\.kr/g, hostUrl);
+        return res.send(content);
+      } catch (err) {
+        // Fallback to default
+      }
+    }
+    
+    res.send(`User-agent: Mediapartners-Google
 Allow: /
 
-User-agent: Mediapartners-Google
+User-agent: Googlebot
+Allow: /ads.txt
+
+User-agent: *
 Allow: /
 
 Sitemap: ${hostUrl}/sitemap.xml
