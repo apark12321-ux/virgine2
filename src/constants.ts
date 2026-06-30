@@ -659,7 +659,7 @@ const buildPosts = (): Post[] => {
 
   return postsList.map(post => {
     const rawContent = post.content || generateCustomContent(post);
-    post.content = expandContentIfNeeded(post.title, post.category, post.hashtags || [], rawContent);
+    post.content = expandContentIfNeeded(post.title, post.category, post.hashtags || [], rawContent, post.id);
     return post;
   });
 };

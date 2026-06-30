@@ -18,16 +18,14 @@ export function expandContentIfNeeded(
   title: string,
   category: "신혼금융" | "신혼가전" | "결혼준비",
   hashtags: string[] = [],
-  originalContent: string = ""
+  originalContent: string = "",
+  id: string = ""
 ): string {
   const currentLengthNoSpaces = getCharCountNoSpaces(originalContent);
+  let finalContent = originalContent;
   
-  // 이미 공백제외 3000자 이상인 경우 그대로 반환
-  if (currentLengthNoSpaces >= 3000) {
-    return originalContent;
-  }
-
-  const tagsList = hashtags && hashtags.length > 0 ? hashtags : [category, "결혼꿀팁", "버진로드"];
+  if (currentLengthNoSpaces < 3000) {
+    const tagsList = hashtags && hashtags.length > 0 ? hashtags : [category, "결혼꿀팁", "버진로드"];
   const mainTag = tagsList[0] || category;
   const subTag = tagsList[1] || "정보공유";
 
@@ -439,8 +437,138 @@ export function expandContentIfNeeded(
     `;
   }
 
-  return `
+  finalContent = `
     ${baseContent}
     ${appendix}
   `;
+}
+
+  return injectContextualImages(finalContent, title, category, id);
+}
+
+// Intelligent Spacing Engine & Image Enrichment Parser
+function injectContextualImages(content: string, title: string, category: string, id: string): string {
+  // 1. Determine theme
+  let theme = "finance";
+  const lowerTitle = title.toLowerCase();
+  const lowerId = id.toLowerCase();
+  
+  if (lowerTitle.includes("청약") || lowerTitle.includes("특별공급") || lowerTitle.includes("분양") || lowerTitle.includes("특공")) {
+    theme = "presales";
+  } else if (lowerTitle.includes("전세") || lowerTitle.includes("임대") || lowerTitle.includes("월세") || lowerTitle.includes("버팀목")) {
+    theme = "rental";
+  } else if (lowerId.startsWith("app-") || lowerTitle.includes("가전") || lowerTitle.includes("인테리어") || lowerTitle.includes("침실") || lowerTitle.includes("침대") || lowerTitle.includes("tv") || lowerTitle.includes("가구") || lowerTitle.includes("스마트")) {
+    theme = "interior";
+  } else if (category === "신혼가전") {
+    theme = "interior";
+  } else if (category === "결혼준비" && (lowerTitle.includes("웨딩홀") || lowerTitle.includes("결혼식") || lowerTitle.includes("상견례") || lowerTitle.includes("모바일 청첩장"))) {
+    theme = "rental"; // Warm cozy interior fits beautifully
+  }
+
+  // 2. Map themes to beautiful image pairs
+  const IMAGES_BY_THEME: Record<string, { url: string; caption: string }[]> = {
+    presales: [
+      {
+        url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800",
+        caption: "신혼부부 우선 배정 공급 아파트 및 공공 분양 단지 전경"
+      },
+      {
+        url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=800",
+        caption: "청약 가점 극대화와 지역 분석에 기반한 스마트 입지 분석 계획"
+      }
+    ],
+    rental: [
+      {
+        url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
+        caption: "임차인 대항력 확보를 위한 전세 등본 심사 및 부동산 권리 분석"
+      },
+      {
+        url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800",
+        caption: "저금리 전세금 자금 지원 혜택으로 연출한 아늑하고 평온한 거실 전경"
+      }
+    ],
+    interior: [
+      {
+        url: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
+        caption: "최신 가전 졸업 스펙과 주방 빌트인 공간 인테리어 조화 설계안"
+      },
+      {
+        url: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800",
+        caption: "휴식과 수면의 질을 높이는 안락하고 모던한 침실 인테리어 배치"
+      }
+    ],
+    finance: [
+      {
+        url: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=800",
+        caption: "우대금리 및 주택 마련 이자 상환액 공제를 포함한 가계 자산 로드맵"
+      },
+      {
+        url: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800",
+        caption: "부부 맞춤형 합산 재정 설계와 결혼 준비 단계별 지출 배분 포트폴리오"
+      }
+    ]
+  };
+
+  const images = IMAGES_BY_THEME[theme] || IMAGES_BY_THEME["finance"];
+  const image1 = images[0];
+  const image2 = images[1];
+
+  const makeFigureHtml = (url: string, alt: string, caption: string) => `
+    <figure class="my-8 rounded-xl overflow-hidden shadow-md border border-[#E2E4F0] bg-white">
+      <img src="${url}" alt="${alt}" class="w-full h-auto object-cover max-h-[480px] hover:scale-[1.01] transition-transform duration-500" referrerpolicy="no-referrer" />
+      <figcaption class="p-3 bg-[#F8F9FC] text-center text-xs text-[#5C596F] font-medium border-t border-[#E2E4F0]">
+        📷 ${caption}
+      </figcaption>
+    </figure>
+  `;
+
+  // We want to insert image1 and image2.
+  // Find all occurrences of heading tags: <h2>, <h3>, or <h4>
+  const headingRegex = /(<h[2-4][^>]*>)/gi;
+  const headings: { text: string; index: number }[] = [];
+  let match;
+  while ((match = headingRegex.exec(content)) !== null) {
+    headings.push({ text: match[1], index: match.index });
+  }
+
+  if (headings.length >= 2) {
+    const h1Index = headings[0].index;
+    const hLastIndex = headings[headings.length - 1].index;
+
+    const firstPart = content.substring(0, h1Index);
+    const middlePart = content.substring(h1Index, hLastIndex);
+    const lastPart = content.substring(hLastIndex);
+
+    const fig1 = makeFigureHtml(image1.url, title, image1.caption);
+    const fig2 = makeFigureHtml(image2.url, title, image2.caption);
+
+    return firstPart + fig1 + middlePart + fig2 + lastPart;
+  } else {
+    // If headings are insufficient, find paragraph closing tags </p>
+    const pRegex = /(<\/p>)/gi;
+    const paragraphs: { text: string; index: number }[] = [];
+    while ((match = pRegex.exec(content)) !== null) {
+      paragraphs.push({ text: match[1], index: match.index });
+    }
+
+    if (paragraphs.length >= 4) {
+      const idx1 = Math.floor(paragraphs.length * 0.25);
+      const idx2 = Math.floor(paragraphs.length * 0.7);
+
+      const p1 = paragraphs[idx1];
+      const p2 = paragraphs[idx2];
+
+      const fig1 = makeFigureHtml(image1.url, title, image1.caption);
+      const fig2 = makeFigureHtml(image2.url, title, image2.caption);
+
+      const result = content.substring(0, p1.index + 4) + fig1 +
+                     content.substring(p1.index + 4, p2.index + 4) + fig2 +
+                     content.substring(p2.index + 4);
+      return result;
+    } else {
+      const fig1 = makeFigureHtml(image1.url, title, image1.caption);
+      const fig2 = makeFigureHtml(image2.url, title, image2.caption);
+      return content + fig1 + fig2;
+    }
+  }
 }

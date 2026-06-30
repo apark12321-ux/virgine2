@@ -8,6 +8,7 @@ import { CheongyakCalculator } from "./components/CheongyakCalculator";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP } from "./postMeta";
 import { Post } from "./types";
+import { expandContentIfNeeded } from "./lib/contentExpander";
 import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
@@ -163,6 +164,29 @@ export default function App() {
   const [views, setViews] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
   const [shareSuccess, setShareSuccess] = useState<boolean>(false);
+  
+  // Custom Floating Toast Notification State
+  const [toast, setToast] = useState<{
+    id: string;
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
+    setToast({
+      id: Math.random().toString(),
+      message,
+      type
+    });
+  };
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     const onPopState = () => {
@@ -268,7 +292,11 @@ export default function App() {
       const author = p.author === "홈코노미뉴스 편집부" ? "버진로드 편집부" : (p.author || "버진로드 에디터");
       const title = (p.title || "").replace(/홈코노미뉴스/g, "버진로드");
       const excerpt = (p.excerpt || "").replace(/홈코노미뉴스/g, "버진로드");
-      const content = (p.content || "").replace(/홈코노미뉴스/g, "버진로드");
+      let content = (p.content || "").replace(/홈코노미뉴스/g, "버진로드");
+      // 만약 MOCK_POSTS에 포함되지 않은 게시글인 경우(예: DB에서 불러온 글) 콘텐츠 확장 및 이미지 최적화를 강제해 줍니다.
+      if (!MOCK_POSTS.some(mp => mp.id === p.id)) {
+        content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id);
+      }
       return { ...p, author, title, excerpt, content };
     });
     return sanitized.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -1160,25 +1188,16 @@ export default function App() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {shareSuccess && (
-                      <span className="text-[12px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 animate-pulse">
-                        주소가 복사되었습니다!
-                      </span>
-                    )}
                     <button
-                      className={`w-9 h-9 rounded-md flex items-center justify-center transition-all cursor-pointer ${
-                        shareSuccess ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9]"
-                      }`}
+                      className="w-9 h-9 rounded-md text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors cursor-pointer"
                       title="공유"
                       aria-label="이 글 공유하기"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(window.location.href);
-                          setShareSuccess(true);
-                          setTimeout(() => setShareSuccess(false), 2000);
+                          showToast("포스트 주소가 클립보드에 성공적으로 복사되었습니다!", "success");
                         } catch {
-                          setShareSuccess(true);
-                          setTimeout(() => setShareSuccess(false), 2000);
+                          showToast("주소 복사에 실패했습니다. 주소창의 링크를 복사해주세요.", "error");
                         }
                       }}
                     >
@@ -1188,7 +1207,12 @@ export default function App() {
                       className="w-9 h-9 rounded-md text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors hidden sm:flex cursor-pointer"
                       title="인쇄"
                       aria-label="이 글 인쇄하기"
-                      onClick={() => window.print()}
+                      onClick={() => {
+                        showToast("인쇄 화면을 준비하고 있습니다...", "info");
+                        setTimeout(() => {
+                          window.print();
+                        }, 500);
+                      }}
                     >
                       <Printer className="w-4 h-4" />
                     </button>
@@ -1657,6 +1681,45 @@ export default function App() {
       </main>
 
       <Footer onNavigate={handleNavigate} />
+
+      {/* Dynamic Iframe-Safe Floating Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key={toast.id}
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 bg-[#1E1B2E] text-white px-5 py-3.5 rounded-xl shadow-xl border border-[#3E385C]/60 max-w-[90%] sm:max-w-md w-max"
+          >
+            {toast.type === "success" && (
+              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 shrink-0">
+                <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
+            {toast.type === "error" && (
+              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 shrink-0">
+                <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            )}
+            {toast.type === "info" && (
+              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 shrink-0">
+                <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            )}
+            <p className="text-[13.5px] font-medium leading-tight tracking-tight">
+              {toast.message}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
