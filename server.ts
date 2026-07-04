@@ -849,7 +849,7 @@ ${xmlItems}
 Allow: /
 
 User-agent: Googlebot
-Allow: /ads.txt
+Allow: /
 
 User-agent: *
 Allow: /
