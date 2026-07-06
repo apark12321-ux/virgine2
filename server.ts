@@ -1015,6 +1015,48 @@ Sitemap: ${hostUrl}/sitemap.xml
           } else {
             html = html.replace("</head>", `  ${newCanonicalElement}\n</head>`);
           }
+
+          // Inject dynamic Article and Breadcrumb JSON-LD structured schemas on the server-side
+          const articleJson = {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": post.title,
+            "description": description,
+            "image": [image],
+            "datePublished": post.date,
+            "dateModified": post.updated || post.date,
+            "author": { "@type": "Person", "name": post.author || "버진로드 에디터" },
+            "publisher": {
+              "@type": "Organization",
+              "name": "상상아트",
+              "alternateName": "버진로드",
+              "url": "https://virginroad.kr",
+              "logo": { "@type": "ImageObject", "url": "https://virginroad.kr/icon.svg" }
+            },
+            "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+            "articleSection": post.category,
+            "inLanguage": "ko-KR"
+          };
+
+          const breadcrumbJson = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+              { "@type": "ListItem", "position": 2, "name": post.category, "item": `https://virginroad.kr/category/${encodeURIComponent(post.category)}` },
+              { "@type": "ListItem", "position": 3, "name": post.title, "item": canonical }
+            ]
+          };
+
+          const jsonLdBlock = `
+  <script type="application/ld+json">
+  ${JSON.stringify(articleJson, null, 2)}
+  </script>
+  <script type="application/ld+json">
+  ${JSON.stringify(breadcrumbJson, null, 2)}
+  </script>
+`;
+          html = html.replace("</head>", `  ${jsonLdBlock}\n</head>`);
         }
 
         res.send(html);
@@ -1024,9 +1066,132 @@ Sitemap: ${hostUrl}/sitemap.xml
       }
     });
 
-    // Default Fallback SPA route for home, categories, tools, static pages
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+    // Default Fallback SPA route with full dynamic HTML page-specific preprocessors
+    app.get("*", async (req, res) => {
+      const htmlPath = path.join(distPath, "index.html");
+      if (!fs.existsSync(htmlPath)) {
+        return res.status(404).send("Site is building. Please try again soon.");
+      }
+
+      try {
+        let html = fs.readFileSync(htmlPath, "utf-8");
+        const pathname = req.path;
+        
+        let title = "버진로드 (Virginroad) - 결혼 준비 & 신혼 금융 생활 백서";
+        let description = "결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서, 버진로드입니다.";
+        let canonical = `https://virginroad.kr${pathname === "/" ? "" : pathname}`;
+        let ogType = "website";
+        let image = "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
+        let jsonLd: any = null;
+
+        if (pathname === "/about") {
+          title = "소개 | 버진로드";
+          description = "버진로드는 신혼·출산·주거·세금 정책부터 가정 재무까지 다루는 가정경제·생활정책 전문 미디어입니다.";
+        } else if (pathname === "/policy") {
+          title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
+          description = "2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.";
+        } else if (pathname === "/privacy") {
+          title = "개인정보 처리방침 | 버진로드";
+          description = "버진로드의 개인정보 수집 및 이용에 관한 안내입니다.";
+        } else if (pathname === "/partnership") {
+          title = "제휴 및 비즈니스 문의 | 버진로드";
+          description = "버진로드와 광고, 콘텐츠 협업, 파트너십 문의를 위한 안내 페이지입니다.";
+        } else if (pathname === "/announcement") {
+          title = "공지사항 | 버진로드";
+          description = "버진로드의 서비스 운영 관련 공지사항을 안내합니다.";
+        } else if (pathname === "/terms") {
+          title = "이용약관 | 버진로드";
+          description = "버진로드 서비스 이용에 관한 약관입니다.";
+        } else if (pathname === "/tools/didimdol") {
+          title = "디딤돌 우대금리 계산기 | 버진로드";
+          description = "한국주택금융공사 2026년 5월 1일 공시 기준으로 본인 가구의 디딤돌대출 우대금리와 월 상환액을 시뮬레이션해 드립니다. 자녀·청약통장·전자계약 우대를 단계별로 확인하세요.";
+        } else if (pathname === "/tools/cheongyak") {
+          title = "신혼부부 특별공급 가점 계산기 | 버진로드";
+          description = "「주택공급에 관한 규칙」 별표1 기준으로 신혼부부 특별공급 가점과 일반 청약가점제 점수를 동시에 계산해 드립니다. 자녀·혼인 기간·청약통장·신생아 가산까지 단계별 확인.";
+        } else if (pathname.startsWith("/category/")) {
+          const rawCat = pathname.replace("/category/", "");
+          const decodedCat = decodeURIComponent(rawCat);
+          if (decodedCat === "신혼금융") {
+            title = "신혼금융 | 버진로드";
+            description = "신혼·출산 가구의 주거 대출(디딤돌·보금자리·신생아특례), 청약 전략, 세제 혜택, 자산 형성까지. 가정의 재무 의사결정에 필요한 정책·금융 정보를 정리한 섹션입니다.";
+          } else if (decodedCat === "신혼가전") {
+            title = "신혼가전 | 버진로드";
+            description = "삼성·LG 신혼가전 패키지 비교, 평수별 적정 사이즈, 빌트인 가전 선택 기준, 한샘·이케아·리바트·일룸 가구 비교 등 신혼집 꾸리기 실용 가이드를 모았습니다.";
+          } else if (decodedCat === "결혼준비") {
+            title = "결혼준비 | 버진로드";
+            description = "스드메 견적의 실제, 웨딩홀 종류별 장단점, 결혼 준비 타임라인, 예단·예물 협상 기준 등 결혼을 앞둔 가구를 위한 풍성한 자료가 한가득 수록되어 있습니다.";
+          } else {
+            title = `${decodedCat} | 버진로드`;
+            description = `${decodedCat} 관련 가정경제·생활정책 정보를 한데 모아 제공합니다.`;
+          }
+        } else if (pathname === "/" || pathname === "") {
+          // Homepage gets standard Website JSON-LD
+          jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "버진로드",
+            "url": "https://virginroad.kr",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://virginroad.kr/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          };
+        }
+
+        // Perform HTML substitutions
+        html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+
+        const injectOrReplaceMeta = (metaNameOrProperty: string, content: string, isProperty = false) => {
+          const attr = isProperty ? "property" : "name";
+          const regex = new RegExp(`<meta[^>]*(?:${attr}="${metaNameOrProperty}"|content="[^"]*"[^>]*${attr}="${metaNameOrProperty}")[^>]*>`, "i");
+          const newMetaTag = `<meta ${attr}="${metaNameOrProperty}" content="${content.replace(/"/g, "&quot;")}" />`;
+          
+          if (html.match(regex)) {
+            html = html.replace(regex, newMetaTag);
+          } else {
+            html = html.replace("</head>", `  ${newMetaTag}\n</head>`);
+          }
+        };
+
+        injectOrReplaceMeta("description", description);
+        injectOrReplaceMeta("og:title", title, true);
+        injectOrReplaceMeta("og:description", description, true);
+        injectOrReplaceMeta("og:url", canonical, true);
+        injectOrReplaceMeta("og:image", image, true);
+        injectOrReplaceMeta("og:type", ogType, true);
+        injectOrReplaceMeta("og:site_name", "버진로드", true);
+        injectOrReplaceMeta("og:locale", "ko_KR", true);
+
+        injectOrReplaceMeta("twitter:title", title);
+        injectOrReplaceMeta("twitter:description", description);
+        injectOrReplaceMeta("twitter:image", image);
+        injectOrReplaceMeta("twitter:card", "summary_large_image");
+
+        // Canonical element
+        const canonicalRegex = /<link[^>]*rel="canonical"[^>]*>/i;
+        const newCanonicalElement = `<link rel="canonical" href="${canonical}" />`;
+        if (html.match(canonicalRegex)) {
+          html = html.replace(canonicalRegex, newCanonicalElement);
+        } else {
+          html = html.replace("</head>", `  ${newCanonicalElement}\n</head>`);
+        }
+
+        // If JSON-LD is available, inject it
+        if (jsonLd) {
+          const jsonLdString = `
+  <script type="application/ld+json">
+  ${JSON.stringify(jsonLd, null, 2)}
+  </script>
+`;
+          html = html.replace("</head>", `  ${jsonLdString}\n</head>`);
+        }
+
+        res.send(html);
+      } catch (err) {
+        console.error("Dynamic page SEO metadata injection failure:", err);
+        res.sendFile(htmlPath);
+      }
     });
   }
 
