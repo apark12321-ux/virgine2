@@ -479,7 +479,7 @@ function injectContextualImages(content: string, title: string, category: string
     ],
     rental: [
       {
-        url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
+        url: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800",
         caption: "임차인 대항력 확보를 위한 전세 등본 심사 및 부동산 권리 분석"
       },
       {
@@ -531,18 +531,31 @@ function injectContextualImages(content: string, title: string, category: string
     headings.push({ text: match[1], index: match.index });
   }
 
-  if (headings.length >= 2) {
-    const h1Index = headings[0].index;
-    const hLastIndex = headings[headings.length - 1].index;
+  if (headings.length >= 3) {
+    const midIdx = Math.floor(headings.length / 2);
+    const lastIdx = headings.length - 1;
 
-    const firstPart = content.substring(0, h1Index);
-    const middlePart = content.substring(h1Index, hLastIndex);
+    const hMidIndex = headings[midIdx].index;
+    const hLastIndex = headings[lastIdx].index;
+
+    const firstPart = content.substring(0, hMidIndex);
+    const middlePart = content.substring(hMidIndex, hLastIndex);
     const lastPart = content.substring(hLastIndex);
 
     const fig1 = makeFigureHtml(image1.url, title, image1.caption);
     const fig2 = makeFigureHtml(image2.url, title, image2.caption);
 
     return firstPart + fig1 + middlePart + fig2 + lastPart;
+  } else if (headings.length === 2) {
+    const h1Index = headings[1].index;
+
+    const firstPart = content.substring(0, h1Index);
+    const lastPart = content.substring(h1Index);
+
+    const fig1 = makeFigureHtml(image1.url, title, image1.caption);
+    const fig2 = makeFigureHtml(image2.url, title, image2.caption);
+
+    return firstPart + fig1 + lastPart + fig2;
   } else {
     // If headings are insufficient, find paragraph closing tags </p>
     const pRegex = /(<\/p>)/gi;
@@ -552,8 +565,8 @@ function injectContextualImages(content: string, title: string, category: string
     }
 
     if (paragraphs.length >= 4) {
-      const idx1 = Math.floor(paragraphs.length * 0.25);
-      const idx2 = Math.floor(paragraphs.length * 0.7);
+      const idx1 = Math.floor(paragraphs.length * 0.4);
+      const idx2 = Math.floor(paragraphs.length * 0.8);
 
       const p1 = paragraphs[idx1];
       const p2 = paragraphs[idx2];
