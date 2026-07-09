@@ -254,7 +254,7 @@ async function fetchMergedPosts(): Promise<any[]> {
 
   return combined.map(post => {
     const hashtags = post.hashtags || [];
-    const expandedContent = expandContentIfNeeded(post.title, post.category, hashtags, post.content || "");
+    const expandedContent = expandContentIfNeeded(post.title, post.category, hashtags, post.content || "", post.id, post.image);
     return {
       ...post,
       content: expandedContent
@@ -676,7 +676,7 @@ ${xmlItems}
       }
       
       const hashtags = [category, "결혼꿀팁", "버진로드"];
-      const finalContent = expandContentIfNeeded(title, category, hashtags, content);
+      const finalContent = expandContentIfNeeded(title, category, hashtags, content, postId, image);
 
       // 4. Calculate reading time (approx 500 characters per minute)
       const plainText = stripHtml(finalContent);

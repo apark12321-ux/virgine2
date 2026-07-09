@@ -295,7 +295,7 @@ export default function App() {
       let content = (p.content || "").replace(/홈코노미뉴스/g, "버진로드");
       // 만약 MOCK_POSTS에 포함되지 않은 게시글인 경우(예: DB에서 불러온 글) 콘텐츠 확장 및 이미지 최적화를 강제해 줍니다.
       if (!MOCK_POSTS.some(mp => mp.id === p.id)) {
-        content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id);
+        content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id, p.image);
       }
       return { ...p, author, title, excerpt, content };
     });

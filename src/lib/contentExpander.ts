@@ -19,7 +19,8 @@ export function expandContentIfNeeded(
   category: "신혼금융" | "신혼가전" | "결혼준비",
   hashtags: string[] = [],
   originalContent: string = "",
-  id: string = ""
+  id: string = "",
+  postImage: string = ""
 ): string {
   const currentLengthNoSpaces = getCharCountNoSpaces(originalContent);
   let finalContent = originalContent;
@@ -441,13 +442,13 @@ export function expandContentIfNeeded(
     ${baseContent}
     ${appendix}
   `;
-}
+  }
 
-  return injectContextualImages(finalContent, title, category, id);
+  return injectContextualImages(finalContent, title, category, id, postImage);
 }
 
 // Intelligent Spacing Engine & Image Enrichment Parser
-function injectContextualImages(content: string, title: string, category: string, id: string): string {
+function injectContextualImages(content: string, title: string, category: string, id: string, postImage: string = ""): string {
   // 1. Determine theme
   let theme = "finance";
   const lowerTitle = title.toLowerCase();
@@ -510,8 +511,16 @@ function injectContextualImages(content: string, title: string, category: string
   };
 
   const images = IMAGES_BY_THEME[theme] || IMAGES_BY_THEME["finance"];
-  const image1 = images[0];
-  const image2 = images[1];
+  
+  // Select an image different from postImage to prevent duplicates
+  let selectedImage = images[0];
+  if (postImage) {
+    const cleanPostImage = postImage.split("?")[0];
+    const cleanImage1 = images[0].url.split("?")[0];
+    if (cleanPostImage === cleanImage1 || cleanPostImage.includes(cleanImage1) || cleanImage1.includes(cleanPostImage)) {
+      selectedImage = images[1];
+    }
+  }
 
   const makeFigureHtml = (url: string, alt: string, caption: string) => `
     <figure class="my-8 rounded-xl overflow-hidden shadow-md border border-[#E2E4F0] bg-white">
@@ -522,7 +531,6 @@ function injectContextualImages(content: string, title: string, category: string
     </figure>
   `;
 
-  // We want to insert image1 and image2.
   // Find all occurrences of heading tags: <h2>, <h3>, or <h4>
   const headingRegex = /(<h[2-4][^>]*>)/gi;
   const headings: { text: string; index: number }[] = [];
@@ -531,31 +539,16 @@ function injectContextualImages(content: string, title: string, category: string
     headings.push({ text: match[1], index: match.index });
   }
 
-  if (headings.length >= 3) {
+  if (headings.length >= 2) {
     const midIdx = Math.floor(headings.length / 2);
-    const lastIdx = headings.length - 1;
+    const hIndex = headings[midIdx].index;
 
-    const hMidIndex = headings[midIdx].index;
-    const hLastIndex = headings[lastIdx].index;
+    const firstPart = content.substring(0, hIndex);
+    const lastPart = content.substring(hIndex);
 
-    const firstPart = content.substring(0, hMidIndex);
-    const middlePart = content.substring(hMidIndex, hLastIndex);
-    const lastPart = content.substring(hLastIndex);
+    const fig = makeFigureHtml(selectedImage.url, title, selectedImage.caption);
 
-    const fig1 = makeFigureHtml(image1.url, title, image1.caption);
-    const fig2 = makeFigureHtml(image2.url, title, image2.caption);
-
-    return firstPart + fig1 + middlePart + fig2 + lastPart;
-  } else if (headings.length === 2) {
-    const h1Index = headings[1].index;
-
-    const firstPart = content.substring(0, h1Index);
-    const lastPart = content.substring(h1Index);
-
-    const fig1 = makeFigureHtml(image1.url, title, image1.caption);
-    const fig2 = makeFigureHtml(image2.url, title, image2.caption);
-
-    return firstPart + fig1 + lastPart + fig2;
+    return firstPart + fig + lastPart;
   } else {
     // If headings are insufficient, find paragraph closing tags </p>
     const pRegex = /(<\/p>)/gi;
@@ -564,24 +557,16 @@ function injectContextualImages(content: string, title: string, category: string
       paragraphs.push({ text: match[1], index: match.index });
     }
 
-    if (paragraphs.length >= 4) {
-      const idx1 = Math.floor(paragraphs.length * 0.4);
-      const idx2 = Math.floor(paragraphs.length * 0.8);
+    if (paragraphs.length >= 2) {
+      const midIdx = Math.floor(paragraphs.length / 2);
+      const p = paragraphs[midIdx];
 
-      const p1 = paragraphs[idx1];
-      const p2 = paragraphs[idx2];
+      const fig = makeFigureHtml(selectedImage.url, title, selectedImage.caption);
 
-      const fig1 = makeFigureHtml(image1.url, title, image1.caption);
-      const fig2 = makeFigureHtml(image2.url, title, image2.caption);
-
-      const result = content.substring(0, p1.index + 4) + fig1 +
-                     content.substring(p1.index + 4, p2.index + 4) + fig2 +
-                     content.substring(p2.index + 4);
-      return result;
+      return content.substring(0, p.index + 4) + fig + content.substring(p.index + 4);
     } else {
-      const fig1 = makeFigureHtml(image1.url, title, image1.caption);
-      const fig2 = makeFigureHtml(image2.url, title, image2.caption);
-      return content + fig1 + fig2;
+      const fig = makeFigureHtml(selectedImage.url, title, selectedImage.caption);
+      return content + fig;
     }
   }
 }
