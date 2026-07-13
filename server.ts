@@ -6,6 +6,7 @@ import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
 
 const VIEWS_FILE = path.join(process.cwd(), "views.json");
+const EXPOSURES_FILE = path.join(process.cwd(), "exposures.json");
 
 function loadViews(): Record<string, number> {
   try {
@@ -23,6 +24,25 @@ function saveViews(views: Record<string, number>) {
     fs.writeFileSync(VIEWS_FILE, JSON.stringify(views, null, 2), "utf-8");
   } catch (e) {
     console.error("Failed to write views file:", e);
+  }
+}
+
+function loadExposures(): Record<string, number> {
+  try {
+    if (fs.existsSync(EXPOSURES_FILE)) {
+      return JSON.parse(fs.readFileSync(EXPOSURES_FILE, "utf-8"));
+    }
+  } catch (e) {
+    console.error("Failed to read exposures file:", e);
+  }
+  return {};
+}
+
+function saveExposures(exposures: Record<string, number>) {
+  try {
+    fs.writeFileSync(EXPOSURES_FILE, JSON.stringify(exposures, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Failed to write exposures file:", e);
   }
 }
 
@@ -396,6 +416,55 @@ async function startServer() {
     }
 
     res.json({ views });
+  });
+
+  // API Route: increment exposures (single)
+  app.post("/api/exposures", (req, res) => {
+    const { id } = req.body;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ error: "Invalid post ID" });
+    }
+    const exposures = loadExposures();
+    exposures[id] = (exposures[id] || 0) + 1;
+    saveExposures(exposures);
+    res.json({ id, exposures: exposures[id] });
+  });
+
+  // API Route: increment exposures in bulk (highly performant list viewing)
+  app.post("/api/exposures/bulk", (req, res) => {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ error: "Invalid post IDs array" });
+    }
+    const exposures = loadExposures();
+    ids.forEach((id) => {
+      if (typeof id === "string" && id.trim()) {
+        exposures[id] = (exposures[id] || 0) + 1;
+      }
+    });
+    saveExposures(exposures);
+    res.json({ success: true, count: ids.length });
+  });
+
+  // API Route: fetch exposures (supports ?ids=a,b or ?id=a)
+  app.get("/api/exposures", (req, res) => {
+    const { id, ids } = req.query;
+    const exposures = loadExposures();
+
+    if (ids && typeof ids === "string") {
+      const idList = ids.split(",");
+      const result: Record<string, number> = {};
+      idList.forEach((key) => {
+        result[key] = exposures[key] || 0;
+      });
+      return res.json({ exposures: result });
+    }
+
+    if (id && typeof id === "string") {
+      return res.json({ id, exposures: exposures[id] || 0 });
+    }
+
+    res.json({ exposures });
   });
 
   const DEBUG_LOG_FILE = path.join(process.cwd(), "webhook-debug.json");
@@ -1028,7 +1097,7 @@ Sitemap: ${hostUrl}/sitemap.xml
             "author": { "@type": "Person", "name": post.author || "버진로드 에디터" },
             "publisher": {
               "@type": "Organization",
-              "name": "상상아트",
+              "name": "버진로드",
               "alternateName": "버진로드",
               "url": "https://virginroad.kr",
               "logo": { "@type": "ImageObject", "url": "https://virginroad.kr/icon.svg" }

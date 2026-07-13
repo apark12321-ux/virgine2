@@ -9,6 +9,7 @@ interface PostCardProps {
   onClick: (id: string) => void;
   index?: number;
   views?: number;
+  exposures?: number;
 }
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
@@ -17,7 +18,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   "결혼준비": { bg: "#FFD2BD", text: "#6B2418" },
 };
 
-export function PostCard({ post, onClick, views }: PostCardProps) {
+export function PostCard({ post, onClick, views, exposures }: PostCardProps) {
   const dynamicReadTime = calculateReadTime(post.content);
   const colors = CATEGORY_COLORS[post.category] || CATEGORY_COLORS["신혼금융"];
 

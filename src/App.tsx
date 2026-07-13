@@ -12,7 +12,7 @@ import { expandContentIfNeeded } from "./lib/contentExpander";
 import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
-import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType } from "./lib/views";
+import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType, recordExposuresBulk, fetchAllExposures } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { calculateReadTime, slugify, stripHtml } from "./lib/utils";
@@ -162,6 +162,7 @@ export default function App() {
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [, setUser] = useState<User | null>(null);
   const [views, setViews] = useState<Record<string, number>>({});
+  const [exposures, setExposures] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
   const [shareSuccess, setShareSuccess] = useState<boolean>(false);
   
@@ -178,6 +179,14 @@ export default function App() {
       message,
       type
     });
+  };
+
+  const calculateCtr = (viewsCount?: number, exposuresCount?: number): string => {
+    const v = viewsCount || 0;
+    const e = exposuresCount || 0;
+    if (e === 0) return "0.0";
+    const adjustedE = Math.max(e, v);
+    return ((v / adjustedE) * 100).toFixed(1);
   };
 
   useEffect(() => {
@@ -302,10 +311,12 @@ export default function App() {
     return sanitized.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [realPosts]);
 
-  // 전체 조회수 로드 (글 목록이 준비되면)
+  // 전체 조회수 및 노출수 로드 (글 목록이 준비되면)
   useEffect(() => {
     if (allPosts.length === 0) return;
-    fetchAllViews(allPosts.map((p) => p.id)).then(setViews);
+    const postIds = allPosts.map((p) => p.id);
+    fetchAllViews(postIds).then(setViews);
+    fetchAllExposures(postIds).then(setExposures);
   }, [allPosts]);
 
   const filteredPosts = useMemo(() => {
@@ -324,6 +335,19 @@ export default function App() {
     }
     return posts;
   }, [currentPage, searchQuery, allPosts]);
+
+  // 필터링된 게시글 노출 기록 (노출수 일괄 증가 및 반영)
+  useEffect(() => {
+    if (filteredPosts.length === 0) return;
+    const ids = filteredPosts.map(p => p.id);
+    recordExposuresBulk(ids).then((success) => {
+      if (success) {
+        fetchAllExposures(ids).then((latestExposures) => {
+          setExposures((prev) => ({ ...prev, ...latestExposures }));
+        });
+      }
+    });
+  }, [filteredPosts]);
 
   const currentPost = useMemo(() => {
     if (currentPage.startsWith("post-")) {
@@ -791,6 +815,7 @@ export default function App() {
                                 key={post.id}
                                 post={post}
                                 views={views[post.id]}
+                                exposures={exposures[post.id]}
                                 onClick={(id) => handleNavigate(`post-${id}`)}
                               />
                             ))}
@@ -831,6 +856,7 @@ export default function App() {
                                 key={post.id}
                                 post={post}
                                 views={views[post.id]}
+                                exposures={exposures[post.id]}
                                 onClick={(id) => handleNavigate(`post-${id}`)}
                               />
                             ))}
@@ -1183,8 +1209,8 @@ export default function App() {
                     <span className="w-[2px] h-[2px] bg-[#D5D8E8] rounded-full" />
                     <span className="text-[#8A87A0]">{calculateReadTime(currentPost.content)} 읽기</span>
                     <span className="w-[2px] h-[2px] bg-[#D5D8E8] rounded-full" />
-                    <span className="text-[#8A87A0] inline-flex items-center gap-1">
-                      <Eye className="w-3.5 h-3.5" /> {(views[currentPost.id] || 0).toLocaleString()}
+                    <span className="text-[#8A87A0] inline-flex items-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5" /> 조회수 {(views[currentPost.id] || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1595,6 +1621,7 @@ export default function App() {
                             <PostCard
                               post={post}
                               views={views[post.id]}
+                              exposures={exposures[post.id]}
                               onClick={(id) => handleNavigate(`post-${id}`)}
                               index={idx}
                             />

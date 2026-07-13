@@ -49,20 +49,36 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 }
 
 /**
- * 조회수 헬퍼 (Firebase Firestore 기반 실시간 조회수)
+ * 조회수 & 노출수 헬퍼 (Server REST API 기반 실시간 조회수/노출수 추적)
  *
- * - recordView(id): 글 진입·새로고침할 때마다 조회수 1 증가 (Firestore Transaction)
+ * - recordView(id): 글 진입·새로고침할 때마다 조회수 1 증가 (REST API)
  * - fetchAllViews(ids): 여러 글 조회수를 한 번에 읽어 카드·목록에 표시
- * - 카운터 미설정(오류) 시 조회수는 숨김 — 가짜 숫자를 만들지 않음
+ * - recordExposure(id): 글 노출될 때마다 노출수 1 증가 (REST API)
+ * - recordExposuresBulk(ids): 여러 글 노출 시 한 번에 노출수 대량 증가 (REST API)
+ * - fetchAllExposures(ids): 여러 글 노출수를 한 번에 읽음
  */
 
-/** 글 조회 시 호출 — 호출(새로고침)할 때마다 1 증가. 반환: 최신 조회수 또는 null(오류). */
+/** 글 조회 시 호출 — 호출할 때마다 1 증가. */
 export async function recordView(postId: string): Promise<number | null> {
   if (!postId) return null;
 
-  const docRef = doc(db, "views", postId);
+  // 1. Primary: Use local highly-reliable server REST API over standard port
+  try {
+    const res = await fetch("/api/views", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: postId })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return typeof data.views === "number" ? data.views : null;
+    }
+  } catch (apiError) {
+    console.warn("REST API recordView failed, trying Firestore direct fallback:", apiError);
+  }
 
-  // 1. First, attempt a light transaction to securely increase count
+  // 2. Fallback: Write directly to client-side Firestore
+  const docRef = doc(db, "views", postId);
   try {
     const newViews = await runTransaction(db, async (transaction) => {
       const sfDoc = await transaction.get(docRef);
@@ -74,55 +90,50 @@ export async function recordView(postId: string): Promise<number | null> {
       transaction.update(docRef, { count: newCount });
       return newCount;
     });
-    
     return newViews;
   } catch (error) {
-    console.warn("Transaction failed in recordView, attempting highly robust fallback with increment(1):", error);
-    
-    // 2. High-resiliency fallback: write increment(1) with merge and fetch updated value
     try {
       await setDoc(docRef, { count: increment(1) }, { merge: true });
       const snap = await getDoc(docRef);
       return snap.exists() ? (snap.data().count || 1) : 1;
     } catch (fallbackError) {
-      try {
-        handleFirestoreError(fallbackError, OperationType.WRITE, `views/${postId}`);
-      } catch (thrownError) {
-        console.warn("recordView robust fallback caught error silently:", thrownError);
-      }
+      console.warn("Firestore recordView direct write also failed:", fallbackError);
       return null;
     }
   }
 }
 
-/** 여러 글 조회수를 { id: count }로 읽기. 실패 시 빈 객체(조회수 숨김). */
+/** 여러 글 조회수를 { id: count }로 읽기. */
 export async function fetchAllViews(ids: string[] = []): Promise<Record<string, number>> {
   if (ids.length === 0) return {};
   
+  // 1. Primary: Use highly-reliable server REST API
+  try {
+    const res = await fetch(`/api/views?ids=${ids.join(",")}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.views) {
+        return data.views;
+      }
+    }
+  } catch (apiError) {
+    console.warn("REST API fetchAllViews failed, trying Firestore fallback:", apiError);
+  }
+
+  // 2. Fallback: Query Firestore documents
   try {
     const result: Record<string, number> = {};
-    
-    // 개별 문서에 대해 getDoc을 병렬로 수행함으로써 list 쿼리 권한 문제를 피하고 get 권한만 사용합니다.
     await Promise.all(
       ids.map(async (id) => {
         try {
           const docRef = doc(db, "views", id);
           const snap = await getDoc(docRef);
-          if (snap.exists()) {
-            result[id] = snap.data().count || 0;
-          } else {
-            result[id] = 0;
-          }
+          result[id] = snap.exists() ? (snap.data().count || 0) : 0;
         } catch (error) {
-          try {
-            handleFirestoreError(error, OperationType.GET, `views/${id}`);
-          } catch (thrownError) {
-            console.warn(`fetchAllViews individual document fetch error on ${id} handled gracefully:`, thrownError);
-          }
+          result[id] = 0;
         }
       })
     );
-    
     return result;
   } catch (error) {
     console.error("Failed to fetch views from Firestore:", error);
@@ -133,17 +144,75 @@ export async function fetchAllViews(ids: string[] = []): Promise<Record<string, 
 /** 단일 글 조회수 읽기. */
 export async function fetchView(postId: string): Promise<number | null> {
   if (!postId) return null;
+
+  // 1. Primary: REST API
+  try {
+    const res = await fetch(`/api/views?id=${postId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return typeof data.views === "number" ? data.views : 0;
+    }
+  } catch (apiError) {
+    console.warn("REST API fetchView failed, trying Firestore fallback:", apiError);
+  }
+
+  // 2. Fallback: Firestore
   try {
     const snap = await getDoc(doc(db, "views", postId));
     return snap.exists() ? (snap.data().count || 0) : 0;
   } catch (error) {
-    try {
-      handleFirestoreError(error, OperationType.GET, `views/${postId}`);
-    } catch (thrownError) {
-      console.warn("fetchView caught and handled error silently:", thrownError);
-    }
     return null;
   }
+}
+
+/** 글 노출 시 단일 기록 (REST API) */
+export async function recordExposure(postId: string): Promise<number | null> {
+  if (!postId) return null;
+  try {
+    const res = await fetch("/api/exposures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: postId })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return typeof data.exposures === "number" ? data.exposures : null;
+    }
+  } catch (err) {
+    console.warn("Failed to record exposure via REST API:", err);
+  }
+  return null;
+}
+
+/** 여러 글 일괄 노출 기록 (REST API - 일괄 처리) */
+export async function recordExposuresBulk(ids: string[]): Promise<boolean> {
+  if (!ids || ids.length === 0) return false;
+  try {
+    const res = await fetch("/api/exposures/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids })
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn("Failed to record bulk exposures via REST API:", err);
+    return false;
+  }
+}
+
+/** 여러 글 노출수 { id: count } 가져오기 (REST API) */
+export async function fetchAllExposures(ids: string[] = []): Promise<Record<string, number>> {
+  if (ids.length === 0) return {};
+  try {
+    const res = await fetch(`/api/exposures?ids=${ids.join(",")}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.exposures || {};
+    }
+  } catch (err) {
+    console.warn("Failed to fetch all exposures via REST API:", err);
+  }
+  return {};
 }
 
 /** 조회수 표시 포맷: 1234 → "1.2천", 12345 → "1.2만" */

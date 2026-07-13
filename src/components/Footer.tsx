@@ -142,7 +142,7 @@ export function Footer({ onNavigate }: FooterProps) {
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div className="space-y-2">
               <p className="text-[13px] text-[#3F3D56] leading-[1.7]">
-                <span className="font-bold text-[#1E1B2E]">상상아트</span>
+                <span className="font-bold text-[#1E1B2E]">상상아트 (서비스명: 버진로드)</span>
                 <span className="mx-2 text-[#B5B3C8]">·</span>사업자등록번호 272-14-01256
                 <span className="mx-2 text-[#B5B3C8]">·</span>통신판매업 신고번호 제2023-화성동탄-1098호
               </p>
