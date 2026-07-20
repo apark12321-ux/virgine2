@@ -1,5 +1,10 @@
 import { useState, useMemo } from "react";
 
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 interface CalcInput {
   // 신혼특공 가점
   children: 0 | 1 | 2 | 3; // 미성년 자녀 수 (태아 제외)
@@ -86,8 +91,36 @@ function generalJeongyak(months: number): number {
   return Math.min(Math.round(1 + years), 17);
 }
 
+const FAQ_DATA: FaqItem[] = [
+  {
+    question: "만 2세 이하 신생아 가구 가산점(+3점)과 우선공급 배정 기준은 구체적으로 어떻게 되나요?",
+    answer: "국토교통부의 저출산 극복 대책(2024~2025 개정 반영)에 따라, 입주자모집공고일 기준 만 2세 이하의 자녀(태아 및 입양아 포함)가 있는 신생아 가구는 공공분양 신혼특공 청약 시 특별 가산점 3점을 즉시 수령받게 됩니다. 또한 배정 물량 자체에서도 '신생아 우선공급' 트랙으로 먼저 1차 분류 및 추첨을 진행하므로, 신생아가 있는 가정은 일반 신혼특공 대비 당첨 확률이 비약적으로 수십 배 이상 상승하는 절대적인 혜택을 쥐게 됩니다."
+  },
+  {
+    question: "배우자의 청약통장 가입 기간과 납입 가산점 50% 합산 룰은 어떻게 연산하나요?",
+    answer: "2024년 청약 규칙 개정으로 민영 및 공공분양 일반 청약뿐 아니라 특공 가점 산정 시에도 배우자의 청약통장 가입 이력이 본인 점수에 가산 연동됩니다. 배우자의 청약통장 납입 점수(최대 3점)의 50%를 소수점 이하 버림으로 본인 점수에 가산하여 최대 3점 한도로 추가 점수를 얻을 수 있습니다. 예를 들어 본인이 청약 가입 기간 및 납입 회차 요건으로 만점(3점)을 취득하고, 배우자의 납입 점수가 2점(12회 이상~23회 이하)이라면 그 절반인 1점이 본인 가점에 즉시 가산되어 총 4점의 높은 청약 경쟁력을 조기에 안정적으로 세팅할 수 있습니다."
+  },
+  {
+    question: "부부 중 한 명이 결혼 전에 주택을 소유한 적이 있거나 당첨된 적이 있으면 신청 가능한가요?",
+    answer: "신혼특공은 '혼인신고일로부터 입주자모집공고일까지 계속하여 무주택'일 것을 기본 룰로 정하고 있습니다. 따라서 결혼 전에 주택을 처분하여 혼인신고 시점에 완벽히 무주택 상태였다면 신청 자체는 허용됩니다. 다만 배우자가 결혼 전 단독 세대주로서 특별공급에 당첨된 적이 있거나 주택을 소유하여 '평생 1회 특별공급 당첨 제한' 룰에 저촉되는 경우, 부부는 동일 세대원이 되므로 일방의 과거 이력 때문에 청약이 최종 부적격 처리될 수 있습니다. 따라서 청약 홈에서 부부 양방의 과거 특별공급 수혜 이력을 꼼꼼하게 교차 검증하는 단계가 필수적입니다."
+  },
+  {
+    question: "무주택 기간의 산정 시점과 기준일은 부부 기준으로 어떻게 적용하나요?",
+    answer: "청약 규칙상 무주택 기간은 청약 신청자의 연령이 '만 30세가 되는 날'부터 기산하며, 만 30세 이전에 혼인신고를 마친 경우에는 '혼인신고일'부터 무주택 기간을 기산하여 소급 연산합니다. 만약 부부 중 한 명이 과거 주택을 소유한 이력이 있다면, 그 주택을 완전히 처분하고 무주택자가 된 시점과 만 30세(또는 혼인신고일) 중 가장 늦은 날을 기준으로 하여 무주택 기간을 최종 판정합니다."
+  },
+  {
+    question: "해당 거주 지역 연속 거주 가점에서 '연속'의 정확한 판단 기준은 무엇인가요?",
+    answer: "거주 기간 가점은 말 그대로 주민등록등본상 해당 주택 건설 지역(예: 서울시, 경기도 등)에 중간에 타 시도로 전출입 이력 없이 '연속하여 등본을 유지한 기간'을 일할 산정합니다. 단 하루라도 타 지역으로 전입신고를 하여 주소를 이전했다면, 과거 거주 이력은 전부 초기화되며 타 지역 전출 후 다시 해당 지역으로 재전입한 시점부터 거주 기간이 새롭게 1일 차로 기산되므로 주소 이전에 지극히 신중해야 합니다."
+  },
+  {
+    question: "만 60세 이상 직계존속(부모님)이 소유한 주택도 무주택 자격으로 인정되나요?",
+    answer: "일반 가점 청약에서는 주택공급에 관한 규칙 제53조에 의거해 만 60세 이상의 직계존속(부모, 조부모)이 소유한 주택은 신청자 본인을 무주택으로 간주해 줍니다. 그러나 매우 중요하게도 **'특별공급(신혼특공, 다자녀특공, 노부모부양 등)' 청약 시에는 이 60세 이상 무주택 인정 조항이 철저하게 배제**됩니다! 즉, 직계존속이 주택을 소유하고 있다면 신혼부부 특별공급 청약 시에는 무주택 가구 자격을 박탈당하거나 부적격 탈락하므로, 부모님과 주민등록상 세대가 합쳐져 있다면 공고일 전에 미리 세대 분리를 완수해야 안전합니다."
+  }
+];
+
 export function CheongyakCalculator() {
   const [input, setInput] = useState<CalcInput>(initialInput);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   const result = useMemo(() => {
     // 신혼특공
@@ -385,6 +418,83 @@ export function CheongyakCalculator() {
           </div>
         </section>
       </div>
+
+      {/* 신혼부부 특별공급 청약 가점 초정밀 핵심 가이드 & FAQ (AdSense Value Boost) */}
+      <section className="mt-12 border-t border-[#EDEEF7] pt-10" itemScope itemType="https://schema.org/FAQPage">
+        <div className="max-w-4xl">
+          <span className="text-[11px] font-bold text-[#E8745F] tracking-[0.2em] uppercase">Subscription Guide</span>
+          <h2 className="text-[22px] sm:text-[26px] font-bold text-[#151320] tracking-[-0.02em] mt-2 mb-6">
+            신혼부부 특별공급(공공분양) 가점 산정 및 당첨률 제고 전략
+          </h2>
+          
+          <div className="space-y-6 text-[14.5px] text-[#3F3D56] leading-[1.8] break-keep">
+            <p>
+              아파트 청약 시장에서 결혼 7년 이내 무주택 신혼부부가 일반 공급(가점제)으로 인기 단지에 진입하는 것은 
+              현실적으로 장기 무주택자들에 밀려 극히 어렵습니다. 이를 위해 정부는 <strong>'신혼부부 특별공급'</strong> 물량을 
+              별도로 대폭 배정하여 생애 가장 중요한 시기에 주거 패러다임을 확 바꿀 수 있는 발판을 마련해 주었습니다. 
+              특히 공공분양 신혼특공은 소득, 자녀 수, 혼인 기간, 청약 납입 횟수 등을 바탕으로 명확한 소수점 가점 체계를 가집니다.
+            </p>
+
+            <div className="bg-[#F5F6FD] rounded-[12px] p-5 border border-[#E2E4F0] my-6">
+              <h4 className="font-bold text-[#151320] text-[15px] mb-3">🎯 공공분양 신혼특공 핵심 당첨 팁</h4>
+              <ul className="space-y-2 text-[13.5px] text-[#5B5870] list-disc list-inside">
+                <li><strong className="text-[#3F3D56]">자녀 수의 절대적인 영향력:</strong> 자녀 수에 따라 최대 3점의 가점이 주어지므로, 자녀가 많을수록 압도적으로 유리합니다.</li>
+                <li><strong className="text-[#3F3D56]">배우자 청약 통장 소급 활용:</strong> 2024년 법 개정으로 배우자의 납입 횟수에 따른 점수도 50% 가중 합산되므로 부부가 동시에 통장을 탄탄하게 굴리는 것이 유리합니다.</li>
+                <li><strong className="text-[#3F3D56]">신생아 우선공급 가용:</strong> 공고일 기준 만 2세 이하 자녀가 있는 가구는 가산점(+3점)과 물량 우선 배정 혜택을 동시에 누립니다.</li>
+                <li><strong className="text-[#3F3D56]">부적격 예방 필수:</strong> 동점자 처리 및 거주 기간 요건, 부모님 주택 소유 여부 등을 명확히 대조하여 당첨 후 '부적격 취소 및 제한' 리스크를 원천 배제해야 합니다.</li>
+              </ul>
+            </div>
+
+            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-3">1. 공공분양 특별공급과 민간분양 특별공급의 핵심 차이</h3>
+            <p>
+              공공분양 신혼특공은 '가점 순'으로 칼같이 당첨자를 선정하는 반면, 민간분양 신혼특공은 가점 요소보다는 
+              '소득 기준별 우선공급' 비중을 맞춘 후 동점자 발생 시 자녀 수 우선순위로 거르고 잔여 물량은 '추첨제'로 진행합니다. 
+              따라서 본인의 가점이 10점대 이하로 비교적 낮다고 판단된다면, 가점 경쟁 위주인 공공분양보다는 추첨제 비중이 존재하는 
+              민간분양 신혼부부 특별공급에 전략적으로 접수하는 것이 실질 당첨 확률을 높이는 영리한 방법론이 될 수 있습니다.
+            </p>
+
+            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-4">2. 청약 전문가가 해설하는 자주 묻는 질문 (FAQ)</h3>
+            
+            <div className="space-y-3 mt-4">
+              {FAQ_DATA.map((faq, idx) => {
+                const isOpen = activeFaq === idx;
+                return (
+                  <div 
+                    key={idx} 
+                    className="border border-[#E2E4F0] rounded-[10px] overflow-hidden bg-white transition-shadow hover:shadow-sm"
+                    itemScope 
+                    itemProp="mainEntity" 
+                    itemType="https://schema.org/Question"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveFaq(isOpen ? null : idx)}
+                      className="w-full flex justify-between items-center px-5 py-4 text-left cursor-pointer bg-[#FDFDFD]"
+                    >
+                      <span className="font-bold text-[#1E1B2E] text-[14px] sm:text-[15px] pr-4" itemProp="name">
+                        Q. {faq.question}
+                      </span>
+                      <span className="text-[16px] text-[#8A87A0] shrink-0 font-bold">
+                        {isOpen ? "−" : "+"}
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <div 
+                        className="px-5 pb-5 pt-1 text-[13.5px] leading-[1.75] text-[#5B5870] border-t border-[#F1F3FA]"
+                        itemScope 
+                        itemProp="acceptedAnswer" 
+                        itemType="https://schema.org/Answer"
+                      >
+                        <p itemProp="text">{faq.answer}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 면책 및 출처 */}
       <section className="mt-10 bg-[#F5F6FD] border border-[#E2E4F0] rounded-[12px] p-5 sm:p-6">

@@ -2,6 +2,11 @@ import { useState, useMemo } from "react";
 
 type IncomeBand = "low" | "mid" | "high";
 
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 interface CalcInput {
   income: IncomeBand; // 소득 구간 (기본금리 결정)
   loanAmount: number; // 대출 희망 금액 (만원)
@@ -86,8 +91,36 @@ function calcMonthlyPayment(principal: number, annualRate: number, termYears: nu
   return (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
 }
 
+const FAQ_DATA: FaqItem[] = [
+  {
+    question: "부부 합산 소득을 산정할 때 성과급이나 명절 보너스 상여금도 전액 포함되나요?",
+    answer: "그렇습니다. 디딤돌대출 심사 시 적용하는 부부 소득은 소득세법 제20조에 따른 근로소득 원천징수영수증 상의 '총급여액(세전)'을 기준으로 삼습니다. 따라서 정기 성과급, 경영성과급, 명절 귀향비, 특별 상여금 등 급여 명목으로 원천징수된 일시적인 소득도 모두 합산됩니다. 단, 식대(월 20만원 한도), 자가운전보조금(월 20만원 한도), 자녀양육수당 등 소득세법상 '비과세 근로소득' 항목은 소득 합산액에서 제외되므로, 아슬아슬하게 소득 컷오프를 초과할 위기라면 원천징수영수증의 21번 비과세 소득 합계액을 세밀하게 공제 소명해야 합니다."
+  },
+  {
+    question: "맞벌이 신혼부부의 소득 제한 기준과 혜택 주택 한도는 구체적으로 어떻게 되나요?",
+    answer: "신혼부부 전용 디딤돌대출은 맞벌이 부부 기준으로 부부 합산 연소득 8,500만 원 이하까지 신청이 허용됩니다. (일반 가구의 소득 제한인 6,000만 원 대비 대폭 완화된 수준입니다.) 자산 요건은 부부 합산 순자산 가액이 4억 6,200만 원 이하여야 합니다. 또한 일반 가구는 담보 주택 평가액 5억 원 이하 주택만 대상이 되지만, 신혼부부 및 자녀 가구는 담보 주택 가액이 최대 6억 원 이하(수도권 전용 85㎡ 이하)까지 확장 적용되어 선택할 수 있는 아파트의 범위가 한층 넓어집니다."
+  },
+  {
+    question: "부동산 전자계약 우대금리(0.1%p)는 구체적으로 어떻게 신청하고 중복 적용하나요?",
+    answer: "국토교통부가 공식 운영하는 '부동산거래 전자계약시스템(irds.molit.go.kr)'을 통해 주택 매매 계약서를 서면이 아닌 태블릿이나 PC 전자서명으로 작성하시면 우대금리 요건이 자동 승인됩니다. 전자계약이 체결되면 국토부 시스템에 실거래 신고와 확정일자가 즉시 전산 처리되며, 대출 신청 시 은행 창구에 별도로 무거운 종이 서류를 제출하지 않아도 연동되어 연 0.1%p의 금리 인하 특전이 즉시 소급 배정됩니다. 이는 다른 자녀 우대, 청약 우대 등과 완전히 중복 적용됩니다."
+  },
+  {
+    question: "대출 실행 및 입주 후에 자녀가 태어나는 경우에도 우대금리 추가 할인이 가능한가요?",
+    answer: "네, 대출 실행 이후에 새롭게 태어난 아이가 있는 경우에도 자녀 추가 우대금리를 즉시 적용받으실 수 있습니다. 대출 실행처인 한국주택금융공사나 기금 수탁 은행 창구에 출생신고 완료 후 주민등록등본 및 가족관계증명서를 지참해 '금리 변경 신청서'를 접수하시면 즉시 자녀 추가 할인율이 새로 일할 계산되어 월 원리금이 인하됩니다. 자녀 우대금리는 1자녀 0.3%p, 2자녀 0.5%p, 3자녀 이상 0.7%p가 주어집니다."
+  },
+  {
+    question: "가능 한도의 30% 이하 소액 신청 우대금리(0.1%p)는 정확히 어떤 제도인가요?",
+    answer: "이 제도는 주택담보대출 비율(LTV)상 최대로 대출금을 영끌하여 빌리지 않고, 집값 대비 대출 비중을 현격히 낮춰 신청하는 소액 대출 고객을 우대해 주는 제도입니다. 산정된 총 대출 가능 금액(방공제 등을 제한 실제 승인 한도)의 30% 이하 수준으로 매우 낮춰서 소액만 소박하게 빌리는 경우, 금융당국의 가계대출 안정화 기조에 기여한 공로로 연 0.1%p의 추가 금리 인하 인센티브를 부여합니다. 자금이 넉넉하여 소액 대출로 잔금을 치르려는 신혼부부에게 강력 추천하는 꿀팁입니다."
+  },
+  {
+    question: "디딤돌 대출 도중에 이직을 하거나 연봉이 소득 한도를 초과하면 대출 금리가 다시 오르나요?",
+    answer: "아닙니다. 디딤돌대출의 소득 자격 심사는 대출 신청 및 실행 시점의 원천징수 소득을 기준으로 최종 판정합니다. 계약서 작성과 심사를 거쳐 정상적으로 대출이 승인되고 실비 입금이 완료된 이후에는, 직장을 이직하거나 승진을 하여 부부 합산 소득이 소득 제한 요건(8,500만원)을 초과하더라도 기존에 고정된 저금리 이율은 만기 상환 시까지 계약대로 완벽하게 유지됩니다. 단, 대출 실행 후 '무주택 유지 의무'를 위반하여 추가 주택을 취득하는 경우에는 즉시 대출금이 회수되거나 고율의 가산금리가 부과되므로 등기 관리에 극도의 주의가 요구됩니다."
+  }
+];
+
 export function DidimdolCalculator() {
   const [input, setInput] = useState<CalcInput>(initialInput);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   const result = useMemo(() => {
     const baseRate = getBaseRate(input.income, input.loanTerm);
@@ -401,6 +434,87 @@ export function DidimdolCalculator() {
           </div>
         </section>
       </div>
+
+      {/* 신혼부부 디딤돌대출 초정밀 핵심 가이드 & FAQ (AdSense Value Boost) */}
+      <section className="mt-12 border-t border-[#EDEEF7] pt-10" itemScope itemType="https://schema.org/FAQPage">
+        <div className="max-w-4xl">
+          <span className="text-[11px] font-bold text-[#E8745F] tracking-[0.2em] uppercase">Expert Guide</span>
+          <h2 className="text-[22px] sm:text-[26px] font-bold text-[#151320] tracking-[-0.02em] mt-2 mb-6">
+            내 집 마련의 첫 단추, 신혼부부 디딤돌대출 마스터 바이블
+          </h2>
+          
+          <div className="space-y-6 text-[14.5px] text-[#3F3D56] leading-[1.8] break-keep">
+            <p>
+              정부가 지원하고 주택도시기금과 한국주택금융공사가 전담하는 <strong>'내집마련 디딤돌대출'</strong>은 
+              무주택 세대주인 예비 및 신혼부부에게 현존하는 가장 확실하고 유리한 초저금리 금융 안전망입니다. 
+              시중 시중은행의 담보대출 금리가 연 4%대를 훨씬 상회하는 시장 흐름 속에서, 디딤돌 대출은 조건에 따라 
+              <strong>최저 연 1.2%에서 최고 연 3%대</strong>의 압도적인 고정금리 혜택을 온전히 누릴 수 있게 설계되었습니다.
+            </p>
+
+            <div className="bg-[#F5F6FD] rounded-[12px] p-5 border border-[#E2E4F0] my-6">
+              <h4 className="font-bold text-[#151320] text-[15px] mb-3">💡 디딤돌대출 신청 전 자격 자격체크 리스트</h4>
+              <ul className="space-y-2 text-[13.5px] text-[#5B5870] list-disc list-inside">
+                <li><strong className="text-[#3F3D56]">무주택 세대주 요건:</strong> 세대주를 포함한 세대원 전원이 신청일 기준 무주택 상태여야 합니다.</li>
+                <li><strong className="text-[#3F3D56]">맞벌이 연소득 제한:</strong> 신혼부부 가구는 부부 합산 연간 세전 소득 8,500만 원 이하여야 혜택이 적용됩니다.</li>
+                <li><strong className="text-[#3F3D56]">순자산 가액 기준:</strong> 2026년 기준 부부 합산 총 순자산이 4억 6,200만 원을 초과하면 대상에서 제외됩니다.</li>
+                <li><strong className="text-[#3F3D56]">대상 아파트 규모:</strong> 공부상 전용면적 85㎡ 이하(지방 읍·면 지역은 100㎡ 이하) 및 평가액 6억 원 이하(신혼부부는 최대 9억 원까지 허용 확대) 주택에 한합니다.</li>
+              </ul>
+            </div>
+
+            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-3">1. 우대금리 중복 적용으로 한계 이자까지 깎는 법</h3>
+            <p>
+              디딤돌대출의 꽃은 바로 <strong>'중복 적용 가능한 우대금리'</strong> 제약입니다. 
+              우선 순수 가계 배경(자녀 수)에 따른 혜택과 신혼부부 혜택 중 본인에게 더 유리한 메인 혜택 1종이 자동 적용됩니다. 
+              예를 들어 무자녀 신혼부부는 0.2%p를 받고, 1자녀인 경우에는 자녀 우대 0.3%p가 적용되어 더 큰 폭인 0.3%p 할인을 선택하게 됩니다.
+            </p>
+            <p>
+              여기에 <strong>부동산 전자계약 이용(0.1%p)</strong>, <strong>청약통장 장기 가입 우대(최대 0.5%p)</strong>, 
+              그리고 <strong>한도 대비 30% 이하 소액 신청(0.1%p)</strong> 우대 항목들을 차례차례 더해 얹으면 
+              사실상 대출 하한선인 연 1.2% 고정금리를 쟁취할 수 있는 구조적 기틀이 완성됩니다.
+            </p>
+
+            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-4">2. 신혼 금융 전문가가 전하는 자주 묻는 질문 (FAQ)</h3>
+            
+            <div className="space-y-3 mt-4">
+              {FAQ_DATA.map((faq, idx) => {
+                const isOpen = activeFaq === idx;
+                return (
+                  <div 
+                    key={idx} 
+                    className="border border-[#E2E4F0] rounded-[10px] overflow-hidden bg-white transition-shadow hover:shadow-sm"
+                    itemScope 
+                    itemProp="mainEntity" 
+                    itemType="https://schema.org/Question"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveFaq(isOpen ? null : idx)}
+                      className="w-full flex justify-between items-center px-5 py-4 text-left cursor-pointer bg-[#FDFDFD]"
+                    >
+                      <span className="font-bold text-[#1E1B2E] text-[14px] sm:text-[15px] pr-4" itemProp="name">
+                        Q. {faq.question}
+                      </span>
+                      <span className="text-[16px] text-[#8A87A0] shrink-0 font-bold">
+                        {isOpen ? "−" : "+"}
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <div 
+                        className="px-5 pb-5 pt-1 text-[13.5px] leading-[1.75] text-[#5B5870] border-t border-[#F1F3FA]"
+                        itemScope 
+                        itemProp="acceptedAnswer" 
+                        itemType="https://schema.org/Answer"
+                      >
+                        <p itemProp="text">{faq.answer}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 면책 및 출처 */}
       <section className="mt-10 bg-[#F5F6FD] border border-[#E2E4F0] rounded-[12px] p-5 sm:p-6">

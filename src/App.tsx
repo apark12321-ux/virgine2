@@ -615,6 +615,70 @@ export default function App() {
               {/* === POLICY HUB 요약 (정책·금리 대시보드) === */}
               <PolicyHub compact={true} onNavigate={handleNavigate} />
 
+              {/* === 버진로드 E-E-A-T 에디토리얼 선언 및 자산 마스터 플랜 (AdSense Quality Boost) === */}
+              <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-12 lg:pt-16">
+                <div className="bg-gradient-to-r from-[#1E1B2E] via-[#2F294E] to-[#1E1B2E] rounded-3xl p-6 sm:p-10 lg:p-12 text-white shadow-md relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-[#E8745F]/10 rounded-full blur-3xl -mr-20 -mt-20" />
+                  <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#4F46E5]/10 rounded-full blur-3xl -ml-20 -mb-20" />
+                  
+                  <div className="relative">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-[12px] font-bold text-[#FFB4A2] mb-5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E8745F]" />
+                      버진로드 스페셜 에디토리얼 (Virginroad Editorial)
+                    </div>
+                    
+                    <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-bold tracking-[-0.025em] leading-[1.25] text-white mb-6 break-keep">
+                      신혼 가계의 지속 가능한 성장을 위한 5대 자산 마스터 플랜
+                    </h2>
+                    
+                    <p className="text-[14.5px] leading-[1.8] text-white/80 max-w-3xl break-keep mb-8">
+                      단 한 번의 축복 가득한 결혼식 이후 시작되는 기나긴 부부의 공동 경제 생활은 
+                      체계적이고 기민한 생활 법령 및 금융 정책 분석에서부터 출발해야 합니다. 
+                      버진로드 편집부는 대한민국 국토교통부, 한국주택금융공사, 국세청 등의 공인된 1차 공시 기준을 결합하여, 
+                      예비·신혼부부가 가장 먼저 수립하고 체득해야 할 핵심 자산 형성의 골든 룰 5가지를 공식 발간합니다.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left mt-8">
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
+                        <span className="text-[24px] block mb-3">📈</span>
+                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">DSR·LTV 최적화</h4>
+                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
+                          대출 신청 시 무리한 영끌보다는 가능 한도의 30% 이하 소액 신청 우대를 결합해 금리를 연 소수점 이하 단위까지 극한으로 인하합니다.
+                        </p>
+                      </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
+                        <span className="text-[24px] block mb-3">🎯</span>
+                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">배우자 통장 50% 룰</h4>
+                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
+                          2024년 청약 규칙 개정으로 배우자 청약저축 납입 기간과 횟수의 50%(최대 3점)를 소급 가산하여 부부 합산 청약 경쟁력을 극대화합니다.
+                        </p>
+                      </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
+                        <span className="text-[24px] block mb-3">👶</span>
+                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">신생아 배정 전략</h4>
+                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
+                          만 2세 이하 자녀가 있는 가구에 부여되는 신혼특공 추가 가산점 3점과 함께 물량의 상당 부분을 우선 배정하는 전용 트랙을 노립니다.
+                        </p>
+                      </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
+                        <span className="text-[24px] block mb-3">🏦</span>
+                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">1.5억 증여공제</h4>
+                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
+                          혼인 신고 전후 2년 이내(총 4년) 양가 부모로부터 각각 최대 1.5억 원(부부 합산 최대 3억 원)까지 증여세 면제 한도를 세법상 투명하게 신고하는 법.
+                        </p>
+                      </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
+                        <span className="text-[24px] block mb-3">🏠</span>
+                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">체적 최적화 혼수</h4>
+                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
+                          신혼집 전용면적(59㎡, 84㎡)과 빌트인 유무에 맞춰 삼성 비스포크, LG 오브제 패키지의 실제 치수를 정밀 분석하여 과다 예산 낭비를 막습니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* === 공식 자료 바로가기 === */}
               <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-10 lg:pt-14">
                 <div className="flex items-center gap-2 mb-4">
