@@ -563,6 +563,8 @@ async function startServer() {
         const escapedExcerpt = escapeXml(post.excerpt || "");
         const escapedAuthor = escapeXml(post.author || "버진로드 에디터");
         const escapedCategory = escapeXml(post.category || "결혼준비");
+        const escapedLink = escapeXml(postUrl);
+        const escapedImage = escapeXml(post.image || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800");
         
         let pubDateStr = new Date().toUTCString();
         if (post.date) {
@@ -573,14 +575,14 @@ async function startServer() {
 
         return `    <item>
       <title>${escapedTitle}</title>
-      <link>${postUrl}</link>
-      <guid isPermaLink="true">${postUrl}</guid>
+      <link>${escapedLink}</link>
+      <guid isPermaLink="true">${escapedLink}</guid>
       <description>${escapedExcerpt}</description>
       <content:encoded><![CDATA[${post.content || post.excerpt || ""}]]></content:encoded>
       <pubDate>${pubDateStr}</pubDate>
       <dc:creator>${escapedAuthor}</dc:creator>
       <category>${escapedCategory}</category>
-      <enclosure url="${post.image || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"}" length="0" type="image/jpeg" />
+      <enclosure url="${escapedImage}" length="0" type="image/jpeg" />
     </item>`;
       }).join("\n");
 
