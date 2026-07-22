@@ -6,7 +6,7 @@ import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
-import { POST_EXTRA_MAP } from "./postMeta";
+import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
 import { expandContentIfNeeded } from "./lib/contentExpander";
 import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye } from "lucide-react";
@@ -148,6 +148,68 @@ function setBreadcrumbJsonLd(post: Post | null) {
       { "@type": "ListItem", "position": 2, "name": post.category, "item": `${SITE_URL}/category/${encodeURIComponent(post.category)}` },
       { "@type": "ListItem", "position": 3, "name": post.title, "item": `${SITE_URL}/post/${slug}` }
     ]
+  };
+  el.textContent = JSON.stringify(data);
+}
+
+function setFaqJsonLd(extra: PostExtra | null) {
+  const id = "faq-jsonld";
+  let el = document.getElementById(id) as HTMLScriptElement | null;
+  if (!extra || !extra.aeoFaq || extra.aeoFaq.length === 0) {
+    if (el) el.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElement("script");
+    el.id = id;
+    el.type = "application/ld+json";
+    document.head.appendChild(el);
+  }
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": extra.aeoFaq.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
+  };
+  el.textContent = JSON.stringify(data);
+}
+
+function setWebSiteJsonLd() {
+  const id = "website-jsonld";
+  let el = document.getElementById(id) as HTMLScriptElement | null;
+  if (!el) {
+    el = document.createElement("script");
+    el.id = id;
+    el.type = "application/ld+json";
+    document.head.appendChild(el);
+  }
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": SITE_NAME,
+    "url": SITE_URL,
+    "description": DEFAULT_DESCRIPTION,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${SITE_URL}/?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "상상아트",
+      "alternateName": SITE_NAME,
+      "url": SITE_URL,
+      "logo": `${SITE_URL}/icon.svg`
+    }
   };
   el.textContent = JSON.stringify(data);
 }
@@ -472,6 +534,8 @@ export default function App() {
     setMeta("twitter:description", description);
     setArticleJsonLd(currentPost);
     setBreadcrumbJsonLd(currentPost);
+    setWebSiteJsonLd();
+    setFaqJsonLd(currentPost ? (POST_EXTRA_MAP[currentPost.id] || null) : null);
   }, [currentPage, currentPost]);
 
   const handleNavigate = (page: string) => {
