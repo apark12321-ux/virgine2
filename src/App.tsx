@@ -1412,90 +1412,49 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Partnership/Recommendation Card */}
-                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="rounded-xl p-5 mb-8 relative overflow-hidden shadow-sm bg-gradient-to-br from-[#FAF9FF] to-[#EFF6FF] border border-[#C7D2FE]">
-                      <div className="absolute top-0 right-0 flex items-center">
-                        <div className="text-[9px] font-bold px-2.5 py-1 rounded-bl bg-[#4F46E5]/10 text-[#4F46E5]">
-                          💡 에디터 맞춤정보 제휴 안내
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2">
-                        <div className="text-left max-w-xl">
-                          <div className="text-[10px] text-[#4F46E5] font-bold tracking-wider uppercase mb-1">
-                            RECOMMENDED FOR YOU
-                          </div>
-                          <h4 className="text-[14px] font-bold text-[#1E1B2E] leading-[1.4] break-keep">
-                            {POST_EXTRA_MAP[currentPost.id].adsName}
-                          </h4>
-                          <p className="text-[12.5px] text-[#475569] mt-1 break-keep">
-                            내 여건에 부합하는 {POST_EXTRA_MAP[currentPost.id].adsKeyword} 가계 지원 서비스 및 모의 계산을 즉시 매칭합니다.
-                          </p>
-                        </div>
-                        <div className="flex flex-col sm:items-end gap-3 shrink-0 w-full sm:w-auto">
-                          <button 
-                            onClick={() => {
-                              if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
-                                handleNavigate("tools-didimdol");
-                              } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
-                                handleNavigate("tools-cheongyak");
-                              } else {
-                                handleNavigate("partnership");
-                              }
-                            }}
-                            className="bg-[#1E1B2E] hover:bg-[#4F46E5] text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap inline-flex items-center justify-center gap-1 cursor-pointer w-full sm:w-auto shadow-sm"
-                          >
-                            자세히 알아보기 <ArrowUpRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <div
                     className="article-body"
                     dangerouslySetInnerHTML={{ __html: currentPost.content }}
                   />
 
-                  {/* GEO Official Source Card */}
+                  {/* Official Policy Source Card */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="mt-10 p-5 bg-[#EEF2F6] border border-[#D0D7DE] rounded-xl" id={`geo-source-${currentPost.id}`}>
+                    <div className="mt-10 p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl" id={`geo-source-${currentPost.id}`}>
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
                         <h4 className="text-[14px] font-bold text-[#1E1B2E] flex items-center gap-1.5">
-                          🏛️ GEO 오피셜 신뢰 기관 및 정책 근거 정보
+                          📌 참고 공식 출처 및 정책 기준
                         </h4>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-[12px] text-[#475569]">
                         <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
-                          <div className="text-[11px] text-[#8A87A0] mb-0.5">배포 및 보장 기구</div>
+                          <div className="text-[11px] text-[#8A87A0] mb-0.5">주관/담당 기구</div>
                           <div className="font-semibold text-[#1E1B2E] break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.agency}</div>
                         </div>
                         <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
-                          <div className="text-[11px] text-[#8A87A0] mb-0.5">법적/행정적 근거 고시</div>
+                          <div className="text-[11px] text-[#8A87A0] mb-0.5">행정 고시 및 근거</div>
                           <div className="font-semibold text-[#1E1B2E] leading-normal break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.basis}</div>
                         </div>
                         <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
-                          <div className="text-[11px] text-[#8A87A0] mb-0.5">적용 유효 지자체 범위</div>
+                          <div className="text-[11px] text-[#8A87A0] mb-0.5">적용 지역</div>
                           <div className="font-semibold text-[#1E1B2E] break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.region}</div>
                         </div>
                         <div className="bg-white p-3 rounded-lg border border-[#E2E8F0] flex items-center justify-between">
                           <div>
-                            <div className="text-[11px] text-[#8A87A0] mb-0.5">정보 공신력 판정 지수</div>
+                            <div className="text-[11px] text-[#8A87A0] mb-0.5">검증 기준</div>
                             <div className="font-bold text-[#10B981]">{POST_EXTRA_MAP[currentPost.id].geoSource.trustIndex}</div>
                           </div>
-                          <span className="text-[10px] font-extrabold text-white bg-[#10B981] px-2 py-0.5 rounded shrink-0">공인인증</span>
+                          <span className="text-[10px] font-extrabold text-white bg-[#10B981] px-2 py-0.5 rounded shrink-0">공식자료</span>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* AEO FAQ Accordion */}
-                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
+                  {/* FAQ Accordion */}
+                  {currentPost && POST_EXTRA_MAP[currentPost.id] && POST_EXTRA_MAP[currentPost.id].aeoFaq.length > 0 && (
                     <div className="mt-8 p-5 bg-white border border-[#E2E4F0] rounded-xl shadow-sm" id={`aeo-faq-${currentPost.id}`}>
                       <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-4 flex items-center gap-1.5">
-                        💬 AEO 원 포인트 자격 Q&A (통합 AI 검색 정합성 보증)
+                        💬 자주 묻는 질문 (FAQ)
                       </h4>
                       <div className="space-y-2.5">
                         {POST_EXTRA_MAP[currentPost.id].aeoFaq.map((faq, idx) => {
@@ -1507,10 +1466,10 @@ export default function App() {
                                 className="w-full flex items-center justify-between p-3.5 text-left bg-[#F8FAFD] hover:bg-[#EEF0FB] transition-colors cursor-pointer"
                               >
                                 <span className="text-[13px] font-bold text-[#1E1B2E] leading-relaxed flex items-start gap-1.5 break-keep">
-                                  <span className="text-[#4F46E5] font-extrabold shrink-0">Q.</span> {faq.q}
+                                  <span className="text-[#E8745F] font-extrabold shrink-0">Q.</span> {faq.q}
                                 </span>
-                                <span className="text-[11px] text-[#4F46E5] font-semibold shrink-0 ml-2 whitespace-nowrap">
-                                  {isOpen ? "해설 닫기 ▲" : "해설 해부 ▼"}
+                                <span className="text-[11px] text-[#E8745F] font-semibold shrink-0 ml-2 whitespace-nowrap">
+                                  {isOpen ? "닫기 ▲" : "열기 ▼"}
                                 </span>
                               </button>
                               {isOpen && (
@@ -1521,40 +1480,6 @@ export default function App() {
                             </div>
                           );
                         })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tool Integration Card */}
-                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="rounded-xl p-5 mt-8 relative overflow-hidden shadow-sm text-center bg-gradient-to-br from-[#F0FDF4] to-[#EFF6FF] border border-[#C6EDD2]">
-                      <div className="absolute top-0 right-0 bg-[#E8F8EE] text-[#10B981] text-[9px] font-bold px-3 py-0.5 rounded-bl">
-                        🛠️ 버진로드 추천 스마트 툴
-                      </div>
-                      <div className="py-2">
-                        <div className="text-[10px] text-[#10B981] font-bold tracking-wider uppercase mb-1">
-                          CONNECTED VALUE TOOL
-                        </div>
-                        <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-2 leading-[1.4] break-keep">
-                          {POST_EXTRA_MAP[currentPost.id].adsName}
-                        </h4>
-                        <p className="text-[12.5px] text-[#475569] max-w-xl mx-auto mb-4 break-keep">
-                          버진로드가 제공하는 초정밀 가점 진단기 및 가계 예산 디딤돌 시뮬레이터를 활용해 예비 가계 자금을 아끼고 똑똑하게 설계해보세요.
-                        </p>
-                        <button 
-                          onClick={() => {
-                            if (currentPost.category === "신혼금융" && currentPost.id.includes("didimdol")) {
-                              handleNavigate("tools-didimdol");
-                            } else if (currentPost.category === "신혼금융" && currentPost.id.includes("cheongyak")) {
-                              handleNavigate("tools-cheongyak");
-                            } else {
-                              handleNavigate("partnership");
-                            }
-                          }}
-                          className="bg-[#10B981] hover:bg-[#059669] text-white text-[11px] font-bold px-4 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-sm"
-                        >
-                          관련 계산기 및 추천도구 바로가기 <ArrowUpRight className="w-3.5 h-3.5" />
-                        </button>
                       </div>
                     </div>
                   )}
@@ -1757,17 +1682,180 @@ export default function App() {
                         ))}
                       </div>
                     ) : (
-                      <div className="py-20 text-center bg-[#F1F3F9] rounded-xl">
-                        <p className="text-[16px] font-semibold text-[#1E1B2E] mb-2">
-                          검색 결과가 없습니다
-                        </p>
-                        <p className="text-[14px] text-[#8A87A0] mb-6">다른 검색어로 다시 시도해 보세요.</p>
-                        <button
-                          className="text-[13px] font-semibold text-[#1E1B2E] underline underline-offset-4 cursor-pointer"
-                          onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
-                        >
-                          모든 글 보기
-                        </button>
+                      <div className="py-10 px-6 bg-white border border-[#E2E4F0] rounded-2xl shadow-sm text-left">
+                        {/* 1. Header & Re-search prompt */}
+                        <div className="text-center max-w-xl mx-auto mb-10">
+                          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#FFD2BD]/40 text-[#E8745F] text-2xl mb-4">
+                            🔍
+                          </div>
+                          <h3 className="text-[20px] sm:text-[22px] font-bold text-[#1E1B2E] mb-2 break-keep">
+                            {searchQuery ? `'${searchQuery}'` : "요청하신"} 검색 결과가 없습니다
+                          </h3>
+                          <p className="text-[14px] text-[#5B5870] leading-relaxed break-keep mb-6">
+                            입력하신 단어의 철자가 정확한지 확인하시거나, 아래의 인기 태그 및 카테고리를 활용해 원하시는 정보를 탐색해 보세요.
+                          </p>
+                          <div className="flex flex-wrap items-center justify-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
+                              className="px-5 py-2.5 bg-[#1E1B2E] hover:bg-[#3730A3] text-white text-[13px] font-bold rounded-xl transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1.5"
+                            >
+                              전체 글 목록 보기
+                            </button>
+                            {searchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setSearchQuery("")}
+                                className="px-5 py-2.5 bg-[#EEF0FB] hover:bg-[#E2E6F8] text-[#1E1B2E] text-[13px] font-bold rounded-xl transition-colors cursor-pointer"
+                              >
+                                검색어 초기화
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Google External Search Card */}
+                          <div className="mt-8 p-5 bg-gradient-to-r from-[#F0F4FF] via-[#F8FAFF] to-[#E8F0FE] border border-[#D0E2FF] rounded-2xl text-left shadow-sm">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                              <div className="flex items-start gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-white border border-[#D0E2FF] shadow-xs flex items-center justify-center shrink-0 text-xl font-black text-[#4285F4]">
+                                  G
+                                </div>
+                                <div>
+                                  <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1A73E8] tracking-wider uppercase mb-0.5">
+                                    <span>GOOGLE EXTERNAL SEARCH</span>
+                                  </div>
+                                  <h4 className="text-[14px] font-bold text-[#1E1B2E] break-keep">
+                                    구글(Google)에서 '{searchQuery || "신혼부부 정책"}' 외부 검색 결과 확인하기
+                                  </h4>
+                                  <p className="text-[12px] text-[#5F6368] mt-1 leading-relaxed break-keep">
+                                    원하시는 포스팅을 찾지 못하셨다면, 구글 검색을 통해 실시간 정부 고시 및 외부 정책 자료 결과를 확인해 보세요.
+                                  </p>
+                                </div>
+                              </div>
+                              <a
+                                href={`https://www.google.com/search?q=${encodeURIComponent(searchQuery ? `${searchQuery} 신혼부부` : "신혼부부 디딤돌대출 버팀목대출")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="shrink-0 px-4 py-2.5 bg-[#4285F4] hover:bg-[#1A73E8] text-white text-[13px] font-bold rounded-xl transition-colors shadow-sm inline-flex items-center justify-center gap-1.5 cursor-pointer w-full sm:w-auto"
+                              >
+                                <span>구글 검색 연동</span>
+                                <ArrowUpRight className="w-4 h-4" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 2. Popular Search Tags */}
+                        <div className="pt-8 border-t border-[#EDEEF7] mb-10">
+                          <div className="flex items-center gap-2 mb-4">
+                            <span className="text-[16px]">🔥</span>
+                            <h4 className="text-[15px] font-bold text-[#1E1B2E]">많은 예비·신혼부부가 찾는 인기 키워드</h4>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { label: "디딤돌대출", kw: "디딤돌" },
+                              { label: "신생아특례", kw: "신생아" },
+                              { label: "청약가점", page: "tools-cheongyak" },
+                              { label: "결혼세액공제", kw: "세액공제" },
+                              { label: "혼수가전", kw: "가전" },
+                              { label: "스드메견적", kw: "스드메" },
+                              { label: "부모급여", kw: "부모급여" },
+                              { label: "버팀목전세", kw: "버팀목" },
+                            ].map((tag) => (
+                              <button
+                                key={tag.label}
+                                type="button"
+                                onClick={() => {
+                                  if (tag.page) {
+                                    setSearchQuery("");
+                                    handleNavigate(tag.page as Page);
+                                  } else if (tag.kw) {
+                                    setSearchQuery(tag.kw);
+                                  }
+                                }}
+                                className="px-3.5 py-2 bg-[#FAFBFF] hover:bg-[#EEF0FB] border border-[#E2E4F0] hover:border-[#3730A3] rounded-lg text-[13px] font-semibold text-[#3F3D56] hover:text-[#3730A3] transition-all cursor-pointer inline-flex items-center gap-1"
+                              >
+                                <span className="text-[#E8745F]">#</span> {tag.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 3. Core Categories & Calculators */}
+                        <div className="pt-8 border-t border-[#EDEEF7] mb-10">
+                          <div className="flex items-center gap-2 mb-4">
+                            <span className="text-[16px]">📂</span>
+                            <h4 className="text-[15px] font-bold text-[#1E1B2E]">주요 카테고리 및 계산기 바로가기</h4>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {[
+                              { title: "💰 신혼금융", desc: "대출·청약·세금", page: "category-신혼금융" },
+                              { title: "🏠 신혼가전", desc: "삼성·LG 패키지", page: "category-신혼가전" },
+                              { title: "💍 결혼준비", desc: "스드메·웨딩홀", page: "category-결혼준비" },
+                              { title: "🧮 금리 계산기", desc: "디딤돌 우대금리", page: "tools-didimdol" },
+                              { title: "🎯 가점 계산기", desc: "신혼특공 가점", page: "tools-cheongyak" },
+                            ].map((cat) => (
+                              <button
+                                key={cat.title}
+                                type="button"
+                                onClick={() => {
+                                  setSearchQuery("");
+                                  handleNavigate(cat.page as Page);
+                                }}
+                                className="p-4 bg-[#F8FAFC] hover:bg-[#EEF2FF] border border-[#E2E8F0] hover:border-[#C7D2FE] rounded-xl text-left transition-all cursor-pointer group"
+                              >
+                                <div className="text-[14px] font-bold text-[#1E1B2E] group-hover:text-[#4F46E5] transition-colors mb-1">
+                                  {cat.title}
+                                </div>
+                                <div className="text-[11.5px] text-[#64748B]">
+                                  {cat.desc}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 4. Recommended Popular Articles */}
+                        <div className="pt-8 border-t border-[#EDEEF7]">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[16px]">⭐</span>
+                              <h4 className="text-[15px] font-bold text-[#1E1B2E]">지금 가장 많이 읽는 버진로드 추천 가이드</h4>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
+                              className="text-[12px] font-bold text-[#E8745F] hover:underline"
+                            >
+                              전체 글 보기 →
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {allPosts.slice(0, 3).map((post) => (
+                              <button
+                                key={post.id}
+                                type="button"
+                                onClick={() => {
+                                  setSearchQuery("");
+                                  handleNavigate(`post-${post.id}` as Page);
+                                }}
+                                className="group p-3.5 bg-[#FAFBFF] hover:bg-[#F5F6FD] border border-[#E2E4F0] rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between"
+                              >
+                                <div>
+                                  <div className="text-[11px] font-bold text-[#E8745F] mb-1">
+                                    {post.category}
+                                  </div>
+                                  <h5 className="text-[13.5px] font-bold text-[#1E1B2E] group-hover:text-[#3730A3] transition-colors leading-snug line-clamp-2 break-keep mb-2">
+                                    {post.title}
+                                  </h5>
+                                </div>
+                                <div className="text-[11px] text-[#8A87A0] mt-2">
+                                  {post.date.replace(/-/g, ". ")}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
