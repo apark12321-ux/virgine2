@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
+import { runAutoPublisherService } from "./src/lib/autoPublisher";
 
 const VIEWS_FILE = path.join(process.cwd(), "views.json");
 const EXPOSURES_FILE = path.join(process.cwd(), "exposures.json");
@@ -510,6 +511,22 @@ async function startServer() {
       return res.json({ message: "No webhook traffic logged yet. Trigger a connection test." });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to read debug log", details: err.message });
+    }
+  });
+
+  // GET/POST /api/auto-publish/run: Manual trigger and status check for daily randomized post publisher
+  app.all("/api/auto-publish/run", async (req, res) => {
+    try {
+      const result = await runAutoPublisherService();
+      res.json({
+        success: true,
+        message: "Auto publisher service executed successfully.",
+        publishedCount: result.publishedCount,
+        logs: result.messages
+      });
+    } catch (err: any) {
+      console.error("Auto publisher execution error:", err);
+      res.status(500).json({ error: "Failed to execute auto publisher", details: err.message });
     }
   });
 
@@ -1268,6 +1285,16 @@ Sitemap: ${hostUrl}/sitemap.xml
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    
+    // Trigger auto-publisher service on server startup
+    runAutoPublisherService()
+      .then(res => console.log("[AutoPublisher Initial Run]:", res.publishedCount, "posts updated"))
+      .catch(err => console.error("[AutoPublisher Startup Error]:", err));
+
+    // Schedule background check every 60 seconds to publish daily posts at randomized times
+    setInterval(() => {
+      runAutoPublisherService().catch(err => console.error("[AutoPublisher Periodic Error]:", err));
+    }, 60000);
   });
 }
 
