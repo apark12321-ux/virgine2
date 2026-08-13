@@ -68,26 +68,26 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "" }: NavbarProps) 
               <LogoIcon className="w-8 h-8 shrink-0" />
               <div className="flex flex-col items-start leading-none">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-[17px] font-bold tracking-[-0.02em] text-[#1E1B2E]">
+                  <span className="text-[20px] font-extrabold tracking-[-0.02em] text-[#111827] font-['GmarketSansBold','Gmarket_Sans',sans-serif]">
                     버진로드
                   </span>
-                  <span className="text-[10px] font-medium text-[#E8745F] tracking-[0.1em] uppercase">
+                  <span className="text-[12px] font-extrabold text-[#E8745F] tracking-[0.08em] uppercase">
                     Virginroad
                   </span>
                 </div>
-                <span className="text-[10px] font-medium text-[#8A87A0] mt-1">
-                  결혼 준비 & 신혼 금융 생활 백서
+                <span className="text-[12px] font-bold text-[#4B5563] mt-1">
+                  신혼부부 주거·금융·가전·결혼준비 미디어
                 </span>
               </div>
             </button>
 
             {/* Desktop nav */}
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-1.5">
               {navItems.map((item) => (
                 <button
                   key={item.page}
                   onClick={() => onNavigate(item.page)}
-                  className="px-4 py-2 text-[14px] font-semibold text-[#3F3D56] hover:text-[#4F46E5] hover:bg-[#EEF0FB] rounded-lg transition-all cursor-pointer"
+                  className="px-4 py-2.5 text-[16px] font-extrabold text-[#111827] hover:text-[#4F46E5] hover:bg-[#EEF0FB] rounded-xl transition-all cursor-pointer font-['GmarketSansBold','Gmarket_Sans',sans-serif]"
                 >
                   {item.label}
                 </button>

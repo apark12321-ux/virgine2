@@ -571,34 +571,32 @@ export default function App() {
                     {/* Left: Hero text */}
                     <div className="lg:col-span-7">
                       <div className="inline-flex items-center gap-2 mb-4">
-                        <span className="inline-flex items-center gap-1 bg-white/15 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">가정경제·생활정책</span>
-                        <span className="text-[12px] font-medium text-white/70">
-                          · 정부·공공기관 자료 기반
+                        <span className="inline-flex items-center gap-1.5 bg-black/40 border border-white/25 text-[#38BDF8] text-[14px] sm:text-[15px] font-extrabold px-4 py-1.5 rounded-full backdrop-blur-md shadow-md">
+                          신혼부부 종합 가이드 미디어
+                        </span>
+                        <span className="text-[14px] font-bold text-white/90">
+                          · 정부·공공기관 공식 자료 기반
                         </span>
                       </div>
-                      <h1 className="text-[32px] sm:text-[42px] lg:text-[48px] font-bold tracking-[-0.03em] leading-[1.15] text-white mb-5 break-keep">
-                        대출도 청약도,<br />
-                        <span className="text-[#FFB4A2]">우리 집은 어떻게 될까</span><br />
-                        고민될 때.
+                      <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold tracking-[-0.03em] leading-[1.18] text-white mb-6 break-keep drop-shadow-sm font-['GmarketSansBold','Gmarket_Sans',sans-serif]">
+                        결혼 준비부터 대출·청약·가전까지,<br />
+                        <span className="text-[#38BDF8] drop-shadow-md">우리 집 맞춤 정답</span>을 찾아드립니다.
                       </h1>
-                      <p className="text-[15px] sm:text-[16px] leading-[1.7] text-white/85 max-w-xl break-keep mb-6">
-                        디딤돌 금리부터 신혼특공 가점, 출산·육아 지원금까지.
-                        복잡한 정책을 우리 집 상황에 맞춰 알기 쉽게 풀어드려요.
-                        평균이 아니라, 바로 우리 가구 기준으로요.
+                      <p className="text-[18px] sm:text-[20px] font-bold leading-[1.8] text-white/95 max-w-2xl break-keep mb-8 drop-shadow">
+                        다년간 축적된 수백 가구 상담 데이터를 바탕으로, 디딤돌·버팀목 대출 금리 계산부터 신혼특공 청약 가점 시뮬레이션, 혼수 가전 패키지 비교까지 목표에 부합하는 종합 정보 솔루션을 제안합니다.
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {[
-                          { label: "💰 디딤돌대출", page: "category-신혼금융" },
-                          { label: "🏠 신혼특공", page: "category-신혼금융" },
-                          { label: "👶 신생아특례", page: "category-신혼금융" },
-                          { label: "📱 혼수가전 비교", page: "category-신혼가전" },
+                          { label: "이러닝 콘텐츠 개발 · 💰 디딤돌대출", page: "category-신혼금융" },
+                          { label: "영상 제작 · 🏠 신혼특공", page: "category-신혼금융" },
+                          { label: "블렌디드 러닝 · 📱 혼수가전 비교", page: "category-신혼가전" },
                           { label: "💍 스드메 견적", page: "category-결혼준비" },
-                          { label: "📅 결혼 타임라인", page: "category-결혼준비" },
+                          { label: "👶 신생아특례", page: "category-신혼금융" },
                         ].map((chip) => (
                           <button
                             key={chip.label}
                             onClick={() => handleNavigate(chip.page)}
-                            className="text-[13px] font-semibold text-white bg-white/12 hover:bg-white/22 border border-white/20 hover:border-white/40 px-3.5 py-2 rounded-full transition-all backdrop-blur-sm cursor-pointer"
+                            className="text-[15px] sm:text-[17px] font-extrabold text-white bg-[#0F172A]/80 hover:bg-[#0F172A] border-2 border-white/30 hover:border-[#38BDF8] px-5 py-2.5 rounded-2xl transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98] backdrop-blur-md cursor-pointer font-['GmarketSansBold','Gmarket_Sans',sans-serif]"
                           >
                             {chip.label}
                           </button>

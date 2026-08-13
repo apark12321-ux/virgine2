@@ -33,20 +33,20 @@ export function Footer({ onNavigate }: FooterProps) {
               <LogoIcon className="w-9 h-9 shrink-0" />
               <div className="flex flex-col items-start leading-none">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-[18px] font-bold tracking-[-0.02em] text-[#1E1B2E]">
+                  <span className="text-[20px] font-extrabold tracking-[-0.02em] text-[#111827]">
                     버진로드
                   </span>
-                  <span className="text-[11px] font-medium text-[#E8745F] tracking-[0.1em] uppercase">
+                  <span className="text-[12px] font-bold text-[#E8745F] tracking-[0.08em] uppercase">
                     Virginroad
                   </span>
                 </div>
-                <span className="text-[11px] font-medium text-[#8A87A0] mt-1.5">
-                  결혼 준비 & 신혼 금융 생활 백서
+                <span className="text-[12px] font-medium text-[#6B7280] mt-1.5">
+                  신혼부부 주거·금융·가전·결혼준비 미디어
                 </span>
               </div>
             </button>
-            <p className="text-[13px] leading-[1.7] text-[#3F3D56] max-w-md break-keep">
-              결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서, 버진로드입니다.
+            <p className="text-[14px] leading-[1.75] text-[#374151] max-w-md break-keep">
+              결혼 준비부터 디딤돌·버팀목 대출, 신생아 특례대출, 청약 가점 계산, 혼수 가전 패키지 비교까지 예비·신혼부부를 위한 종합 금융·생활 가이드 미디어, 버진로드입니다.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="badge-coral">정부·공공기관 자료 기반</span>

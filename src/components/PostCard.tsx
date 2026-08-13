@@ -55,25 +55,25 @@ export function PostCard({ post, onClick, views, exposures }: PostCardProps) {
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
         {/* Title */}
-        <h3 className="text-[16px] sm:text-[17px] font-bold leading-[1.4] text-[#151320] mb-2.5 break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors tracking-[-0.018em]">
+        <h3 className="text-[19px] sm:text-[21px] font-extrabold leading-[1.38] text-[#111827] mb-2.5 break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors tracking-[-0.018em] font-['GmarketSansBold','Gmarket_Sans',sans-serif]">
           {post.title}
         </h3>
 
         {/* Excerpt */}
-        <p className="text-[14px] leading-[1.6] text-[#5B5870] line-clamp-2 break-keep mb-4 flex-1 tracking-[-0.012em]">
+        <p className="text-[16px] leading-[1.7] font-semibold text-[#374151] line-clamp-2 break-keep mb-4 flex-1 tracking-[-0.012em]">
           {post.excerpt}
         </p>
 
         {/* Meta */}
-        <div className="flex items-center gap-2 text-[12px] text-[#8A87A0] pt-3 border-t border-[#EDEEF7]">
-          <span className="font-medium">{post.date.replace(/-/g, ". ")}</span>
-          <span className="w-[3px] h-[3px] bg-[#B5B3C8] rounded-full" />
-          <Clock className="w-3 h-3 text-[#B5B3C8]" />
+        <div className="flex items-center gap-2 text-[14px] font-bold text-[#4B5563] pt-3.5 border-t border-[#EDEEF7]">
+          <span className="font-semibold">{post.date.replace(/-/g, ". ")}</span>
+          <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
+          <Clock className="w-3.5 h-3.5 text-[#9CA3AF]" />
           <span>{dynamicReadTime}</span>
           {typeof views === "number" && views > 0 && (
             <>
-              <span className="w-[3px] h-[3px] bg-[#B5B3C8] rounded-full" />
-              <Eye className="w-3.5 h-3.5 text-[#B5B3C8]" />
+              <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
+              <Eye className="w-3.5 h-3.5 text-[#9CA3AF]" />
               <span>{formatViews(views)}</span>
             </>
           )}
