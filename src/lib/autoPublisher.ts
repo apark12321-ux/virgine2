@@ -204,14 +204,21 @@ async function generatePostContent(topic: typeof TOPIC_POOL[0], dateStr: string)
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Gemini API timeout")), 4000)
+        setTimeout(() => reject(new Error("Gemini API timeout")), 18000)
       );
 
       const response = await Promise.race([generatePromise, timeoutPromise]);
 
       const text = response.text || "";
-      const cleanedText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsed = JSON.parse(cleanedText);
+      const cleanedText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+      let parsed: any;
+      try {
+        parsed = JSON.parse(cleanedText);
+      } catch {
+        // Fix unescaped control characters/newlines inside JSON strings
+        const sanitized = cleanedText.replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
+        parsed = JSON.parse(sanitized);
+      }
 
       if (parsed.title && parsed.content) {
         return {
