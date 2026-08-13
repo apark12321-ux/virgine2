@@ -5,6 +5,7 @@ import { PostCard } from "./components/PostCard";
 import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
+import { AdSenseSlot } from "./components/AdSenseSlot";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
@@ -463,7 +464,8 @@ export default function App() {
     let description = DEFAULT_DESCRIPTION;
     let canonical = `${SITE_URL}/`;
     let ogType: "website" | "article" = "website";
-    let ogImage: string | null = null;
+    let ogImage = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&h=630&q=80";
+    let ogImageAlt = "버진로드 (Virginroad) - 결혼 준비 & 신혼 금융 생활 백서";
 
     if (currentPost) {
       const slug = slugify(currentPost.title) || currentPost.id;
@@ -472,14 +474,19 @@ export default function App() {
       canonical = `${SITE_URL}/post/${slug}`;
       ogType = "article";
       ogImage = currentPost.image;
+      ogImageAlt = currentPost.title;
     } else if (currentPage === "about") {
       title = `소개 | ${SITE_NAME}`;
       description = `${SITE_NAME}는 신혼·출산·주거·세금 정책부터 가정 재무까지 다루는 가정경제·생활정책 전문 미디어입니다.`;
       canonical = `${SITE_URL}/about`;
+      ogImage = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&h=630&q=80";
+      ogImageAlt = `${SITE_NAME} 서비스 소개 및 편집부`;
     } else if (currentPage === "policy") {
       title = `2026 가정경제·생활정책 핵심 정보 | ${SITE_NAME}`;
-      description = `2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.`;
+      description = `2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 한눈에 정리합니다. 정책 변경 시 신속 반영.`;
       canonical = `${SITE_URL}/policy`;
+      ogImage = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&h=630&q=80";
+      ogImageAlt = "2026 가정경제·생활정책 핵심 가이드";
     } else if (currentPage === "privacy") {
       title = `개인정보 처리방침 | ${SITE_NAME}`;
       description = `${SITE_NAME}의 개인정보 수집 및 이용에 관한 안내입니다.`;
@@ -500,38 +507,81 @@ export default function App() {
       title = `디딤돌 우대금리 계산기 | ${SITE_NAME}`;
       description = `한국주택금융공사 2026년 5월 1일 공시 기준으로 본인 가구의 디딤돌대출 우대금리와 월 상환액을 시뮬레이션해 드립니다. 자녀·청약통장·전자계약 우대를 단계별로 확인하세요.`;
       canonical = `${SITE_URL}/tools/didimdol`;
+      ogImage = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80";
+      ogImageAlt = "디딤돌대출 우대금리 및 월 상환액 시뮬레이터";
     } else if (currentPage === "tools-cheongyak") {
       title = `신혼부부 특별공급 가점 계산기 | ${SITE_NAME}`;
       description = `「주택공급에 관한 규칙」 별표1 기준으로 신혼부부 특별공급 가점과 일반 청약가점제 점수를 동시에 계산해 드립니다. 자녀·혼인 기간·청약통장·신생아 가산까지 단계별 확인.`;
       canonical = `${SITE_URL}/tools/cheongyak`;
+      ogImage = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&h=630&q=80";
+      ogImageAlt = "신혼부부 특별공급 청약가점 시뮬레이터";
     } else if (currentPage.startsWith("category-")) {
       const cat = currentPage.replace("category-", "");
-      const catDescriptions: Record<string, string> = {
-        "신혼금융": "신혼·출산 가구의 주거 대출(디딤돌·보금자리·신생아특례), 청약 전략, 세제 혜택, 자산 형성까지. 가정의 재무 의사결정에 필요한 정책·금융 정보를 정리한 섹션입니다.",
-        "신혼가전": "삼성·LG 신혼가전 패키지 비교, 평수별 적정 사이즈, 빌트인 가전 선택 기준, 한샘·이케아·리바트·일룸 가구 비교 등 신혼집 꾸리기 실용 가이드를 모았습니다.",
-        "결혼준비": "스드메 견적의 실제, 웨딩홀 종류별 장단점, 결혼 준비 타임라인, 예단·예물 협상 기준 등 결혼을 앞둔 가구를 위한 풍성한 자료가 한가득 수록되어 있습니다.",
+      const catMeta: Record<string, { title: string; description: string; image: string; alt: string }> = {
+        "신혼금융": {
+          title: `신혼금융 | ${SITE_NAME} - 신혼부부 대출·청약·세제·재무 가이드`,
+          description: "신혼·출산 가구의 주거 대출(디딤돌·보금자리·신생아특례), 청약 전략, 세제 혜택, 자산 형성까지. 가정의 재무 의사결정에 필요한 정책·금융 정보를 정리한 섹션입니다.",
+          image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&w=1200&h=630&q=80",
+          alt: "버진로드 신혼금융 섹션 - 대출 및 세제 가이드"
+        },
+        "신혼가전": {
+          title: `신혼가전 | ${SITE_NAME} - 삼성·LG 신혼가전 및 인테리어 가이드`,
+          description: "삼성·LG 신혼가전 패키지 비교, 평수별 적정 사이즈, 빌트인 가전 선택 기준, 한샘·이케아·리바트·일룸 가구 비교 등 신혼집 꾸리기 실용 가이드를 모았습니다.",
+          image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&h=630&q=80",
+          alt: "버진로드 신혼가전 및 인테리어 패키지 비교"
+        },
+        "결혼준비": {
+          title: `결혼준비 | ${SITE_NAME} - 스드메·웨딩홀·타임라인 완벽 정리`,
+          description: "스드메 견적의 실제, 웨딩홀 종류별 장단점, 결혼 준비 타임라인, 예단·예물 협상 기준 등 결혼을 앞둔 가구를 위한 풍성한 자료가 한가득 수록되어 있습니다.",
+          image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&h=630&q=80",
+          alt: "버진로드 결혼준비 타임라인 및 웨딩홀 체크리스트"
+        },
+        "정책정보": {
+          title: `정책정보 | ${SITE_NAME} - 2026 정부지원금 및 신혼 정책 총정리`,
+          description: "신생아특례, 부모급여, 결혼세액공제, 아동수당, 청년도약계좌 등 2026년 신혼·출산 가구에 꼭 필요한 최신 지원 정책을 한눈에 정리했습니다.",
+          image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&h=630&q=80",
+          alt: "버진로드 정책정보 - 2026 정부지원금 및 신혼 정책 총정리"
+        }
       };
-      title = `${cat} | ${SITE_NAME}`;
-      description = catDescriptions[cat] || `${cat} 관련 가정경제·생활정책 정보를 모았습니다.`;
+
+      if (catMeta[cat]) {
+        title = catMeta[cat].title;
+        description = catMeta[cat].description;
+        ogImage = catMeta[cat].image;
+        ogImageAlt = catMeta[cat].alt;
+      } else {
+        title = `${cat} | ${SITE_NAME}`;
+        description = `${cat} 관련 가정경제·생활정책 정보를 모았습니다.`;
+        ogImage = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&h=630&q=80";
+        ogImageAlt = `${cat} 정보 - ${SITE_NAME}`;
+      }
       canonical = `${SITE_URL}/category/${encodeURIComponent(cat)}`;
     }
 
     document.title = title;
     setMeta("description", description);
     setCanonical(canonical);
+
+    // Open Graph Tags
     setMeta("og:type", ogType, "property");
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
     setMeta("og:url", canonical, "property");
     setMeta("og:site_name", SITE_NAME, "property");
     setMeta("og:locale", "ko_KR", "property");
-    if (ogImage) {
-      setMeta("og:image", ogImage, "property");
-      setMeta("twitter:image", ogImage);
-    }
+    setMeta("og:image", ogImage, "property");
+    setMeta("og:image:width", "1200", "property");
+    setMeta("og:image:height", "630", "property");
+    setMeta("og:image:alt", ogImageAlt, "property");
+
+    // Twitter Card Tags
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
     setMeta("twitter:description", description);
+    setMeta("twitter:image", ogImage);
+    setMeta("twitter:image:alt", ogImageAlt);
+    setMeta("twitter:domain", "virginroad.kr");
+    setMeta("twitter:url", canonical);
     setArticleJsonLd(currentPost);
     setBreadcrumbJsonLd(currentPost);
     setWebSiteJsonLd();
@@ -572,31 +622,29 @@ export default function App() {
                     <div className="lg:col-span-7">
                       <div className="inline-flex items-center gap-2 mb-4">
                         <span className="inline-flex items-center gap-1.5 bg-black/40 border border-white/25 text-[#38BDF8] text-[14px] sm:text-[15px] font-extrabold px-4 py-1.5 rounded-full backdrop-blur-md shadow-md">
-                          신혼부부 종합 가이드 미디어
-                        </span>
-                        <span className="text-[14px] font-bold text-white/90">
-                          · 정부·공공기관 공식 자료 기반
+                          버진로드 · 신혼 금융 생활 백서
                         </span>
                       </div>
-                      <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold tracking-[-0.03em] leading-[1.18] text-white mb-6 break-keep drop-shadow-sm font-['GmarketSansBold','Gmarket_Sans',sans-serif]">
-                        결혼 준비부터 대출·청약·가전까지,<br />
+                      <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold tracking-[-0.03em] leading-[1.18] text-white mb-6 break-keep drop-shadow-sm">
+                        결혼 준비부터 금융 계산·시뮬레이션까지,<br />
                         <span className="text-[#38BDF8] drop-shadow-md">우리 집 맞춤 정답</span>을 찾아드립니다.
                       </h1>
                       <p className="text-[18px] sm:text-[20px] font-bold leading-[1.8] text-white/95 max-w-2xl break-keep mb-8 drop-shadow">
-                        다년간 축적된 수백 가구 상담 데이터를 바탕으로, 디딤돌·버팀목 대출 금리 계산부터 신혼특공 청약 가점 시뮬레이션, 혼수 가전 패키지 비교까지 목표에 부합하는 종합 정보 솔루션을 제안합니다.
+                        디딤돌·버팀목 대출 금리 시뮬레이션부터 신혼특공 청약 가점 계산, 스드메·웨딩홀 견적 분석 및 혼수가전 패키지 비교까지 예비·신혼부부를 위한 필수 금융 생활 백서입니다.
                       </p>
                       <div className="flex flex-wrap gap-3">
                         {[
-                          { label: "이러닝 콘텐츠 개발 · 💰 디딤돌대출", page: "category-신혼금융" },
-                          { label: "영상 제작 · 🏠 신혼특공", page: "category-신혼금융" },
-                          { label: "블렌디드 러닝 · 📱 혼수가전 비교", page: "category-신혼가전" },
-                          { label: "💍 스드메 견적", page: "category-결혼준비" },
-                          { label: "👶 신생아특례", page: "category-신혼금융" },
+                          { label: "💰 디딤돌대출 금리계산", page: "category-신혼금융" },
+                          { label: "🏠 신혼특공 청약가점", page: "category-신혼금융" },
+                          { label: "👶 신생아특례 우대금리", page: "category-신혼금융" },
+                          { label: "📱 혼수가전 패키지비교", page: "category-신혼가전" },
+                          { label: "💍 스드메·웨딩홀 견적", page: "category-결혼준비" },
+                          { label: "📊 2026 정부지원금", page: "category-정책정보" },
                         ].map((chip) => (
                           <button
                             key={chip.label}
                             onClick={() => handleNavigate(chip.page)}
-                            className="text-[15px] sm:text-[17px] font-extrabold text-white bg-[#0F172A]/80 hover:bg-[#0F172A] border-2 border-white/30 hover:border-[#38BDF8] px-5 py-2.5 rounded-2xl transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98] backdrop-blur-md cursor-pointer font-['GmarketSansBold','Gmarket_Sans',sans-serif]"
+                            className="text-[15px] sm:text-[17px] font-extrabold text-white bg-[#0F172A]/80 hover:bg-[#0F172A] border-2 border-white/30 hover:border-[#38BDF8] px-5 py-2.5 rounded-2xl transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98] backdrop-blur-md cursor-pointer"
                           >
                             {chip.label}
                           </button>
@@ -612,7 +660,7 @@ export default function App() {
                           <span className="text-[11px] font-bold text-[#22C55E] tracking-wide">버진로드는 이렇게 일해요</span>
                         </div>
                         <h3 className="text-[18px] font-bold text-[#1E1B2E] mb-5 break-keep">
-                          숫자 하나도 공식 자료에서
+                          신뢰할 수 있는 실무 정보
                         </h3>
                         <ul className="space-y-4">
                           <li className="flex gap-3">
@@ -739,11 +787,11 @@ export default function App() {
                 </div>
               </div>
 
-              {/* === 공식 자료 바로가기 === */}
+              {/* === 주요 정책 서비스 바로가기 === */}
               <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-10 lg:pt-14">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-5 bg-[#E8745F] rounded-full" />
-                  <h2 className="text-[16px] font-bold text-[#1E1B2E]">정부·공공기관 공식 자료 바로가기</h2>
+                  <h2 className="text-[16px] font-bold text-[#1E1B2E]">주요 정책 서비스 바로가기</h2>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
@@ -1413,6 +1461,9 @@ export default function App() {
                     dangerouslySetInnerHTML={{ __html: currentPost.content }}
                   />
 
+                  {/* In-Article AdSense Banner Slot */}
+                  <AdSenseSlot type="in-article" label="관련 맞춤 정책·금융 추천" />
+
                   {/* Official Policy Source Card */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
                     <div className="mt-10 p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl" id={`geo-source-${currentPost.id}`}>
@@ -1572,6 +1623,9 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Sidebar Sticky AdSense Slot */}
+                  <AdSenseSlot type="sidebar" label="사이드바 스폰서 배너" />
                 </div>
               </div>
             </motion.article>

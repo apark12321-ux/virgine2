@@ -365,7 +365,7 @@ const buildPosts = (): Post[] => {
     
     if (i < ORIGINAL_17.length) {
       const orig = ORIGINAL_17[i];
-      postsList.push({
+      const basePost = {
         id: orig.id,
         title: orig.title,
         excerpt: orig.excerpt,
@@ -374,8 +374,11 @@ const buildPosts = (): Post[] => {
         date: dateStr,
         image: getCategoryImage(orig.category),
         readTime: orig.readTime,
-        hashtags: orig.hashtags,
-        content: ""
+        hashtags: orig.hashtags
+      };
+      postsList.push({
+        ...basePost,
+        content: generateCustomContent(basePost)
       });
     } else {
       const newIdx = i - ORIGINAL_17.length;
@@ -389,7 +392,7 @@ const buildPosts = (): Post[] => {
       const category = catData.category;
       const prefix = category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed";
       
-      postsList.push({
+      const basePost = {
         id: `${prefix}-new-${newIdx}`,
         title,
         excerpt,
@@ -398,8 +401,12 @@ const buildPosts = (): Post[] => {
         date: dateStr,
         image: getCategoryImage(category),
         readTime: "5분",
-        hashtags: tags,
-        content: ""
+        hashtags: tags
+      };
+
+      postsList.push({
+        ...basePost,
+        content: generateCustomContent(basePost)
       });
     }
     

@@ -186,11 +186,10 @@ async function generatePostContent(topic: typeof TOPIC_POOL[0], dateStr: string)
 
 [작성 가이드라인]
 1. HTML 태그(<h3>, <p>, <ul>, <li>, <strong>)만을 사용하여 정갈하고 시각적으로 구조화된 본문을 작성하세요.
-2. <h3> 소제목 3~4개로 구분을 명확히 하고, 각 단락마다 풍부한 정보(구체적 조건, 우대 이율, 세부 체크리스트, 절차 등)를 1,200자 이상으로 친절하고 명확하게 서술하세요.
-3. 광고성 멘트나 거짓 정보 없이 2026년 최신 공식 정책 및 실무 기준을 준수하세요.
-4. JSON 형식으로만 응답하세요. Markdown 코드 블록(\`\`\`json) 없이 순수 JSON 객체여야 합니다.
+2. <h3> 소제목 3개로 구분을 명확히 하고, 구체적 조건, 우대 이율, 세부 체크리스트, 절차 등을 친절하고 명확하게 서술하세요.
+3. 2026년 최신 공식 정책 및 실무 기준을 준수하세요.
 
-응답 JSON 구조:
+응답은 반드시 아래 JSON 구조로만 반환하세요:
 {
   "title": "${topic.title}",
   "excerpt": "요약문 2~3문장",
@@ -200,11 +199,14 @@ async function generatePostContent(topic: typeof TOPIC_POOL[0], dateStr: string)
 
       const generatePromise = ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: prompt
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json"
+        }
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Gemini API timeout")), 18000)
+        setTimeout(() => reject(new Error("Gemini API timeout (45s limit reached)")), 45000)
       );
 
       const response = await Promise.race([generatePromise, timeoutPromise]);
@@ -230,12 +232,12 @@ async function generatePostContent(topic: typeof TOPIC_POOL[0], dateStr: string)
           author: "버진로드 에디터",
           date: dateStr,
           image: topic.image,
-          readTime: `${Math.max(8, Math.ceil(parsed.content.length / 300))}분`,
+          readTime: `${Math.max(5, Math.ceil(parsed.content.length / 300))}분`,
           hashtags: topic.hashtags
         };
       }
-    } catch (e) {
-      console.warn("Gemini API post generation fallback triggered:", e);
+    } catch (e: any) {
+      console.warn("[AutoPublisher] Gemini API post generation notice:", e?.message || e);
     }
   }
 

@@ -55,7 +55,7 @@ export function PostCard({ post, onClick, views, exposures }: PostCardProps) {
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
         {/* Title */}
-        <h3 className="text-[19px] sm:text-[21px] font-extrabold leading-[1.38] text-[#111827] mb-2.5 break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors tracking-[-0.018em] font-['GmarketSansBold','Gmarket_Sans',sans-serif]">
+        <h3 className="text-[19px] sm:text-[21px] font-extrabold leading-[1.38] text-[#111827] mb-2.5 break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors tracking-[-0.018em]">
           {post.title}
         </h3>
 

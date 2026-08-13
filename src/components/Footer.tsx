@@ -40,8 +40,8 @@ export function Footer({ onNavigate }: FooterProps) {
                     Virginroad
                   </span>
                 </div>
-                <span className="text-[12px] font-medium text-[#6B7280] mt-1.5">
-                  신혼부부 주거·금융·가전·결혼준비 미디어
+                <span className="text-[12px] font-extrabold text-[#4F46E5] mt-1.5 tracking-tight">
+                  신혼 금융 생활 백서
                 </span>
               </div>
             </button>
@@ -49,7 +49,7 @@ export function Footer({ onNavigate }: FooterProps) {
               결혼 준비부터 디딤돌·버팀목 대출, 신생아 특례대출, 청약 가점 계산, 혼수 가전 패키지 비교까지 예비·신혼부부를 위한 종합 금융·생활 가이드 미디어, 버진로드입니다.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <span className="badge-coral">정부·공공기관 자료 기반</span>
+              <span className="badge-coral">신혼 금융·생활 가이드</span>
               <span className="badge-coral">정책 변경 신속 반영</span>
             </div>
           </div>

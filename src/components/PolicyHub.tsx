@@ -36,7 +36,7 @@ export function PolicyHub({ compact = false, onNavigate }: PolicyHubProps) {
               📊 최신 정책·금리 한눈에
             </h2>
             <p className="text-[13px] text-[#5B5870] mt-1">
-              가정에 바로 영향 주는 핵심 정책을 항상 최신으로 정리해요 · 정부 공식 자료 기준
+              가정에 바로 영향 주는 핵심 정책을 항상 최신으로 정리해 드립니다.
             </p>
           </div>
           {onNavigate && (
@@ -130,8 +130,7 @@ export function PolicyHub({ compact = false, onNavigate }: PolicyHubProps) {
           2026 가정경제·생활정책 한눈에
         </h1>
         <p className="text-[15px] leading-[1.7] text-[#3F3D56] max-w-2xl break-keep">
-          대출 금리, 세금 혜택, 출산 지원금처럼 가정에 바로 영향을 주는 정책을
-          정부·공공기관 공식 자료 기준으로 모았어요. 정책이 바뀌면 그때그때 업데이트합니다.
+          대출 금리, 세금 혜택, 출산 지원금처럼 가정에 바로 영향을 주는 정책 핵심 정보를 한눈에 모았습니다. 정책이 바뀌면 그때그때 업데이트합니다.
         </p>
       </div>
 
