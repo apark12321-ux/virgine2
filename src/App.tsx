@@ -15,7 +15,7 @@ import { auth, db } from "./lib/firebase";
 import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType, recordExposuresBulk, fetchAllExposures } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { calculateReadTime, slugify, stripHtml, formatPostDateTime } from "./lib/utils";
+import { calculateReadTime, slugify, stripHtml, formatPostDateTime, parsePostTimestamp } from "./lib/utils";
 
 type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
@@ -345,19 +345,30 @@ export default function App() {
   }, []);
 
   const allPosts = useMemo(() => {
-    // 덮어쓰기 우선: 이전 DB에 꼬여있거나 빈약해진 글들이 있을 때, 개정 완료된 고품격 로컬 MOCK_POSTS를 최우선 덮어쓰고, 신규 DB 글만 살려 귀속합니다.
-    const combined = [...MOCK_POSTS];
+    // 1. 실시간 서버/DB 게시글(realPosts)을 우선 탑재하고, 로컬 MOCK_POSTS와 결합합니다.
+    const combinedMap = new Map<string, Post>();
+
+    // 실시간/자동 발행된 글 우선 등록
     realPosts.forEach(real => {
-      // 만약 ID가 같거나 제목이 완전히 일치하거나 slug가 같은 글이 이미 존재한다면, 고품질 보증된 로컬 MOCK_POSTS를 최우선 채용하고 해당 DB 글은 배제합니다.
-      const isDuplicate = combined.some(p => 
-        p.id === real.id || 
-        p.title.trim() === real.title?.trim() || 
-        slugify(p.title) === slugify(real.title || "")
-      );
-      if (!isDuplicate) {
-        combined.push(real as Post);
+      if (real && real.id && real.title) {
+        combinedMap.set(real.id, real as Post);
       }
     });
+
+    // 기본 MOCK_POSTS 중 아직 등록되지 않은 글 보충
+    MOCK_POSTS.forEach(mockPost => {
+      const isDuplicate = Array.from(combinedMap.values()).some(p =>
+        p.id === mockPost.id ||
+        p.title.trim() === mockPost.title.trim() ||
+        slugify(p.title) === slugify(mockPost.title)
+      );
+      if (!isDuplicate) {
+        combinedMap.set(mockPost.id, mockPost);
+      }
+    });
+
+    const combined = Array.from(combinedMap.values());
+
     // Dynamically sanitize any fallback branding to 버진로드 (Virginroad) with safety guards
     const sanitized = combined.map(p => {
       const author = p.author ? p.author.replace(/편집부|에디터|편집국|기자/g, "").trim() || "버진로드" : "버진로드";
@@ -368,13 +379,15 @@ export default function App() {
         .replace(/버진로드 편집부의 정밀 취재에 따르면/g, "직접 검토하고 분석한 결과에 따르면")
         .replace(/버진로드 편집부에서/g, "직접 꼼꼼하게 정리한")
         .replace(/버진로드 편집부/g, "버진로드");
-      // 만약 MOCK_POSTS에 포함되지 않은 게시글인 경우(예: DB에서 불러온 글) 콘텐츠 확장 및 이미지 최적화를 강제해 줍니다.
+      // 만약 MOCK_POSTS에 포함되지 않은 게시글인 경우(예: DB/자동발행 글) 콘텐츠 확장 및 이미지 최적화를 적용합니다.
       if (!MOCK_POSTS.some(mp => mp.id === p.id)) {
         content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id, p.image);
       }
       return { ...p, author, title, excerpt, content };
     });
-    return sanitized.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // parsePostTimestamp를 활용하여 일자 및 시간 순으로 정확하게 내림차순 정렬 (최신 글이 최상단 노출)
+    return sanitized.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
   }, [realPosts]);
 
   // 전체 조회수 및 노출수 로드 (글 목록이 준비되면)

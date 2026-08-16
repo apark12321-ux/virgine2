@@ -89,3 +89,46 @@ export function slugify(title: string): string {
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
+
+/**
+ * 게시글의 날짜 문자열(YYYY-MM-DD, YYYY. MM. DD, ISO 등)을 파싱하여 정렬용 밀리초 타임스탬프로 안전하게 변환
+ */
+export function parsePostTimestamp(dateStr: string, id?: string): number {
+  if (!dateStr) return 0;
+
+  // 1. ISO 또는 시:분 형식이 포함된 경우
+  if (dateStr.includes("T") || dateStr.includes(":")) {
+    const d = new Date(dateStr.includes("T") ? dateStr : dateStr.replace(" ", "T"));
+    if (!isNaN(d.getTime())) {
+      return d.getTime();
+    }
+  }
+
+  // 2. YYYY-MM-DD, YYYY.MM.DD, YYYY. MM. DD 등 표준 일자 파싱
+  const clean = dateStr.replace(/\./g, "-").replace(/\s+/g, "").trim();
+  const parts = clean.split("-").map(p => parseInt(p, 10));
+  if (parts.length >= 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+    const year = parts[0];
+    const month = parts[1] - 1;
+    const day = parts[2];
+
+    let extraSeconds = 0;
+    if (id) {
+      let seed = 0;
+      const strToHash = id + dateStr;
+      for (let i = 0; i < strToHash.length; i++) {
+        seed = ((seed << 5) - seed + strToHash.charCodeAt(i)) | 0;
+      }
+      const positiveSeed = Math.abs(seed);
+      const hour = 9 + (positiveSeed % 13);
+      const minute = Math.floor(positiveSeed / 13) % 60;
+      const second = Math.floor(positiveSeed / 780) % 60;
+      extraSeconds = (hour * 3600 + minute * 60 + second);
+    }
+
+    return new Date(year, month, day).getTime() + extraSeconds * 1000;
+  }
+
+  const fallback = new Date(dateStr).getTime();
+  return isNaN(fallback) ? 0 : fallback;
+}
