@@ -514,7 +514,7 @@ async function startServer() {
     }
   });
 
-  // GET/POST /api/auto-publish/run: Manual trigger and status check for daily randomized post publisher
+  // GET/POST /api/auto-publish/run: Manual trigger for daily category randomized publisher
   app.all("/api/auto-publish/run", async (req, res) => {
     try {
       const result = await runAutoPublisherService();
@@ -522,11 +522,32 @@ async function startServer() {
         success: true,
         message: "Auto publisher service executed successfully.",
         publishedCount: result.publishedCount,
+        todayStatus: result.todayStatus,
         logs: result.messages
       });
     } catch (err: any) {
       console.error("Auto publisher execution error:", err);
       res.status(500).json({ error: "Failed to execute auto publisher", details: err.message });
+    }
+  });
+
+  // GET /api/auto-publish/status: Get current schedule, times, and publishing status
+  app.get("/api/auto-publish/status", async (req, res) => {
+    try {
+      const result = await runAutoPublisherService();
+      res.json({
+        success: true,
+        rule: {
+          frequency: "카테고리별 1일 1포스팅 (총 3개/일)",
+          interval: "포스팅 간 최소 4시간(240분) 이상 간격 보장",
+          timing: "매일 랜덤 시간 자동 스케줄링 (KST 기준)"
+        },
+        todayStatus: result.todayStatus,
+        lastLogs: result.messages
+      });
+    } catch (err: any) {
+      console.error("Auto publisher status error:", err);
+      res.status(500).json({ error: "Failed to get auto publisher status", details: err.message });
     }
   });
 
