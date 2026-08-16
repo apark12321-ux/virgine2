@@ -142,12 +142,29 @@ function extractFirstImage(content: string): string | null {
   return match ? match[1] : null;
 }
 
+function normalizeTitle(str: string): string {
+  return (str || "").replace(/[^a-zA-Z0-9가-힣]/g, "").toLowerCase();
+}
+
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 
 function loadLocalPosts(): any[] {
   try {
     if (fs.existsSync(LOCAL_POSTS_FILE)) {
-      return JSON.parse(fs.readFileSync(LOCAL_POSTS_FILE, "utf-8"));
+      const raw: any[] = JSON.parse(fs.readFileSync(LOCAL_POSTS_FILE, "utf-8"));
+      const seenTitles = new Set<string>();
+      const seenIds = new Set<string>();
+      const unique: any[] = [];
+      for (const p of raw) {
+        const norm = normalizeTitle(p.title);
+        if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
+          continue;
+        }
+        seenTitles.add(norm);
+        seenIds.add(p.id);
+        unique.push(p);
+      }
+      return unique;
     }
   } catch (e) {
     console.error("Failed to read local posts:", e);
@@ -157,7 +174,19 @@ function loadLocalPosts(): any[] {
 
 function saveLocalPosts(posts: any[]) {
   try {
-    fs.writeFileSync(LOCAL_POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
+    const seenTitles = new Set<string>();
+    const seenIds = new Set<string>();
+    const unique: any[] = [];
+    for (const p of posts) {
+      const norm = normalizeTitle(p.title);
+      if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
+        continue;
+      }
+      seenTitles.add(norm);
+      seenIds.add(p.id);
+      unique.push(p);
+    }
+    fs.writeFileSync(LOCAL_POSTS_FILE, JSON.stringify(unique, null, 2), "utf-8");
   } catch (e) {
     console.error("Failed to write local posts:", e);
   }
@@ -261,14 +290,14 @@ async function fetchMergedPosts(): Promise<any[]> {
   const combined = [...localPosts];
   firestorePosts.forEach(fp => {
     // Prevent duplicated items across files and DB
-    if (!combined.some(p => p.id === fp.id || p.title.trim() === fp.title.trim() || slugify(p.title) === slugify(fp.title))) {
+    if (!combined.some(p => p.id === fp.id || normalizeTitle(p.title) === normalizeTitle(fp.title) || slugify(p.title) === slugify(fp.title))) {
       combined.push(fp);
     }
   });
 
   // Merge in high-quality default MOCK_POSTS so the REST api feed is never blank
   MOCK_POSTS.forEach(mp => {
-    if (!combined.some(p => p.id === mp.id || p.title.trim() === mp.title.trim() || slugify(p.title) === slugify(mp.title))) {
+    if (!combined.some(p => p.id === mp.id || normalizeTitle(p.title) === normalizeTitle(mp.title) || slugify(p.title) === slugify(mp.title))) {
       combined.push(mp);
     }
   });

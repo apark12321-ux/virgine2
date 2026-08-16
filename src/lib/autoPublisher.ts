@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
+import { MOCK_POSTS } from "../constants";
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 const SCHEDULE_FILE = path.join(process.cwd(), "auto-schedule.json");
@@ -8,6 +9,10 @@ const SCHEDULE_FILE = path.join(process.cwd(), "auto-schedule.json");
 export type PostCategory = "신혼금융" | "신혼가전" | "결혼준비";
 
 export const CATEGORIES: PostCategory[] = ["신혼금융", "신혼가전", "결혼준비"];
+
+export function normalizeTitle(str: string): string {
+  return (str || "").replace(/[^a-zA-Z0-9가-힣]/g, "").toLowerCase();
+}
 
 export interface Post {
   id: string;
@@ -116,7 +121,21 @@ export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem
 export function loadLocalPosts(): Post[] {
   try {
     if (fs.existsSync(LOCAL_POSTS_FILE)) {
-      return JSON.parse(fs.readFileSync(LOCAL_POSTS_FILE, "utf-8"));
+      const raw: Post[] = JSON.parse(fs.readFileSync(LOCAL_POSTS_FILE, "utf-8"));
+      // Deduplicate posts on read by normalized title and ID
+      const seenTitles = new Set<string>();
+      const seenIds = new Set<string>();
+      const unique: Post[] = [];
+      for (const p of raw) {
+        const norm = normalizeTitle(p.title);
+        if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
+          continue;
+        }
+        seenTitles.add(norm);
+        seenIds.add(p.id);
+        unique.push(p);
+      }
+      return unique;
     }
   } catch (e) {
     console.error("Failed to load local posts:", e);
@@ -126,7 +145,19 @@ export function loadLocalPosts(): Post[] {
 
 export function saveLocalPosts(posts: Post[]) {
   try {
-    fs.writeFileSync(LOCAL_POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
+    const seenTitles = new Set<string>();
+    const seenIds = new Set<string>();
+    const unique: Post[] = [];
+    for (const p of posts) {
+      const norm = normalizeTitle(p.title);
+      if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
+        continue;
+      }
+      seenTitles.add(norm);
+      seenIds.add(p.id);
+      unique.push(p);
+    }
+    fs.writeFileSync(LOCAL_POSTS_FILE, JSON.stringify(unique, null, 2), "utf-8");
   } catch (e) {
     console.error("Failed to save local posts:", e);
   }
@@ -643,18 +674,24 @@ export async function runAutoPublisherService(): Promise<{
       const hasCategoryPost = postsOnDate.some(p => p.category === category);
       if (!hasCategoryPost) {
         console.log(`[AutoPublisher Backfill] Missing ${category} for ${dateStr}. Auto-generating...`);
-        const usedTitles = new Set(localPosts.map(p => p.title));
+        const usedTitles = new Set([
+          ...localPosts.map(p => normalizeTitle(p.title)),
+          ...MOCK_POSTS.map(p => normalizeTitle(p.title))
+        ]);
         const categoryPool = TOPIC_POOL.filter(t => t.category === category);
-        const availableTopics = categoryPool.filter(t => !usedTitles.has(t.title));
+        const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
         const selectedTopic = availableTopics.length > 0
           ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
           : categoryPool[Math.floor(Math.random() * categoryPool.length)];
 
         // Generate backfill post using instant rich procedural engine without consuming Gemini API quota
         const newPost = await generatePostContent(selectedTopic, dateStr, category, false);
-        localPosts.unshift(newPost);
-        saveLocalPosts(localPosts);
-        syncToFirestore(newPost);
+        // Avoid duplicate ID or title
+        if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
+          localPosts.unshift(newPost);
+          saveLocalPosts(localPosts);
+          syncToFirestore(newPost);
+        }
 
         if (!store.schedules[dateStr]) {
           store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
@@ -708,17 +745,23 @@ export async function runAutoPublisherService(): Promise<{
     if (!item.published && currentTimeStr >= item.targetTime) {
       console.log(`[AutoPublisher Today] Target time ${item.targetTime} reached for ${item.category} on ${todayStr}. Publishing post...`);
 
-      const usedTitles = new Set(localPosts.map(p => p.title));
+      const usedTitles = new Set([
+        ...localPosts.map(p => normalizeTitle(p.title)),
+        ...MOCK_POSTS.map(p => normalizeTitle(p.title))
+      ]);
       const categoryPool = TOPIC_POOL.filter(t => t.category === item.category);
-      const availableTopics = categoryPool.filter(t => !usedTitles.has(t.title));
+      const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
       const selectedTopic = availableTopics.length > 0
         ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
         : categoryPool[Math.floor(Math.random() * categoryPool.length)];
 
       const newPost = await generatePostContent(selectedTopic, todayStr, item.category, true);
-      localPosts.unshift(newPost);
-      saveLocalPosts(localPosts);
-      syncToFirestore(newPost);
+      // Avoid duplicate ID or title
+      if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
+        localPosts.unshift(newPost);
+        saveLocalPosts(localPosts);
+        syncToFirestore(newPost);
+      }
 
       item.published = true;
       item.postId = newPost.id;

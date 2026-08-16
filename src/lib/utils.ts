@@ -91,6 +91,13 @@ export function stripHtml(html: string): string {
 }
 
 /**
+ * 제목 비교 및 중복 검사를 위한 정규화 (특수문자/공백 제거 및 소문자 변환)
+ */
+export function normalizeTitle(str: string): string {
+  return (str || "").replace(/[^a-zA-Z0-9가-힣]/g, "").toLowerCase();
+}
+
+/**
  * 게시글의 날짜 문자열(YYYY-MM-DD, YYYY. MM. DD, ISO 등)을 파싱하여 정렬용 밀리초 타임스탬프로 안전하게 변환
  */
 export function parsePostTimestamp(dateStr: string, id?: string): number {

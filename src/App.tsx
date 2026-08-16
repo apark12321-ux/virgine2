@@ -15,7 +15,7 @@ import { auth, db } from "./lib/firebase";
 import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType, recordExposuresBulk, fetchAllExposures } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { calculateReadTime, slugify, stripHtml, formatPostDateTime, parsePostTimestamp } from "./lib/utils";
+import { calculateReadTime, slugify, stripHtml, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
 
 type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
@@ -345,29 +345,39 @@ export default function App() {
   }, []);
 
   const allPosts = useMemo(() => {
-    // 1. 실시간 서버/DB 게시글(realPosts)을 우선 탑재하고, 로컬 MOCK_POSTS와 결합합니다.
-    const combinedMap = new Map<string, Post>();
+    // 1. 실시간 서버/DB 게시글(realPosts)과 기본 MOCK_POSTS를 병합하며 중복을 완전 제거합니다.
+    const seenTitles = new Set<string>();
+    const seenIds = new Set<string>();
+    const seenSlugs = new Set<string>();
+    const uniquePosts: Post[] = [];
 
     // 실시간/자동 발행된 글 우선 등록
     realPosts.forEach(real => {
       if (real && real.id && real.title) {
-        combinedMap.set(real.id, real as Post);
+        const norm = normalizeTitle(real.title);
+        const slug = slugify(real.title);
+        if (!seenTitles.has(norm) && !seenIds.has(real.id) && !seenSlugs.has(slug)) {
+          seenTitles.add(norm);
+          seenIds.add(real.id);
+          seenSlugs.add(slug);
+          uniquePosts.push(real as Post);
+        }
       }
     });
 
-    // 기본 MOCK_POSTS 중 아직 등록되지 않은 글 보충
+    // 기본 MOCK_POSTS 중 아직 등록되지 않은 고유 글 보충
     MOCK_POSTS.forEach(mockPost => {
-      const isDuplicate = Array.from(combinedMap.values()).some(p =>
-        p.id === mockPost.id ||
-        p.title.trim() === mockPost.title.trim() ||
-        slugify(p.title) === slugify(mockPost.title)
-      );
-      if (!isDuplicate) {
-        combinedMap.set(mockPost.id, mockPost);
+      const norm = normalizeTitle(mockPost.title);
+      const slug = slugify(mockPost.title);
+      if (!seenTitles.has(norm) && !seenIds.has(mockPost.id) && !seenSlugs.has(slug)) {
+        seenTitles.add(norm);
+        seenIds.add(mockPost.id);
+        seenSlugs.add(slug);
+        uniquePosts.push(mockPost);
       }
     });
 
-    const combined = Array.from(combinedMap.values());
+    const combined = uniquePosts;
 
     // Dynamically sanitize any fallback branding to 버진로드 (Virginroad) with safety guards
     const sanitized = combined.map(p => {
