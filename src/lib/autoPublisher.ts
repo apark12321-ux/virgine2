@@ -80,24 +80,24 @@ export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem
   // Shuffle categories so that posting order is randomized each day
   const shuffledCategories = [...CATEGORIES].sort(() => Math.random() - 0.5);
 
-  // Slot 1: Morning random (07:00 ~ 09:30 KST -> 420 ~ 570 mins)
-  const slot1Min = 420 + Math.floor(Math.random() * 150); // 07:00 ~ 09:30
+  // Slot 1: Morning random (06:30 ~ 08:30 KST -> 390 ~ 510 mins)
+  const slot1Min = 390 + Math.floor(Math.random() * 120); // 06:30 ~ 08:30
 
-  // Slot 2: Afternoon random (Min 240 mins after Slot 1 -> Slot1 + 240m ~ Slot1 + 360m, clamped to 13:30 ~ 16:00)
-  const minSlot2 = slot1Min + 240; // Strict minimum 4 hours gap!
+  // Slot 2: Afternoon random (Strictly >= 240 mins after Slot 1 -> 4 hours minimum gap)
+  const minSlot2 = slot1Min + 240;
   const slot2Variation = Math.floor(Math.random() * 90); // 0 to 90 mins extra
   const slot2Min = Math.min(minSlot2 + slot2Variation, 960); // max 16:00
 
-  // Slot 3: Evening/Night random (Min 240 mins after Slot 2 -> Slot2 + 240m ~ 22:30)
-  const minSlot3 = slot2Min + 240; // Strict minimum 4 hours gap!
-  const maxSlot3 = 1350; // 22:30 KST
+  // Slot 3: Evening random (Strictly >= 240 mins after Slot 2 -> 4 hours minimum gap)
+  const minSlot3 = slot2Min + 240;
+  const maxSlot3 = 1350; // max 22:30 KST
   const slot3AvailableRange = Math.max(0, maxSlot3 - minSlot3);
   const slot3Variation = Math.floor(Math.random() * Math.min(90, slot3AvailableRange + 1));
   const slot3Min = Math.min(minSlot3 + slot3Variation, maxSlot3);
 
   const timesInMinutes = [slot1Min, slot2Min, slot3Min];
 
-  // Double check and enforce 240-minute separation guarantee
+  // Enforce absolute strict minimum 240-minute (4 hours) separation guarantee
   if (timesInMinutes[1] - timesInMinutes[0] < 240) {
     timesInMinutes[1] = timesInMinutes[0] + 240;
   }

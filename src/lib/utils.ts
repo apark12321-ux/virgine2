@@ -21,7 +21,7 @@ export function formatPostDateTime(dateStr: string, id?: string): string {
 
   // Check if dateStr already has time component (e.g. ISO format or includes ":")
   if (dateStr.includes(":") || dateStr.includes("T")) {
-    const d = new Date(dateStr);
+    const d = new Date(dateStr.includes("T") ? dateStr : dateStr.replace(" ", "T"));
     if (!isNaN(d.getTime())) {
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -30,6 +30,10 @@ export function formatPostDateTime(dateStr: string, id?: string): string {
       const minutes = String(d.getMinutes()).padStart(2, "0");
       const seconds = String(d.getSeconds()).padStart(2, "0");
       return `${year}. ${month}. ${day} ${hours}:${minutes}:${seconds}`;
+    }
+    const match = dateStr.match(/^(\d{4})[.-](\d{2})[.-](\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (match) {
+      return `${match[1]}. ${match[2]}. ${match[3]} ${match[4]}:${match[5]}:${match[6] || "00"}`;
     }
   }
 

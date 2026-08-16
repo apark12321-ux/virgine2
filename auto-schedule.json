@@ -51,7 +51,67 @@
         "targetTime": "21:11",
         "published": false
       }
+    ],
+    "2026-08-17": [
+      {
+        "id": "sched-20260817-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "08:07",
+        "published": false
+      },
+      {
+        "id": "sched-20260817-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "12:57",
+        "published": false
+      },
+      {
+        "id": "sched-20260817-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "16:58",
+        "published": false
+      }
+    ],
+    "2026-08-18": [
+      {
+        "id": "sched-20260818-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:12",
+        "published": false
+      },
+      {
+        "id": "sched-20260818-결혼준비-2",
+        "category": "결혼준비",
+        "targetTime": "13:13",
+        "published": false
+      },
+      {
+        "id": "sched-20260818-신혼가전-3",
+        "category": "신혼가전",
+        "targetTime": "18:00",
+        "published": false
+      }
+    ],
+    "2026-08-19": [
+      {
+        "id": "sched-20260819-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "07:43",
+        "published": false
+      },
+      {
+        "id": "sched-20260819-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "12:39",
+        "published": false
+      },
+      {
+        "id": "sched-20260819-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "17:50",
+        "published": false
+      }
     ]
   },
-  "lastCheck": "2026-08-12T09:09:49.283Z"
+  "lastCheck": "2026-08-17T02:05:38.823Z"
 }
