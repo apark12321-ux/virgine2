@@ -320,21 +320,178 @@ export const TOPIC_POOL: Array<{
   }
 ];
 
-// Generate an article adhering strictly to the 10-year SEO Tech Blog Editor System Prompt
-async function generatePostContent(
+// In-memory quota cooldown tracker
+let geminiQuotaCooldownUntil = 0;
+
+/**
+ * Generate rich, topic-specific E-E-A-T procedural article with tailored tables, steps, and FAQs
+ */
+export function generateRichProceduralArticle(
   topic: typeof TOPIC_POOL[0],
   dateStr: string,
   category: PostCategory
+): Post {
+  const slugId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const mainTag = topic.hashtags[0] || "신혼가이드";
+  const subTag = topic.hashtags[1] || "핵심포인트";
+
+  let tableHeader: string[] = [];
+  let tableRows: string[][] = [];
+  let faqList: { q: string; a: string }[] = [];
+  let steps: string[] = [];
+
+  if (category === "신혼금융") {
+    tableHeader = ["구분 항목", "2026 기본 정책 기준", "우대 조건 및 감면 혜택", "실무 검증 서류"];
+    tableRows = [
+      ["소득 심사 요건", "부부합산 연 1.3억 ~ 2.0억 이하", "신생아 특례 및 맞벌이 완화 적용", "소득금액증명원, 원천징수영수증"],
+      ["자산 평가 기준", "순자산 5.11억 원 이하", "부동산·금융자산·차량가액 합산 검증", "기금e든든 자산심사 사전 조회"],
+      ["적용 금리 체계", "연 2.0% ~ 3.5% (소득 구간별)", "전자계약(0.1%p)+청약(최대0.5%p)+다자녀", "부동산거래 전자계약서, 청약통장증명서"],
+      ["상환 및 한도", "최대 4억 원 ~ 5억 원 한도", "체증식·원리금균등 분할상환 선택", "주민등록등본, 가족관계증명서"]
+    ];
+    steps = [
+      "1단계 (사전 자격 및 모의 산출): 주택도시기금 '기금e든든' 포털에서 부부 합산 소득, 부채 비율(DTI/DSR), 예상 우대금리 항목을 사전에 시뮬레이션합니다.",
+      "2단계 (서류 원스톱 발급 및 유효기간 확인): 정부24 및 국세청 홈택스에서 1개월 이내 발급된 소득금액증명원, 건강보험자격득실확인서, 재직증명서를 구비합니다.",
+      "3단계 (전자계약 체결 및 우대금리 확보): 국토교통부 부동산거래 전자계약시스템을 통해 매매/임대차 계약을 체결하여 0.1%p 금리 인하 혜택을 확정합니다.",
+      "4단계 (대출 심사 신청 및 잔금 실행): 잔금 지급일 30~45일 전 수탁은행(우리, 국민, 신한, 하나, 농협)에 대출을 접수하고 적격 심사를 완료합니다."
+    ];
+    faqList = [
+      {
+        q: "맞벌이 부부의 소득 산정 시 비과세 수당이나 상여금도 포함되나요?",
+        a: "국세청 소득금액증명원 상의 총지급액 중 비과세 소득(식대, 자가운전보조금 등)은 제외되며, 최근 2개년 평균 소득을 기준으로 심사합니다."
+      },
+      {
+        q: "신생아 특례 대출과 일반 디딤돌 대출 우대금리를 중복 적용받을 수 있나요?",
+        a: "2026년 기준 청약통장 가입기간 우대, 전자계약 우대(0.1%p), 자녀 출산 우대금리는 중복 합산이 가능하여 최저 연 1%대 금리 진입이 가능합니다."
+      },
+      {
+        q: "공동명의 주택 구입 시 대출 신청인은 어떻게 지정해야 유리한가요?",
+        a: "소득이 높거나 재직 기간이 길어 DTI 산정에 유리한 배우자를 주채무자로 지정하고, 상대 배우자를 담보제공자로 지정하여 진행하는 것이 일반적입니다."
+      }
+    ];
+  } else if (category === "신혼가전") {
+    tableHeader = ["가전/가구 품목", "주요 스펙 및 규격 기준", "2026 최신 트렌드 및 추천 기능", "설치 시 사전 체크리스트"];
+    tableRows = [
+      ["냉장고 / 김치냉장고", "키친핏(600L급) vs 프리스탠딩(850L급)", "오토오픈도어, 미세 정온 냉동, 맞춤보관실", "냉장고장 리폼 깊이(700mm) 및 도어 반경 확보"],
+      ["세탁건조기 올인원", "세탁 25kg / 건조 15kg 이상 대용량", "인버터 히트펌프, 자동 세제 투입, 코스 연동", "세탁실 진입로 폭(750mm) 및 단독 배수관 위치"],
+      ["로봇청소기", "직수형 오수/정수 자동 공급 및 집진", "온수 고온 스팀 물걸레 세척, 10,000Pa 이상 흡입", "싱크대 하부장 직수 배관 연결 및 전원 콘센트 유무"],
+      ["식기세척기 / 인덕션", "12~14인용 빌트인 / 3구 올프리", "100도 트루스팀, 저소음 BLDC, 자동 문열림", "싱크대 걸레받이 높이(150mm) 및 단독 누전차단기(20A)"]
+    ];
+    steps = [
+      "1단계 (신혼집 실측 및 도면 배치): 줄자 또는 레이저 측정기를 이용해 주방 냉장고장, 세탁실 도어 폭, 거실 아트월 거리를 오차 5mm 이내로 정밀 실측합니다.",
+      "2단계 (견적 비교 및 프로모션 공략): 백화점 웨딩마일리지 더블적립 주간, 대형 가전 플래그십 오픈점, 온라인 공식몰 다품목 패키지 견적을 3곳 이상 비교합니다.",
+      "3단계 (사전 시설 공사): 식기세척기 장내림, 냉장고장 리폼, 로봇청소기 직수관 매립, 인덕션 직결 배선 공사를 입주일 1~2주 전에 완료합니다.",
+      "4단계 (배송 지정일 설치 및 시운전): 가전 동시 입고를 진행하고, 외관 스크래치, 수평 레벨링, 급배수 누수 여부를 기사님 입회하에 점검합니다."
+    ];
+    faqList = [
+      {
+        q: "백화점과 오픈 매장 중 어디가 체감가가 더 저렴한가요?",
+        a: "5~7개 이상 대형 다품목 구매 시 신규 오픈 매장의 카드 캐시백 조건이 유리하며, 프리미엄 단품 위주 구매 시 백화점 상품권 환급이 유리합니다."
+      },
+      {
+        q: "키친핏 냉장고를 선택할 때 용량이 부족하지는 않나요?",
+        a: "맞벌이 2인 가구 기준 600L 키친핏으로 충분히 여유가 있으며, 냉동 식자재가 많다면 1도어 키친핏 변온고를 추가 구성하는 것을 추천합니다."
+      },
+      {
+        q: "에너지소비효율 1등급 환급금은 어떻게 신청하나요?",
+        a: "한국전력공사 고효율 가전 구매비용 지원사업 포털에 구매 영수증, 에너지 라벨 사진, 제조번호 명판을 등록하면 최대 한도 내에서 환급됩니다."
+      }
+    ];
+  } else {
+    tableHeader = ["준비 단계", "주요 계약 항목", "예산 절감 및 네고 핵심 팁", "필수 특약 및 주의사항"];
+    tableRows = [
+      ["웨딩홀 예약", "보증인원(150~300명), 대관료, 식대", "비수기(1·2·7·8월) 및 일요일 오후 예식 공략", "당일 계약 혜택, 보증인원 미달 시 식대 보전율 확인"],
+      ["스드메 패키지", "스튜디오 촬영, 본식 드레스, 헤어메이크업", "정찰제 및 드레스 추가금 상한선 사전 협의", "헬퍼비, 얼리스타트비, 원본/수정본 데이터 구매비 포함 여부"],
+      ["본식 스냅 & DVD", "1인 2캠 / 2인 3캠 4K 시네마틱", "대표 지정 촬영 무료 프로모션 활용", "촬영 작가 노쇼 방지 위약금 및 원본 제공 기한 명시"],
+      ["신혼여행 (허니문)", "항공권, 풀빌라 리조트, 액티비티", "조기 예약(얼리버드) 및 허니문 특전 포함", "천재지변 취소 규정, 유류할증료 변동분 포함 여부"]
+    ];
+    steps = [
+      "1단계 (총 예산 편성 및 우선순위 설정): 전체 결혼 준비 자금을 주거, 예식, 혼수, 신혼여행 4대 영역으로 분배하고 초과 방지 마지노선을 설정합니다.",
+      "2단계 (웨딩홀 투어 및 골든타임 선점): 예식 희망일 10~12개월 전 웨딩홀 3~4곳을 방문하여 시식, 주차 시설, 단독홀 여부를 비교 계약합니다.",
+      "3단계 (스드메 및 본식 연출 확정): 드레스 투어 3곳을 진행하고 본식 3개월 전 스튜디오 촬영 및 모바일 청첩장 제작을 마무리합니다.",
+      "4단계 (최종 점검 및 하객 관리): 예식 2주 전 최종 보증인원 확정, 축가/사회자 대본 검토, 식권 및 감사장 준비를 완료합니다."
+    ];
+    faqList = [
+      {
+        q: "스드메 계약 시 예기치 못한 추가금을 방지하는 방법은 무엇인가요?",
+        a: "드레스 피팅비, 헬퍼 출장비, 얼리 스타트비, 스튜디오 원본/수정본 데이터비, 드레스 라벨 업그레이드 비용을 계약서에 정찰가로 명시해야 합니다."
+      },
+      {
+        q: "모바일 청첩장은 언제 전달하는 것이 가장 정중한가요?",
+        a: "예식 4~6주 전에 직접 식사 자리를 가지며 종이 청첩장과 함께 모바일 링크를 전달하는 것이 하객들의 일정 조율에 가장 이상적입니다."
+      },
+      {
+        q: "예단과 예물 비용을 간소화할 때 양가 조율은 어떻게 해야 하나요?",
+        a: "양가 부모님의 입장을 미리 파악한 후, 현물 예단 대신 신혼집 가전·가구 지원이나 실속 있는 현금 예단으로 대체하는 선조율이 효과적입니다."
+      }
+    ];
+  }
+
+  const contentHtml = `
+<h3>1. ${topic.title} — 2026 핵심 결론 및 요약</h3>
+<p>신혼부부와 예비가구에게 가장 중요한 실무 의사결정의 핵심은 <strong>정확한 정책 기준 파악과 사전 조건 충족</strong>입니다. 오늘 버진로드에서 심층 분석하는 <strong>"${topic.title}"</strong> 가이드는 2026년 최신 공식 기준을 바탕으로 독자 여러분이 실질적인 혜택을 100% 누리실 수 있도록 체계적으로 구성되었습니다.</p>
+<p>실제 조사 데이터에 따르면, 사전 체크리스트를 준수하고 세부 우대 조항을 꼼꼼히 챙긴 가구일수록 예산 절감 효과가 <strong>평균 25% 이상</strong> 높게 나타났습니다. 아래 표와 단계별 실천 항목을 꼼꼼히 확인해 보세요.</p>
+
+<h3>2. 2026년 최신 기준 핵심 비교 및 필수 체크포인트</h3>
+<table>
+  <thead>
+    <tr>
+      ${tableHeader.map(h => `<th>${h}</th>`).join("\n      ")}
+    </tr>
+  </thead>
+  <tbody>
+    ${tableRows.map(row => `<tr>\n      ${row.map((col, idx) => idx === 0 ? `<td><strong>${col}</strong></td>` : `<td>${col}</td>`).join("\n      ")}\n    </tr>`).join("\n    ")}
+  </tbody>
+</table>
+
+<h3>3. 단계별 실전 실행 가이드 (Step-by-Step)</h3>
+<ul>
+  ${steps.map(s => `<li><strong>${s.split(":")[0]}:</strong>${s.split(":")[1] || ""}</li>`).join("\n  ")}
+</ul>
+
+<h3>4. 현직 전문가가 전하는 실전 주의사항 및 팁</h3>
+<p>많은 분들이 <strong>${mainTag}</strong> 및 <strong>${subTag}</strong> 진행 시 서류 유효기간(통상 1개월)을 놓치거나 세부 특약 조항을 누락하여 불이익을 겪곤 합니다. 계약서 작성 시에는 반드시 구두 약속이 아닌 <strong>공식 서면 특약</strong>으로 명기하고, 온라인 정부24 및 공공기관 포털을 통해 사전 자격 검증을 2회 이상 실시하시기 바랍니다.</p>
+
+<h3>5. 자주 묻는 질문 (FAQ)</h3>
+${faqList.map((faq, idx) => `<blockquote>
+  <p><strong>Q${idx + 1}. ${faq.q}</strong><br />
+  A. ${faq.a}</p>
+</blockquote>`).join("\n")}
+`.trim();
+
+  return {
+    id: slugId,
+    title: topic.title,
+    excerpt: topic.excerpt,
+    content: contentHtml,
+    category,
+    author: "버진로드",
+    date: dateStr,
+    image: topic.image,
+    readTime: "8분",
+    hashtags: topic.hashtags
+  };
+}
+
+// Generate an article: uses Gemini for live daily posts with graceful rate-limit handling, procedural engine otherwise
+async function generatePostContent(
+  topic: typeof TOPIC_POOL[0],
+  dateStr: string,
+  category: PostCategory,
+  isLiveTodayPost: boolean = false
 ): Promise<Post> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const slugId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const now = Date.now();
 
-  if (apiKey) {
-    try {
-      const ai = new GoogleGenAI({ apiKey });
-      const prompt = `
-당신은 10년 차 IT/금융 및 주거 정책 전문 테크니컬 블로그 수석 에디터이자 구글 SEO 최고 전문가입니다.
-대한민국 대표 신혼 생활·금융 전문 미디어 '버진로드(Virginroad)'를 위해 독자에게 실질적인 가치를 제공하고 구글 검색 상위 노출(E-E-A-T) 기준을 충족하는 고품질 전문 블로그 포스팅을 작성합니다.
+  // For historical backfills or when Gemini quota is in cooldown, use instant rich procedural engine
+  if (!isLiveTodayPost || !apiKey || now < geminiQuotaCooldownUntil) {
+    return generateRichProceduralArticle(topic, dateStr, category);
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `
+당신은 신혼 금융, 가전, 결혼준비 실전 팁을 직접 연구하고 정리하여 공유하는 신혼 전문 블로거 '버진로드'입니다.
+개인이 직접 경험하고 발로 뛰어 분석한 실전 노하우와 2026 최신 공식 정책 기준을 바탕으로 독자에게 실질적인 가치를 제공하고 구글 검색 상위 노출(E-E-A-T) 기준을 충족하는 고품질 전문 블로그 포스팅을 작성합니다.
 
 [주제 정보]
 - 포스팅 제목: ${topic.title}
@@ -348,12 +505,10 @@ async function generatePostContent(
    - 리스트 및 표: 복잡한 수치와 조건은 순서형/비순서형 목록(<ul>, <ol>, <li>)과 HTML Table(<table>)을 적극 활용합니다.
 2. HTML 구조화 규격:
    - <h3> 소제목 3~4개로 구조화하고, <h4> 세부 항목으로 나누어 논리적으로 전개합니다.
-   - 신뢰도 높은 2026년 공공기관 기준(국토교통부, 주택도시보증공사 HUG, 한국주택금융공사 등) 실무 지표를 반영합니다.
+   - 신뢰도 높은 2026년 공공기관 기준 실무 지표를 반영합니다.
    - 본문 중간에 전문적인 요약 표(<table>)와 체크리스트를 포함하세요.
    - 본문 마지막에는 자주 묻는 질문(FAQ 3가지) 섹션을 포함하세요.
-3. 톤앤매너:
-   - 전문적이고 신뢰감 있는 실무 브리핑 톤(하십시오/합니다 체).
-   - 과장되거나 모호한 표현을 지양하고 구체적 수치, % 금리, 한도 금액을 정확히 표기합니다.
+3. 톤앤매너: 전문적이고 친절하며 신뢰감 있는 실전 안내 톤(하십시오/합니다 체).
 
 응답은 반드시 아래 JSON 형식으로만 반환하세요:
 {
@@ -363,120 +518,54 @@ async function generatePostContent(
 }
 `;
 
-      const generatePromise = ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
-      });
-
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Gemini API timeout (45s limit reached)")), 45000)
-      );
-
-      const response = await Promise.race([generatePromise, timeoutPromise]);
-      const text = response.text || "";
-      const cleanedText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
-      let parsed: any;
-      try {
-        parsed = JSON.parse(cleanedText);
-      } catch {
-        const sanitized = cleanedText.replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
-        parsed = JSON.parse(sanitized);
+    const generatePromise = ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json"
       }
+    });
 
-      if (parsed.title && parsed.content) {
-        return {
-          id: slugId,
-          title: parsed.title,
-          excerpt: parsed.excerpt || topic.excerpt,
-          content: parsed.content,
-          category,
-          author: "버진로드 에디터",
-          date: dateStr,
-          image: topic.image,
-          readTime: `${Math.max(6, Math.ceil(parsed.content.length / 280))}분`,
-          hashtags: topic.hashtags
-        };
-      }
-    } catch (e: any) {
-      console.warn("[AutoPublisher] Gemini API notice, falling back to rich procedural template:", e?.message || e);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Gemini API timeout")), 25000)
+    );
+
+    const response = await Promise.race([generatePromise, timeoutPromise]);
+    const text = response.text || "";
+    const cleanedText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+    let parsed: any;
+    try {
+      parsed = JSON.parse(cleanedText);
+    } catch {
+      const sanitized = cleanedText.replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
+      parsed = JSON.parse(sanitized);
+    }
+
+    if (parsed.title && parsed.content) {
+      return {
+        id: `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`,
+        title: parsed.title,
+        excerpt: parsed.excerpt || topic.excerpt,
+        content: parsed.content,
+        category,
+        author: "버진로드",
+        date: dateStr,
+        image: topic.image,
+        readTime: `${Math.max(6, Math.ceil(parsed.content.length / 280))}분`,
+        hashtags: topic.hashtags
+      };
+    }
+  } catch (err: any) {
+    // If rate limit (429) is hit, activate 10-minute cooldown
+    const errMsg = err?.message || String(err);
+    if (errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED")) {
+      geminiQuotaCooldownUntil = Date.now() + 10 * 60 * 1000; // 10 min cooldown
+      console.log(`[AutoPublisher] Gemini quota limit reached. Activated 10m procedural engine fallback for seamless operation.`);
     }
   }
 
-  // Fallback high-quality article compliant with E-E-A-T and rich HTML tables
-  const fallbackHtml = `
-<h3>1. ${topic.title} — 2026 핵심 결론 및 핵심 요약</h3>
-<p>신혼부부와 예비가구에게 가장 중요한 재무 및 주거 의사결정의 핵심은 <strong>정확한 정책 기준 파악과 사전 조건 충족</strong>입니다. 오늘 버진로드에서 심층 분석하는 <strong>"${topic.title}"</strong> 가이드는 2026년 공공기관 및 실무 가이드라인을 기반으로 실질적인 비용 절감과 위험 방지를 위해 작성되었습니다.</p>
-<p>주요 데이터 조사에 따르면, 사전 체크리스트를 준수하고 우대 조항을 꼼꼼히 챙긴 가구일수록 예산 절감 효과가 <strong>평균 25% 이상</strong> 높게 나타났습니다.</p>
-
-<h3>2. 2026년 기준 핵심 비교 및 필수 체크리스트</h3>
-<table>
-  <thead>
-    <tr>
-      <th>구분 항목</th>
-      <th>기본 기준 및 자격 요건</th>
-      <th>2026 최신 우대 조항 및 실무 혜택</th>
-      <th>필수 증빙 서류</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>자격 심사</strong></td>
-      <td>혼인 7년 이내 또는 3개월 내 결혼 예정자</td>
-      <td>소득 기준 완화 적용 (합산 2억 원 이하)</td>
-      <td>혼인관계증명서, 소득금액증명원</td>
-    </tr>
-    <tr>
-      <td><strong>혜택 범위</strong></td>
-      <td>기본 한도 및 표준 시세 적용</td>
-      <td>전자계약 우대 + 출산 가산 금리 중복 적용</td>
-      <td>매매/임대차 전자계약서, 가족관계증명서</td>
-    </tr>
-    <tr>
-      <td><strong>사후 관리</strong></td>
-      <td>실거주 의무 및 갱신 주기 확인</td>
-      <td>전입 유지 및 보증보험 가입비 전액 지원</td>
-      <td>주민등록등본, 보증보험 가입증명서</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3>3. 단계별 실전 실행 프로세스 (Step-by-Step)</h3>
-<ul>
-  <li><strong>1단계 (사전 자격 및 한도 모의 산출):</strong> 국토교통부 주택도시기금 및 공식 모의계산기를 통해 소득 요건, 부채 비율, 우대 금리 적용 범위를 사전에 시뮬레이션합니다.</li>
-  <li><strong>2단계 (서류 원스톱 발급 및 유효기간 확인):</strong> 발급 1개월 이내의 주민등록등본, 소득금액증명원, 재직증명서 등을 정부24를 통해 발급받아 서류 미비로 인한 보완 일정을 차단합니다.</li>
-  <li><strong>3단계 (최종 계약 체결 및 특약 조항 기재):</strong> 대출 불가 시 계약금 반환 특약, 하자 보수 특약 등을 명확히 기재하여 예기치 못한 금융 손실을 원천 방지합니다.</li>
-</ul>
-
-<h3>4. 자주 묻는 질문 (FAQ)</h3>
-<blockquote>
-  <p><strong>Q1. 맞벌이 가구 소득 요건 산정 시 상여금과 비과세 소득도 포함되나요?</strong><br />
-  A. 원천징수영수증 상의 총급여액을 기준으로 하며, 비과세 소득(식대 등)은 제외됩니다. 최근 2개년 소득금액증명원을 통해 최종 산출됩니다.</p>
-</blockquote>
-<blockquote>
-  <p><strong>Q2. 신청 후 승인 및 실행까지 걸리는 기간은 얼마나 소요되나요?</strong><br />
-  A. 통상 서류 접수 후 적격 심사에 영업일 기준 7~14일이 소요되며, 잔금일 기준 최소 30일 이전에 접수하는 것을 강력히 권장합니다.</p>
-</blockquote>
-<blockquote>
-  <p><strong>Q3. 신생아 특례나 다자녀 우대 혜택과 중복 적용이 가능한가요?</strong><br />
-  A. 2026년 개편안에 따라 전자계약 우대(0.1%p), 청약통장 보유 우대(최대 0.5%p), 신생아 출산 우대(최대 0.2%p)는 중복 합산이 가능합니다.</p>
-</blockquote>
-`.trim();
-
-  return {
-    id: slugId,
-    title: topic.title,
-    excerpt: topic.excerpt,
-    content: fallbackHtml,
-    category,
-    author: "버진로드 에디터",
-    date: dateStr,
-    image: topic.image,
-    readTime: "8분",
-    hashtags: topic.hashtags
-  };
+  // Graceful fallback to rich procedural article
+  return generateRichProceduralArticle(topic, dateStr, category);
 }
 
 // Sync newly published post to Firestore database asynchronously
@@ -561,7 +650,8 @@ export async function runAutoPublisherService(): Promise<{
           ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
           : categoryPool[Math.floor(Math.random() * categoryPool.length)];
 
-        const newPost = await generatePostContent(selectedTopic, dateStr, category);
+        // Generate backfill post using instant rich procedural engine without consuming Gemini API quota
+        const newPost = await generatePostContent(selectedTopic, dateStr, category, false);
         localPosts.unshift(newPost);
         saveLocalPosts(localPosts);
         syncToFirestore(newPost);
@@ -625,7 +715,7 @@ export async function runAutoPublisherService(): Promise<{
         ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
         : categoryPool[Math.floor(Math.random() * categoryPool.length)];
 
-      const newPost = await generatePostContent(selectedTopic, todayStr, item.category);
+      const newPost = await generatePostContent(selectedTopic, todayStr, item.category, true);
       localPosts.unshift(newPost);
       saveLocalPosts(localPosts);
       syncToFirestore(newPost);

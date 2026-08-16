@@ -15,7 +15,7 @@ import { auth, db } from "./lib/firebase";
 import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType, recordExposuresBulk, fetchAllExposures } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { calculateReadTime, slugify, stripHtml } from "./lib/utils";
+import { calculateReadTime, slugify, stripHtml, formatPostDateTime } from "./lib/utils";
 
 type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
@@ -110,7 +110,7 @@ function setArticleJsonLd(post: Post | null) {
     "image": [post.image],
     "datePublished": post.date,
     "dateModified": post.updated || post.date,
-    "author": { "@type": "Person", "name": post.author || "버진로드 편집부" },
+    "author": { "@type": "Person", "name": post.author || "버진로드" },
     "publisher": {
       "@type": "Organization",
       "name": "상상아트",
@@ -360,10 +360,14 @@ export default function App() {
     });
     // Dynamically sanitize any fallback branding to 버진로드 (Virginroad) with safety guards
     const sanitized = combined.map(p => {
-      const author = p.author === "홈코노미뉴스 편집부" ? "버진로드 편집부" : (p.author || "버진로드 에디터");
+      const author = p.author ? p.author.replace(/편집부|에디터|편집국|기자/g, "").trim() || "버진로드" : "버진로드";
       const title = (p.title || "").replace(/홈코노미뉴스/g, "버진로드");
       const excerpt = (p.excerpt || "").replace(/홈코노미뉴스/g, "버진로드");
-      let content = (p.content || "").replace(/홈코노미뉴스/g, "버진로드");
+      let content = (p.content || "")
+        .replace(/홈코노미뉴스/g, "버진로드")
+        .replace(/버진로드 편집부의 정밀 취재에 따르면/g, "직접 검토하고 분석한 결과에 따르면")
+        .replace(/버진로드 편집부에서/g, "직접 꼼꼼하게 정리한")
+        .replace(/버진로드 편집부/g, "버진로드");
       // 만약 MOCK_POSTS에 포함되지 않은 게시글인 경우(예: DB에서 불러온 글) 콘텐츠 확장 및 이미지 최적화를 강제해 줍니다.
       if (!MOCK_POSTS.some(mp => mp.id === p.id)) {
         content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id, p.image);
@@ -476,10 +480,10 @@ export default function App() {
       ogImageAlt = currentPost.title;
     } else if (currentPage === "about") {
       title = `소개 | ${SITE_NAME}`;
-      description = `${SITE_NAME}는 신혼·출산·주거·세금 정책부터 가정 재무까지 다루는 가정경제·생활정책 전문 미디어입니다.`;
+      description = `${SITE_NAME}는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.`;
       canonical = `${SITE_URL}/about`;
       ogImage = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&h=630&q=80";
-      ogImageAlt = `${SITE_NAME} 서비스 소개 및 편집부`;
+      ogImageAlt = `${SITE_NAME} 서비스 소개`;
     } else if (currentPage === "policy") {
       title = `2026 가정경제·생활정책 핵심 정보 | ${SITE_NAME}`;
       description = `2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 한눈에 정리합니다. 정책 변경 시 신속 반영.`;
@@ -912,7 +916,7 @@ export default function App() {
                                   <span className="text-[11px] font-bold text-[#E8745F]">신혼금융</span>
                                   <span className="w-1 h-1 bg-[#B5B3C8] rounded-full" />
                                   <span className="text-[11px] text-[#8A87A0]">
-                                    {finPosts[0].date.replace(/-/g, ". ")} · {calculateReadTime(finPosts[0].content)} 읽기
+                                    {formatPostDateTime(finPosts[0].date, finPosts[0].id)}
                                   </span>
                                 </div>
                                 <h3 className="text-[19px] sm:text-[21px] font-bold leading-[1.35] text-[#1E1B2E] mb-2.5 break-keep group-hover:text-[#E8745F] transition-colors">
@@ -940,8 +944,8 @@ export default function App() {
                                         <h4 className="text-[14px] font-bold leading-[1.4] text-[#1E1B2E] break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors mb-1">
                                           {post.title}
                                         </h4>
-                                        <p className="text-[11px] text-[#8A87A0] font-medium">
-                                          {post.date.replace(/-/g, ". ")} · {calculateReadTime(post.content)}
+                                        <p className="text-[11px] text-[#8A87A0] font-medium tabular-nums">
+                                          {formatPostDateTime(post.date, post.id)}
                                         </p>
                                       </div>
                                     </button>
@@ -1127,7 +1131,7 @@ export default function App() {
                 버진로드 소개
               </h1>
               <p className="text-[16px] leading-[1.8] text-[#3F3D56] mb-10 break-keep">
-                버진로드(Virginroad)는 결혼 준비, 신혼 가전, 그리고 디딤돌/버팀목 대출이나 청약 가점 시뮬레이션 등 예비·신혼부부의 주거 마련과 금융 의사결정에 직접적인 영향을 미치는 정보를 제공하는 신혼 생활 정책 및 금융 전문 미디어입니다. 평균값 뒤에 가려진 '우리 집만의 정답'을 확실한 공공 기준 자료에 의거해 짚어드립니다.
+                버진로드(Virginroad)는 결혼 준비, 신혼 가전, 그리고 디딤돌/버팀목 대출이나 청약 가점 시뮬레이션 등 예비·신혼부부의 주거 마련과 금융 의사결정에 필요한 정보를 직접 꼼꼼히 조사하고 계산하여 공유하는 개인 전문 블로그입니다. 복잡한 규정 뒤에 가려진 '우리 집만의 정답'을 확실한 공공 기준 자료에 의거해 알기 쉽게 짚어드립니다.
               </p>
 
               <h2>우리의 목표</h2>
@@ -1178,7 +1182,7 @@ export default function App() {
               <p>회사는 다음의 목적을 위하여 최소한의 개인정보를 수집 및 처리하고 있으며, 다음 목적 이외의 용도로는 절대 이용하지 않습니다.</p>
               <ul>
                 <li><strong>웹사이트 운영 및 통계 분석:</strong> 방문자수 통계, 국가별/브라우저별 통계 및 시뮬레이션 계산 사용량 분석</li>
-                <li><strong>일반 제휴 및 이메일 문의 응대:</strong> 이메일을 통한 사업 제휴 제안 및 서비스 관련 문의 사항의 사실 확인 및 처리 결과 보도 회신</li>
+                <li><strong>일반 제휴 및 이메일 문의 응대:</strong> 이메일을 통한 사업 제휴 제안 및 서비스 관련 문의 사항의 사실 확인 및 처리 결과 회신</li>
                 <li><strong>제3자 광고 게재 및 분석:</strong> Google AdSense 솔루션을 적용한 타겟 맞춤형 온라인 광고 배너 송출 및 클릭 로그 분석</li>
               </ul>
 
@@ -1308,7 +1312,7 @@ export default function App() {
 
               <h2>2026년 3월 15일</h2>
               <h3>버진로드 정식 서비스 오픈</h3>
-              <p>신혼 생활 정책 및 금융 전문 미디어 버진로드가 정식 발족되었습니다. 유용한 계산 기구들과 양질의 공식 레코드 중심 보도를 기대해 주세요.</p>
+              <p>신혼 생활 정책 및 금융 정보를 다루는 블로그 버진로드가 오픈되었습니다. 유용한 계산기들과 알기 쉬운 실전 가이드를 전해드립니다.</p>
             </motion.div>
           )}
 
@@ -1373,16 +1377,8 @@ export default function App() {
 
                 {/* Meta */}
                 <div className="font-badge flex items-center justify-between py-5 border-y border-[#E2E8F0] mb-10">
-                  <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-[14px] font-semibold text-[#4B5563]">
-                    <span className="font-bold text-[#111827]">{currentPost.author}</span>
-                    <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
-                    <span>{currentPost.date.replace(/-/g, ". ")}</span>
-                    <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
-                    <span>{calculateReadTime(currentPost.content)} 읽기</span>
-                    <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
-                    <span className="inline-flex items-center gap-1.5">
-                      <Eye className="w-4 h-4 text-[#9CA3AF]" /> 조회수 {(views[currentPost.id] || 0).toLocaleString()}
-                    </span>
+                  <div className="flex items-center text-[14px] sm:text-[15px] font-semibold text-[#4B5563]">
+                    <span className="tabular-nums">{formatPostDateTime(currentPost.date, currentPost.id)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -1592,7 +1588,7 @@ export default function App() {
                               <span className="text-[13px] font-medium text-[#1E1B2E] leading-[1.45] break-keep line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
                                 {post.title}
                               </span>
-                              <span className="text-[11px] text-[#8A87A0]">{post.date.replace(/-/g, ". ")}</span>
+                              <span className="text-[11px] text-[#8A87A0] tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
                             </button>
                           </li>
                         ))}
@@ -1892,8 +1888,8 @@ export default function App() {
                                     {post.title}
                                   </h5>
                                 </div>
-                                <div className="text-[11px] text-[#8A87A0] mt-2">
-                                  {post.date.replace(/-/g, ". ")}
+                                <div className="text-[11px] text-[#8A87A0] mt-2 tabular-nums">
+                                  {formatPostDateTime(post.date, post.id)}
                                 </div>
                               </button>
                             ))}
@@ -1952,7 +1948,7 @@ export default function App() {
                                 <span className="text-[13px] font-medium text-[#1E1B2E] leading-[1.45] break-keep line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
                                   {post.title}
                                 </span>
-                                <span className="text-[11px] text-[#8A87A0]">{post.date.replace(/-/g, ". ")}</span>
+                                <span className="text-[11px] text-[#8A87A0] tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
                               </button>
                             </li>
                           ))}

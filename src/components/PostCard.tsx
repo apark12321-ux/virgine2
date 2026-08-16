@@ -1,7 +1,5 @@
 import { Post } from "../types";
-import { calculateReadTime } from "../lib/utils";
-import { Clock, Eye } from "lucide-react";
-import { formatViews } from "../lib/views";
+import { formatPostDateTime } from "../lib/utils";
 
 interface PostCardProps {
   key?: string | number;
@@ -18,8 +16,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   "결혼준비": { bg: "#FFD2BD", text: "#6B2418" },
 };
 
-export function PostCard({ post, onClick, views, exposures }: PostCardProps) {
-  const dynamicReadTime = calculateReadTime(post.content);
+export function PostCard({ post, onClick }: PostCardProps) {
   const colors = CATEGORY_COLORS[post.category] || CATEGORY_COLORS["신혼금융"];
 
   return (
@@ -65,18 +62,8 @@ export function PostCard({ post, onClick, views, exposures }: PostCardProps) {
         </p>
 
         {/* Meta */}
-        <div className="font-badge flex items-center gap-2 text-[14px] font-semibold text-[#4B5563] pt-3.5 border-t border-[#EDEEF7]">
-          <span>{post.date.replace(/-/g, ". ")}</span>
-          <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
-          <Clock className="w-4 h-4 text-[#9CA3AF]" />
-          <span>{dynamicReadTime}</span>
-          {typeof views === "number" && views > 0 && (
-            <>
-              <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
-              <Eye className="w-4 h-4 text-[#9CA3AF]" />
-              <span>{formatViews(views)}</span>
-            </>
-          )}
+        <div className="font-badge flex items-center text-[13px] sm:text-[14px] font-semibold text-[#4B5563] pt-3.5 border-t border-[#EDEEF7]">
+          <span className="tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
         </div>
       </div>
     </article>

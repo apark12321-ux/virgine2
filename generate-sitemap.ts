@@ -61,7 +61,7 @@ async function fetchFirestorePosts(): Promise<any[]> {
       const excerpt = fields.excerpt?.stringValue || "";
       const content = fields.content?.stringValue || "";
       const category = fields.category?.stringValue || "결혼준비";
-      const author = fields.author?.stringValue || "버진로드 에디터";
+      const author = fields.author?.stringValue || "버진로드";
       const date = fields.date?.stringValue || new Date().toISOString().split("T")[0];
       const image = fields.image?.stringValue || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
       const readTime = fields.readTime?.stringValue || "3분";
@@ -179,7 +179,7 @@ async function generate() {
     const postUrl = `${baseUrl}/post/${slug}`;
     const escapedTitle = escapeXml(post.title || "무제");
     const escapedExcerpt = escapeXml(post.excerpt || "");
-    const escapedAuthor = escapeXml(post.author || "버진로드 에디터");
+    const escapedAuthor = escapeXml(post.author || "버진로드");
     const escapedCategory = escapeXml(post.category || "결혼준비");
     const escapedLink = escapeXml(postUrl);
     const escapedImage = escapeXml(post.image || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800");

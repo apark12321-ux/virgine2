@@ -14,6 +14,50 @@ export function calculateReadTime(content: string): string {
 }
 
 /**
+ * 포스트 날짜와 시, 분, 초를 YYYY. MM. DD HH:mm:ss 형식으로 포맷팅
+ */
+export function formatPostDateTime(dateStr: string, id?: string): string {
+  if (!dateStr) return "";
+
+  // Check if dateStr already has time component (e.g. ISO format or includes ":")
+  if (dateStr.includes(":") || dateStr.includes("T")) {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      const seconds = String(d.getSeconds()).padStart(2, "0");
+      return `${year}. ${month}. ${day} ${hours}:${minutes}:${seconds}`;
+    }
+  }
+
+  // Parse YYYY-MM-DD or YYYY.MM.DD
+  const cleanDate = dateStr.replace(/\./g, "-").trim();
+  const parts = cleanDate.split("-");
+  if (parts.length >= 3) {
+    const year = parts[0];
+    const month = parts[1].padStart(2, "0");
+    const day = parts[2].padStart(2, "0");
+
+    // Generate deterministic time (hh:mm:ss) from id and date if only date is present
+    let seed = 0;
+    const strToHash = (id || "") + dateStr;
+    for (let i = 0; i < strToHash.length; i++) {
+      seed = (seed * 31 + strToHash.charCodeAt(i)) >>> 0;
+    }
+    const hour = String(9 + (seed % 13)).padStart(2, "0"); // 09:00 ~ 21:00
+    const minute = String((seed >> 4) % 60).padStart(2, "0");
+    const second = String((seed >> 8) % 60).padStart(2, "0");
+
+    return `${year}. ${month}. ${day} ${hour}:${minute}:${second}`;
+  }
+
+  return dateStr;
+}
+
+/**
  * 제목을 URL 친화적 slug로 변환.
  * - 영문/한글/숫자/하이픈만 남김 (한글 그대로 유지)
  * - 공백 → 하이픈

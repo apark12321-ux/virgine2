@@ -193,7 +193,7 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-12": {
     persona: {
-      name: "정혜선 에디터",
+      name: "정혜선 칼럼니스트",
       role: "19년 차 신혼가전·리빙 전문 칼럼니스트",
       avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120",
       badge: "가전전문",

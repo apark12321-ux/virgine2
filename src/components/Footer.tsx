@@ -46,7 +46,7 @@ export function Footer({ onNavigate }: FooterProps) {
               </div>
             </button>
             <p className="text-[14px] leading-[1.75] text-[#374151] max-w-md break-keep">
-              결혼 준비부터 디딤돌·버팀목 대출, 신생아 특례대출, 청약 가점 계산, 혼수 가전 패키지 비교까지 예비·신혼부부를 위한 종합 금융·생활 가이드 미디어, 버진로드입니다.
+              결혼 준비부터 디딤돌·버팀목 대출, 신생아 특례대출, 청약 가점 계산, 혼수 가전 패키지 비교까지 예비·신혼부부를 위한 실전 금융·생활 백서, 버진로드입니다.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="badge-coral">신혼 금융·생활 가이드</span>

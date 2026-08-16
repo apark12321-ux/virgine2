@@ -236,7 +236,7 @@ async function fetchFirestorePosts(): Promise<any[]> {
       const excerpt = fields.excerpt?.stringValue || "";
       const content = fields.content?.stringValue || "";
       const category = fields.category?.stringValue || "결혼준비";
-      const author = fields.author?.stringValue || "버진로드 에디터";
+      const author = fields.author?.stringValue || "버진로드";
       const date = fields.date?.stringValue || new Date().toISOString().split("T")[0];
       const image = fields.image?.stringValue || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
       const readTime = fields.readTime?.stringValue || "3분";
@@ -599,7 +599,7 @@ async function startServer() {
         const postUrl = `${hostUrl}/post/${slug}`;
         const escapedTitle = escapeXml(post.title || "무제");
         const escapedExcerpt = escapeXml(post.excerpt || "");
-        const escapedAuthor = escapeXml(post.author || "버진로드 에디터");
+        const escapedAuthor = escapeXml(post.author || "버진로드");
         const escapedCategory = escapeXml(post.category || "결혼준비");
         const escapedLink = escapeXml(postUrl);
         const escapedImage = escapeXml(post.image || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800");
@@ -803,7 +803,7 @@ ${xmlItems}
         excerpt: excerpt.trim(),
         content: finalContent,
         category,
-        author: "버진로드 에디터",
+        author: "버진로드",
         date: kstDate,
         image,
         readTime,
@@ -1134,7 +1134,7 @@ Sitemap: ${hostUrl}/sitemap.xml
             "image": [image],
             "datePublished": post.date,
             "dateModified": post.updated || post.date,
-            "author": { "@type": "Person", "name": post.author || "버진로드 에디터" },
+            "author": { "@type": "Person", "name": post.author || "버진로드" },
             "publisher": {
               "@type": "Organization",
               "name": "버진로드",
@@ -1195,7 +1195,7 @@ Sitemap: ${hostUrl}/sitemap.xml
 
         if (pathname === "/about") {
           title = "소개 | 버진로드";
-          description = "버진로드는 신혼·출산·주거·세금 정책부터 가정 재무까지 다루는 가정경제·생활정책 전문 미디어입니다.";
+          description = "버진로드는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.";
         } else if (pathname === "/policy") {
           title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
           description = "2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.";
