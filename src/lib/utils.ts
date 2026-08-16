@@ -41,15 +41,16 @@ export function formatPostDateTime(dateStr: string, id?: string): string {
     const month = parts[1].padStart(2, "0");
     const day = parts[2].padStart(2, "0");
 
-    // Generate deterministic time (hh:mm:ss) from id and date if only date is present
+    // Generate deterministic positive time (hh:mm:ss) from id and date if only date is present
     let seed = 0;
     const strToHash = (id || "") + dateStr;
     for (let i = 0; i < strToHash.length; i++) {
-      seed = (seed * 31 + strToHash.charCodeAt(i)) >>> 0;
+      seed = ((seed << 5) - seed + strToHash.charCodeAt(i)) | 0;
     }
-    const hour = String(9 + (seed % 13)).padStart(2, "0"); // 09:00 ~ 21:00
-    const minute = String((seed >> 4) % 60).padStart(2, "0");
-    const second = String((seed >> 8) % 60).padStart(2, "0");
+    const positiveSeed = Math.abs(seed);
+    const hour = String(9 + (positiveSeed % 13)).padStart(2, "0"); // 09:00 ~ 21:00
+    const minute = String(Math.floor(positiveSeed / 13) % 60).padStart(2, "0");
+    const second = String(Math.floor(positiveSeed / 780) % 60).padStart(2, "0");
 
     return `${year}. ${month}. ${day} ${hour}:${minute}:${second}`;
   }
