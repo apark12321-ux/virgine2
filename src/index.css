@@ -1,9 +1,13 @@
 @import "tailwindcss";
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+@import url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css');
 
 @theme {
-  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
-  --font-heading: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --font-sans: "Pretendard Variable", "Pretendard", "SUIT Variable", "SUIT", -apple-system, BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --font-heading: "SUIT Variable", "SUIT", "Pretendard Variable", "Pretendard", "GmarketSans", "Gothic A1", -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif;
+  --font-display: "GmarketSans", "SUIT Variable", "Gothic A1", "Pretendard Variable", "Plus Jakarta Sans", sans-serif;
+  --font-serif: "Noto Serif KR", "Batang", "Apple SD Gothic Neo", serif;
+  --font-badge: "SUIT Variable", "SUIT", "Pretendard Variable", "Pretendard", sans-serif;
 
   /* Option B — 대한민국 신혼 대표 */
   --color-coral-50: #F0F2FC;
@@ -120,6 +124,12 @@
   }
 }
 
+.font-display { font-family: var(--font-display); }
+.font-heading { font-family: var(--font-heading); }
+.font-badge { font-family: var(--font-badge); }
+.font-serif { font-family: var(--font-serif); }
+.font-sans { font-family: var(--font-sans); }
+
 .text-coral { color: #E8745F; }
 .text-coral-dark { color: #D45A45; }
 .bg-coral { background-color: #E8745F; }
@@ -138,23 +148,25 @@
 
 .article-body {
   font-family: var(--font-sans);
-  font-size: 20px;
-  line-height: 1.88;
+  font-size: 19.5px;
+  line-height: 1.9;
   color: #111827;
 }
 .article-body .toc {
-  background-color: #F5F6FD;
-  border: 1px solid #E2E4F0;
-  border-radius: 14px;
+  background-color: #F8FAFD;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
   padding: 26px 30px;
-  margin: 36px 0 52px;
+  margin: 36px 0 48px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 .article-body .toc > p:first-child {
-  font-size: 14px;
+  font-family: var(--font-badge);
+  font-size: 15px;
   font-weight: 800;
   color: #E8745F;
   margin: 0 0 16px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .article-body .toc ul {
@@ -165,7 +177,7 @@
   gap: 12px;
 }
 .article-body .toc li {
-  font-size: 16.5px;
+  font-size: 16px;
   font-weight: 600;
   color: #374151;
   line-height: 1.6;
@@ -173,37 +185,40 @@
 .article-body .toc li a {
   color: #374151;
   text-decoration: none;
-  transition: color 0.15s;
+  transition: all 0.15s;
 }
 .article-body .toc li a:hover {
   color: #E8745F;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
 }
 /* 강력한 훅 도입부 (글 첫 단락 강조) */
 .article-body .hook {
-  font-size: 19.5px;
-  line-height: 1.8;
+  font-size: 20px;
+  line-height: 1.85;
   color: #111827;
-  background: linear-gradient(180deg, #FFF6EE 0%, #F5F6FD 100%);
+  background: linear-gradient(180deg, #FFF7F3 0%, #F5F6FD 100%);
   border-left: 4px solid #E8745F;
-  border-radius: 0 12px 12px 0;
-  padding: 22px 26px;
-  margin: 0 0 38px;
+  border-radius: 0 14px 14px 0;
+  padding: 24px 28px;
+  margin: 0 0 40px;
   font-weight: 600;
+  letter-spacing: -0.015em;
 }
 /* 핵심 정리 박스 */
 .article-body .summary-box {
-  background: #312E81;
-  border-radius: 16px;
-  padding: 30px 32px;
-  margin: 48px 0 28px;
+  background: #1E1B2E;
+  border-radius: 18px;
+  padding: 32px 34px;
+  margin: 48px 0 32px;
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .article-body .summary-box > p:first-child {
-  font-size: 17.5px;
+  font-family: var(--font-heading);
+  font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: #FFB4A2;
   margin: 0 0 18px;
   letter-spacing: -0.01em;
 }
@@ -216,8 +231,8 @@
 }
 .article-body .summary-box li {
   font-size: 16.5px;
-  line-height: 1.65;
-  color: #E0E1F5;
+  line-height: 1.7;
+  color: #E2E8F0;
   padding-left: 28px;
   position: relative;
   font-weight: 500;
@@ -227,7 +242,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  color: #FFB4A2;
+  color: #E8745F;
   font-weight: 800;
 }
 .article-body .summary-box strong,
@@ -241,56 +256,56 @@
 }
 .article-body h2 {
   font-family: var(--font-heading);
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: -0.028em;
-  line-height: 1.32;
+  letter-spacing: -0.025em;
+  line-height: 1.35;
   color: #111827;
-  margin: 64px 0 22px;
+  margin: 54px 0 20px;
   padding-bottom: 12px;
-  border-bottom: 3px solid #EEF0FB;
+  border-bottom: 2px solid #EEF0FB;
 }
 .article-body h3 {
   font-family: var(--font-heading);
-  font-size: 26px;
+  font-size: 23px;
   font-weight: 800;
-  letter-spacing: -0.022em;
+  letter-spacing: -0.02em;
   line-height: 1.4;
-  color: #111827;
-  margin: 42px 0 18px;
+  color: #1E1B2E;
+  margin: 38px 0 16px;
 }
 .article-body h4 {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.015em;
-  color: #111827;
-  margin: 32px 0 14px;
+  color: #1E1B2E;
+  margin: 28px 0 12px;
 }
 .article-body p {
-  font-size: 20px;
-  line-height: 1.88;
-  color: #111827;
-  margin-bottom: 22px;
+  font-size: 19.5px;
+  line-height: 1.9;
+  color: #1E1B2E;
+  margin-bottom: 24px;
   letter-spacing: -0.015em;
 }
 .article-body p strong {
   color: #111827;
   font-weight: 800;
-  background: linear-gradient(180deg, transparent 65%, #EEF0FB 65%);
+  background: linear-gradient(180deg, transparent 65%, #FFEBE6 65%);
   padding: 0 3px;
 }
 .article-body ul:not(.toc ul) {
   list-style: none;
   padding-left: 0;
-  margin: 24px 0;
+  margin: 26px 0;
   display: grid;
   gap: 14px;
 }
 .article-body ul:not(.toc ul) li {
-  font-size: 20px;
-  line-height: 1.78;
-  color: #111827;
+  font-size: 19px;
+  line-height: 1.8;
+  color: #1E1B2E;
   padding-left: 28px;
   position: relative;
   letter-spacing: -0.015em;
@@ -308,13 +323,13 @@
 .article-body ul:not(.toc ul) li strong {
   color: #111827;
   font-weight: 800;
-  background: linear-gradient(180deg, transparent 65%, #EEF0FB 65%);
+  background: linear-gradient(180deg, transparent 65%, #FFEBE6 65%);
   padding: 0 3px;
 }
 .article-body a {
   color: #D45A45;
   text-decoration: underline;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
   font-weight: 600;
 }
@@ -323,52 +338,54 @@
   color: #B0432F;
 }
 .article-body blockquote {
+  font-family: var(--font-serif);
   border-left: 4px solid #E8745F;
-  padding: 16px 0 16px 28px;
-  margin: 38px 0;
-  font-size: 20px;
+  padding: 18px 24px 18px 24px;
+  margin: 36px 0;
+  font-size: 19px;
   line-height: 1.8;
-  color: #111827;
+  color: #1E1B2E;
   font-weight: 600;
-  background: linear-gradient(90deg, #F5F6FD 0%, transparent 100%);
-  border-radius: 0 8px 8px 0;
+  background: linear-gradient(90deg, #FFF7F3 0%, #FAFBFF 100%);
+  border-radius: 0 12px 12px 0;
   letter-spacing: -0.015em;
 }
 .article-body p[class*="text-sm"] {
-  font-size: 15px;
+  font-size: 15.5px;
   color: #4B5563;
-  background-color: #F5F6FD;
+  background-color: #F8FAFD;
   border: 1px solid #E2E4F0;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 18px 22px;
   margin-top: 48px;
   line-height: 1.75;
 }
 .article-body p[class*="text-xs"] {
-  font-size: 13.5px;
+  font-size: 14px;
   color: #6B7280;
 }
 .article-body table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 16px;
-  margin: 30px 0;
-  border-radius: 12px;
+  font-size: 15.5px;
+  margin: 32px 0;
+  border-radius: 14px;
   overflow: hidden;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 .article-body th {
+  font-family: var(--font-heading);
   background-color: #EEF0FB;
   text-align: left;
-  padding: 15px 18px;
+  padding: 16px 18px;
   font-weight: 800;
   color: #111827;
-  border: 1px solid #E2E4F0;
+  border: 1px solid #E2E8F0;
   letter-spacing: -0.01em;
 }
 .article-body td {
   padding: 15px 18px;
-  border: 1px solid #E2E4F0;
+  border: 1px solid #E2E8F0;
   color: #1E1B2E;
   vertical-align: top;
   letter-spacing: -0.012em;

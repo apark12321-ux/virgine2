@@ -5,7 +5,6 @@ import { PostCard } from "./components/PostCard";
 import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
-import { AdSenseSlot } from "./components/AdSenseSlot";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
@@ -1200,11 +1199,9 @@ export default function App() {
               <h2>제4조 (개인정보의 제3자 제공 및 위탁)</h2>
               <p>회사는 이용자의 개인정보를 제1조(개인정보의 처리 목적)에서 명시한 범위 내에서만 처리하며, 사전 동의를 받았거나 사법 당국의 법령에 따른 강제 명령이 있는 외에는 제3자에게 임의로 제공하거나 위탁하지 않습니다.</p>
 
-              <h2>제5조 (쿠키 및 구글 애드센스 광고에 관한 고지)</h2>
-              <p>1. 본 서비스는 구글 주식회사(Google Inc.)가 제공하는 웹 광고 분석 기술 서비스인 Google AdSense를 탑재하여 연동 작동하고 있습니다.<br />
-              2. Google은 사용자가 이전 방문 이력을 기반으로 본 사이트 및 기타 제3자 웹사이트에 맞는 온라인 맞춤 배너 광고를 게재하기 위해 쿠키(Cookie)를 활용할 수 있습니다.<br />
-              3. Google의 광고 및 콘텐츠 네트워크 개인정보 보호정책에 관한 보다 상세한 데이터 활용 양식과 지침은 구글 개인정보처리약관 페이지(<a href="https://policies.google.com/privacy" rel="noopener noreferrer" className="text-[#D45A45] underline hover:text-[#1E1B2E]">https://policies.google.com/privacy</a>)에서 확인할 수 있습니다.<br />
-              4. <strong>쿠키 설치 허용 여부에 관한 제어 수단:</strong> 이용자는 언제든 사용하는 웹 브라우저의 옵션을 조절하여 쿠키 저장을 거부하거나 경고를 받도록 처리할 수 있습니다. 예를 들어, 구글 맞춤 설정 페이지(<a href="https://adssettings.google.com" rel="noopener noreferrer" className="text-[#D45A45] underline hover:text-[#1E1B2E]">https://adssettings.google.com</a>)에서 맞춤 광고 게재 비활성화와 같은 직접 제어가 가능합니다.</p>
+              <h2>제5조 (쿠키에 관한 고지)</h2>
+              <p>1. 본 서비스는 이용자 편의 및 브라우저 세션 관리를 위해 쿠키(Cookie)를 활용할 수 있습니다.<br />
+              2. <strong>쿠키 설치 허용 여부에 관한 제어 수단:</strong> 이용자는 언제든 사용하는 웹 브라우저의 옵션을 조절하여 쿠키 저장을 거부하거나 경고를 받도록 처리할 수 있습니다.</p>
 
               <h2>제6조 (정보주체의 권리·의무 및 그 행사방법)</h2>
               <p>1. 이용자는 회사에 대해 언제든지 개인정보의 열람, 정정, 삭제, 처리정지 요구 등의 권리를 신속히 행사할 수 있습니다.<br />
@@ -1217,7 +1214,7 @@ export default function App() {
               <p>회사는 개인정보를 취급함에 있어 안전성 확보를 위해 다음 각 호의 대책을 기본 수립하고 적용하고 있습니다.</p>
               <ul>
                 <li>안전한 서버 가동망 구축 및 대외 불법 침입 시도 상시 탐지 차단 방화벽 적용</li>
-                <li>개 개인정보 열람 담당 책임자의 인원 수 세밀 통제 및 정기 보안 교육 실시</li>
+                <li>개인정보 열람 담당 책임자의 인원 수 세밀 통제 및 정기 보안 교육 실시</li>
               </ul>
 
               <h2>제9조 (개인정보 보호책임자 정보)</h2>
@@ -1343,51 +1340,53 @@ export default function App() {
             >
               <div className="lg:max-w-[860px]">
                 {/* Breadcrumb */}
-                <nav aria-label="breadcrumb" className="mb-6 text-[12px] text-[#8A87A0]">
-                  <ol className="flex flex-wrap items-center gap-1.5">
+                <nav aria-label="breadcrumb" className="mb-6 text-[13px] font-badge font-semibold text-[#6B7280]">
+                  <ol className="flex flex-wrap items-center gap-2">
                     <li>
                       <button onClick={() => handleNavigate("home")} className="hover:text-[#1E1B2E] transition-colors cursor-pointer">홈</button>
                     </li>
-                    <li aria-hidden="true">/</li>
+                    <li aria-hidden="true" className="text-[#9CA3AF]">/</li>
                     <li>
-                      <button onClick={() => handleNavigate(`category-${currentPost.category}`)} className="hover:text-[#1E1B2E] transition-colors cursor-pointer">
+                      <button onClick={() => handleNavigate(`category-${currentPost.category}`)} className="hover:text-[#1E1B2E] transition-colors cursor-pointer text-[#4F46E5]">
                         {currentPost.category}
                       </button>
                     </li>
                   </ol>
                 </nav>
 
-                {/* Category */}
-                <p className="text-[13px] font-semibold text-[#E8745F] mb-4">
-                  {currentPost.category}
-                </p>
+                {/* Category Badge */}
+                <div className="mb-4">
+                  <span className="font-badge inline-flex items-center text-[13px] font-extrabold px-3.5 py-1.5 rounded-full bg-[#EEF0FB] text-[#B0432F] tracking-tight">
+                    {currentPost.category}
+                  </span>
+                </div>
 
                 {/* Title */}
-                <h1 className="text-[28px] sm:text-[34px] lg:text-[40px] font-bold leading-[1.2] tracking-[-0.025em] text-[#1E1B2E] mb-5 break-keep">
+                <h1 className="font-heading text-[30px] sm:text-[38px] lg:text-[44px] font-extrabold leading-[1.24] tracking-[-0.03em] text-[#111827] mb-6 break-keep">
                   {currentPost.title}
                 </h1>
 
                 {/* Excerpt */}
-                <p className="text-[17px] leading-[1.7] text-[#3F3D56] mb-8 break-keep">
+                <p className="font-sans text-[18px] sm:text-[20px] font-medium leading-[1.8] text-[#374151] mb-8 break-keep tracking-[-0.015em]">
                   {currentPost.excerpt}
                 </p>
 
                 {/* Meta */}
-                <div className="flex items-center justify-between py-5 border-y border-[#D5D8E8] mb-10">
-                  <div className="flex items-center gap-3 text-[13px]">
-                    <span className="font-semibold text-[#1E1B2E]">{currentPost.author}</span>
-                    <span className="w-[2px] h-[2px] bg-[#D5D8E8] rounded-full" />
-                    <span className="text-[#8A87A0]">{currentPost.date.replace(/-/g, ". ")}</span>
-                    <span className="w-[2px] h-[2px] bg-[#D5D8E8] rounded-full" />
-                    <span className="text-[#8A87A0]">{calculateReadTime(currentPost.content)} 읽기</span>
-                    <span className="w-[2px] h-[2px] bg-[#D5D8E8] rounded-full" />
-                    <span className="text-[#8A87A0] inline-flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5" /> 조회수 {(views[currentPost.id] || 0).toLocaleString()}
+                <div className="font-badge flex items-center justify-between py-5 border-y border-[#E2E8F0] mb-10">
+                  <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-[14px] font-semibold text-[#4B5563]">
+                    <span className="font-bold text-[#111827]">{currentPost.author}</span>
+                    <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
+                    <span>{currentPost.date.replace(/-/g, ". ")}</span>
+                    <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
+                    <span>{calculateReadTime(currentPost.content)} 읽기</span>
+                    <span className="w-[3px] h-[3px] bg-[#9CA3AF] rounded-full" />
+                    <span className="inline-flex items-center gap-1.5">
+                      <Eye className="w-4 h-4 text-[#9CA3AF]" /> 조회수 {(views[currentPost.id] || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      className="w-9 h-9 rounded-md text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors cursor-pointer"
+                      className="w-9 h-9 rounded-lg text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors cursor-pointer"
                       title="공유"
                       aria-label="이 글 공유하기"
                       onClick={async () => {
@@ -1402,7 +1401,7 @@ export default function App() {
                       <Share2 className="w-4 h-4" />
                     </button>
                     <button
-                      className="w-9 h-9 rounded-md text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors hidden sm:flex cursor-pointer"
+                      className="w-9 h-9 rounded-lg text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors hidden sm:flex cursor-pointer"
                       title="인쇄"
                       aria-label="이 글 인쇄하기"
                       onClick={() => {
@@ -1460,9 +1459,6 @@ export default function App() {
                     className="article-body"
                     dangerouslySetInnerHTML={{ __html: currentPost.content }}
                   />
-
-                  {/* In-Article AdSense Banner Slot */}
-                  <AdSenseSlot type="in-article" label="관련 맞춤 정책·금융 추천" />
 
                   {/* Official Policy Source Card */}
                   {currentPost && POST_EXTRA_MAP[currentPost.id] && (
@@ -1623,9 +1619,6 @@ export default function App() {
                       </button>
                     </div>
                   </div>
-
-                  {/* Sidebar Sticky AdSense Slot */}
-                  <AdSenseSlot type="sidebar" label="사이드바 스폰서 배너" />
                 </div>
               </div>
             </motion.article>
