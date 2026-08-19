@@ -600,5 +600,282 @@
     "responseSent": {
       "count": 130
     }
+  },
+  {
+    "timestamp": "2026-08-17T03:25:49.643Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.138\", \"Chromium\";v=\"151.0.7922.138\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.138\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"7b18f-RSpOkABWqr37+ZjFCXFsu2/YGcs\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "d1b5ebc0bc27aa07bbf8f624ef13a141/14386984995685588701",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-d1b5ebc0bc27aa07bbf8f624ef13a141-c7a8d6a0c8b6dedd-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 130
+    }
+  },
+  {
+    "timestamp": "2026-08-17T03:25:49.888Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.138\", \"Chromium\";v=\"151.0.7922.138\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.138\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"8007c-Jdz+dB5FJ5Xksfg7f34uUgCcq9E\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "85875370f9889771bbf8f624ef13a641/15558854232330471118",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-85875370f9889771bbf8f624ef13a641-d7ec277d6e2406ce-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 130
+    }
+  },
+  {
+    "timestamp": "2026-08-17T03:27:29.121Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.138\", \"Chromium\";v=\"151.0.7922.138\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.138\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"8007c-Jdz+dB5FJ5Xksfg7f34uUgCcq9E\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "0fe27e745083157d1e825eef514aed5a/1054287449405567161",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-0fe27e745083157d1e825eef514aed5a-0ea194d970f8b0b9-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 130
+    }
+  },
+  {
+    "timestamp": "2026-08-17T03:27:29.349Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.138\", \"Chromium\";v=\"151.0.7922.138\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.138\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"8007c-Jdz+dB5FJ5Xksfg7f34uUgCcq9E\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "ab5d3233fa4dd5351e825eef514aefa1/1221994930538650509",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-ab5d3233fa4dd5351e825eef514aefa1-10f565ea38159b8d-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 130
+    }
+  },
+  {
+    "timestamp": "2026-08-17T03:31:37.203Z",
+    "method": "POST",
+    "url": "/api/publish",
+    "headers": {
+      "host": "localhost:3000",
+      "connection": "keep-alive",
+      "content-type": "application/json",
+      "accept": "*/*",
+      "accept-language": "*",
+      "sec-fetch-mode": "cors",
+      "user-agent": "node",
+      "accept-encoding": "gzip, deflate",
+      "content-length": "1126"
+    },
+    "query": {},
+    "body": {
+      "slug": "youtube-shorts-algorithm-retention-guide",
+      "title": "유튜브 쇼츠 조회수 정체 탈출: 평균 시청 지속시간 85% 달성 공식",
+      "subtitle": "알고리즘이 선택하는 첫 3초 훅 설계부터 루프형 이탈 방지 편집 구조까지 실전 가이드",
+      "category": "youtube",
+      "categoryLabel": "유튜브 수익화",
+      "author": "안주영",
+      "summary": "유튜브 쇼츠는 첫 3초 이탈률을 20% 미만으로 낮추고 평균 시청 비율 85% 이상을 확보해야 탐색 피드 확장이 발생합니다.",
+      "tags": [
+        "유튜브쇼츠",
+        "쇼츠수익화",
+        "시청지속시간",
+        "유튜브알고리즘"
+      ],
+      "readTime": "9분",
+      "thumbnail": {
+        "src": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=1200",
+        "alt": "유튜브 쇼츠 영상 기획 및 데이터 분석 화면"
+      },
+      "content": "## 1. 쇼츠 조회수 1만 회의 벽\n\n첫째는 **피드 건너뛰기 비율**이며, 둘째는 **평균 시청 지속률**입니다.\n\n| 분석 항목 | 롱폼 | 쇼츠 |\n|---|---|---|\n| 핵심 지표 | 클릭률 | 잔존율 |\n\n## 2. 실전 3단계 제작 공식\n\n실전 가이드..."
+    },
+    "error": null,
+    "responseSent": {
+      "status": "success",
+      "message": "Post published successfully",
+      "id": "youtube-shorts-algorithm-retention-guide",
+      "postId": "youtube-shorts-algorithm-retention-guide",
+      "channelId": "virginroad",
+      "channel_id": "virginroad",
+      "url": "http://localhost:3000/post/youtube-shorts-algorithm-retention-guide",
+      "data": {
+        "url": "http://localhost:3000/post/youtube-shorts-algorithm-retention-guide",
+        "postId": "youtube-shorts-algorithm-retention-guide",
+        "id": "youtube-shorts-algorithm-retention-guide",
+        "channelId": "virginroad",
+        "channel_id": "virginroad",
+        "channel": {
+          "id": "virginroad",
+          "name": "버진로드",
+          "url": "http://localhost:3000/"
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2026-08-17T03:31:42.825Z",
+    "method": "GET",
+    "url": "/api/publish",
+    "headers": {
+      "host": "localhost:3000",
+      "connection": "keep-alive",
+      "accept": "*/*",
+      "accept-language": "*",
+      "sec-fetch-mode": "cors",
+      "user-agent": "node",
+      "accept-encoding": "gzip, deflate"
+    },
+    "query": {},
+    "body": {},
+    "error": "GET Ping connection test",
+    "responseSent": {
+      "status": "success",
+      "message": "Channel verification successful. Ready to receive posts.",
+      "url": "http://localhost:3000/",
+      "id": "virginroad",
+      "channelId": "virginroad",
+      "channel_id": "virginroad",
+      "channel": {
+        "id": "virginroad",
+        "name": "버진로드",
+        "url": "http://localhost:3000/"
+      },
+      "data": {
+        "url": "http://localhost:3000/",
+        "channelId": "virginroad",
+        "channel_id": "virginroad",
+        "id": "virginroad",
+        "channel": {
+          "id": "virginroad",
+          "name": "버진로드",
+          "url": "http://localhost:3000/"
+        }
+      }
+    }
   }
 ]

@@ -57,7 +57,10 @@
         "id": "sched-20260817-신혼가전-1",
         "category": "신혼가전",
         "targetTime": "08:07",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260817-5956",
+        "postTitle": "신혼집 주방 인테리어 식기세척기 빌트인 장내림 시공 및 전기 용량 체크포인트",
+        "publishedAt": "2026-08-17 12:25"
       },
       {
         "id": "sched-20260817-신혼금융-2",
@@ -111,7 +114,30 @@
         "targetTime": "17:50",
         "published": false
       }
+    ],
+    "2026-08-15": [
+      {
+        "id": "sched-20260815-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "08:08",
+        "published": false
+      },
+      {
+        "id": "sched-20260815-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "12:55",
+        "published": true,
+        "postId": "auto-app-20260815-6724",
+        "postTitle": "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드",
+        "publishedAt": "2026-08-15 12:55"
+      },
+      {
+        "id": "sched-20260815-신혼금융-3",
+        "category": "신혼금융",
+        "targetTime": "17:12",
+        "published": false
+      }
     ]
   },
-  "lastCheck": "2026-08-17T02:44:28.098Z"
+  "lastCheck": "2026-08-17T12:29:06.538Z"
 }

@@ -16,13 +16,14 @@ import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { calculateReadTime, slugify, stripHtml, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
+import { extractSeoKeywords } from "./lib/seoKeywords";
 
 type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
 const SITE_URL = "https://virginroad.kr";
 const SITE_NAME = "버진로드";
-const DEFAULT_TITLE = "버진로드 (Virginroad) - 결혼 준비 & 신혼 금융 생활 백서";
-const DEFAULT_DESCRIPTION = "결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서, 버진로드입니다.";
+const DEFAULT_TITLE = "버진로드 - 2026 신혼부부 디딤돌·버팀목대출 금리 계산기 & 청약 가점 시뮬레이터 | 결혼준비 금융 백서";
+const DEFAULT_DESCRIPTION = "2026년 최신 기준 신혼부부 디딤돌대출·신생아 특례대출·버팀목전세대출 금리 계산기와 신혼특공 청약 가점 시뮬레이터를 무료로 제공합니다. 스드메·웨딩홀 견적 비교 및 혼수가전 패키지 혜택까지 예비·신혼부부를 위한 실전 금융 생활 백서 버진로드입니다.";
 
 function pageFromUrl(): Page {
   if (typeof window === "undefined") return "home";
@@ -587,6 +588,39 @@ export default function App() {
     document.title = title;
     setMeta("description", description);
     setCanonical(canonical);
+    setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+    setMeta("googlebot", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+
+    // Dynamic SEO 10 Keywords Extraction from content, title, tags, and category
+    let dynamicKeywords: string[] = [];
+    if (currentPost) {
+      dynamicKeywords = extractSeoKeywords({
+        title: currentPost.title,
+        content: currentPost.content,
+        category: currentPost.category,
+        hashtags: currentPost.hashtags
+      });
+    } else if (currentPage.startsWith("category-")) {
+      const cat = currentPage.replace("category-", "");
+      dynamicKeywords = extractSeoKeywords({
+        title,
+        category: cat
+      });
+    } else if (currentPage === "tools-didimdol" || currentPage === "tools-cheongyak" || currentPage === "policy") {
+      dynamicKeywords = extractSeoKeywords({
+        title,
+        category: "신혼금융"
+      });
+    } else {
+      dynamicKeywords = extractSeoKeywords({
+        title,
+        category: "신혼금융"
+      });
+    }
+
+    const keywordContent = dynamicKeywords.join(", ");
+    setMeta("keywords", keywordContent);
+    setMeta("news_keywords", keywordContent);
 
     // Open Graph Tags
     setMeta("og:type", ogType, "property");

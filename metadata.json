@@ -1,6 +1,6 @@
 {
   "name": "버진로드",
-  "description": "결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서",
+  "description": "2026년 최신 기준 신혼부부 디딤돌대출·신생아 특례대출·버팀목전세대출 금리 계산기와 신혼특공 청약 가점 시뮬레이터를 무료로 제공합니다. 스드메·웨딩홀 견적 비교 및 혼수가전 패키지 혜택까지 예비·신혼부부를 위한 실전 금융 생활 백서",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

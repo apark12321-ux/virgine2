@@ -5,6 +5,7 @@ import fs from "fs";
 import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
 import { runAutoPublisherService } from "./src/lib/autoPublisher";
+import { extractSeoKeywords } from "./src/lib/seoKeywords";
 
 const VIEWS_FILE = path.join(process.cwd(), "views.json");
 const EXPOSURES_FILE = path.join(process.cwd(), "exposures.json");
@@ -63,6 +64,53 @@ function slugify(title: string): string {
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+function markdownToHtml(md: string): string {
+  if (!md) return "";
+  // If already full HTML and doesn't contain markdown headers or markdown tables
+  if ((md.includes("<p>") || md.includes("<h2>") || md.includes("<div")) && !md.includes("## ") && !md.includes("|---")) {
+    return md;
+  }
+  let html = md;
+  // Convert markdown tables
+  html = html.replace(/\|(.+)\|\n\|[-|\s:]+\|\n((?:\|.+\|\n?)+)/g, (match, headerLine, bodyLines) => {
+    const headers = headerLine.split("|").map((h: string) => h.trim()).filter((h: string) => h.length > 0);
+    const ths = headers.map((h: string) => `<th class="border border-slate-300 bg-slate-100 px-4 py-2 font-bold text-slate-800">${h}</th>`).join("");
+    const rows = bodyLines.trim().split("\n").map((row: string) => {
+      const cells = row.split("|").map((c: string) => c.trim()).filter((c: string) => c.length > 0);
+      const tds = cells.map((c: string) => `<td class="border border-slate-200 px-4 py-2.5 text-slate-700">${c}</td>`).join("");
+      return `<tr class="border-b border-slate-200 hover:bg-slate-50">${tds}</tr>`;
+    }).join("");
+    return `<div class="overflow-x-auto my-6"><table class="w-full text-left border-collapse border border-slate-300 rounded-lg"><thead><tr>${ths}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  });
+  // Convert ### Headings
+  html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-slate-900 mt-6 mb-3">$1</h3>');
+  // Convert ## Headings
+  html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-extrabold text-slate-900 mt-8 mb-4 border-b border-slate-200 pb-2">$1</h2>');
+  // Convert # Headings
+  html = html.replace(/^# (.*$)/gim, '<h2 class="text-2xl font-extrabold text-slate-900 mt-8 mb-4 pb-2">$1</h2>');
+  // Convert bold **text**
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Convert inline code `code`
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-indigo-700 px-1.5 py-0.5 rounded font-mono text-sm border border-slate-200">$1</code>');
+  // Convert hr ---
+  html = html.replace(/^---$/gim, '<hr class="my-6 border-slate-200" />');
+  // Convert list items - item or * item
+  html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<li class="my-1.5 text-slate-700 leading-relaxed">$1</li>');
+  html = html.replace(/(<li class="my-1.5.*<\/li>\n?)+/gms, '<ul class="list-disc pl-5 my-4 space-y-1">$&</ul>');
+  // Convert paragraphs
+  const blocks = html.split(/\n\n+/);
+  html = blocks.map(block => {
+    const trimmed = block.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("<h2") || trimmed.startsWith("<h3") || trimmed.startsWith("<div") || trimmed.startsWith("<ul") || trimmed.startsWith("<hr") || trimmed.startsWith("<table") || trimmed.startsWith("<li")) {
+      return trimmed;
+    }
+    return `<p class="text-base text-slate-700 leading-relaxed my-4">${trimmed.replace(/\n/g, "<br/>")}</p>`;
+  }).join("\n\n");
+
+  return html;
 }
 
 function classifyCategory(title: string, content: string): "신혼금융" | "신혼가전" | "결혼준비" {
@@ -743,7 +791,7 @@ ${xmlItems}
     const rawTitle = req.body.title || req.body.subject || req.body.header || req.body.name;
     const rawContent = req.body.content || req.body.body || req.body.text || req.body.description || req.body.desc;
     const status = req.body.status || req.body.postStatus || "published";
-    const seoDescription = req.body.seoDescription || req.body.excerpt || req.body.summary || "";
+    const seoDescription = req.body.summary || req.body.subtitle || req.body.seoDescription || req.body.excerpt || "";
     
     // Support and capture channel IDs from request body, query or headers to pass verification
     const channelId = extractChannelId(req);
@@ -790,19 +838,41 @@ ${xmlItems}
     }
     
     const title = rawTitle.trim();
-    const content = typeof rawContent === "string" ? rawContent : "";
+    const rawContentStr = typeof rawContent === "string" ? rawContent : "";
+    const htmlContent = markdownToHtml(rawContentStr);
     
     try {
       // 1. Sluggify and sanitize IDs
+      const explicitSlug = req.body.slug && typeof req.body.slug === "string" ? req.body.slug.trim() : null;
       const rawSlug = slugify(title);
-      const postId = rawSlug || `post-${Date.now()}`;
+      const postId = explicitSlug || rawSlug || `post-${Date.now()}`;
       
-      // 2. Classify Category automatically based on the content and title keywords
-      const category = classifyCategory(title, content);
+      // 2. Classify Category automatically based on the content, title, or explicit categoryLabel
+      let category: "신혼금융" | "신혼가전" | "결혼준비" = "결혼준비";
+      if (req.body.category === "신혼금융" || req.body.category === "신혼가전" || req.body.category === "결혼준비") {
+        category = req.body.category;
+      } else if (req.body.categoryLabel === "신혼금융" || req.body.categoryLabel === "신혼가전" || req.body.categoryLabel === "결혼준비") {
+        category = req.body.categoryLabel;
+      } else {
+        category = classifyCategory(title, htmlContent);
+      }
       console.log(`Automatically classified blog category: "${category}" for title: "${title}"`);
       
-      // 3. Extract first image from HTML body, or assign high-quality category default illustrations
-      let image = extractFirstImage(content);
+      // 3. Extract thumbnail / image
+      let image = "";
+      if (req.body.thumbnail) {
+        if (typeof req.body.thumbnail === "object" && req.body.thumbnail.src) {
+          image = req.body.thumbnail.src;
+        } else if (typeof req.body.thumbnail === "string") {
+          image = req.body.thumbnail;
+        }
+      }
+      if (!image && req.body.image && typeof req.body.image === "string") {
+        image = req.body.image;
+      }
+      if (!image) {
+        image = extractFirstImage(htmlContent) || "";
+      }
       if (!image) {
         if (category === "신혼금융") {
           image = "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800";
@@ -813,12 +883,17 @@ ${xmlItems}
         }
       }
       
-      const hashtags = [category, "결혼꿀팁", "버진로드"];
-      const finalContent = expandContentIfNeeded(title, category, hashtags, content, postId, image);
+      const rawTags = req.body.tags || req.body.hashtags || [];
+      const hashtags = Array.isArray(rawTags) && rawTags.length > 0
+        ? rawTags.map((t: any) => String(t).trim()).filter(Boolean)
+        : [category, "결혼꿀팁", "버진로드"];
+      
+      const author = req.body.author && typeof req.body.author === "string" ? req.body.author.trim() : "버진로드";
+      const finalContent = expandContentIfNeeded(title, category, hashtags, htmlContent, postId, image);
 
       // 4. Calculate reading time (approx 500 characters per minute)
       const plainText = stripHtml(finalContent);
-      const readTime = `${Math.max(1, Math.ceil(plainText.length / 500))}분`;
+      const readTime = req.body.readTime || `${Math.max(1, Math.ceil(plainText.length / 500))}분`;
       
       // 5. Excerpt extraction fallback
       const excerpt = seoDescription.trim() || (plainText.slice(0, 140) + (plainText.length > 140 ? "..." : ""));
@@ -832,7 +907,7 @@ ${xmlItems}
         excerpt: excerpt.trim(),
         content: finalContent,
         category,
-        author: "버진로드",
+        author,
         date: kstDate,
         image,
         readTime,
@@ -842,7 +917,7 @@ ${xmlItems}
       // 7. Save to local posts file (keeps persistent and immediate listing in app)
       const localPosts = loadLocalPosts();
       // Avoid duplicate post ID or completely identical title
-      const existingIdx = localPosts.findIndex(p => p.id === postId || p.title === newPost.title);
+      const existingIdx = localPosts.findIndex(p => p.id === postId || normalizeTitle(p.title) === normalizeTitle(newPost.title));
       if (existingIdx !== -1) {
         localPosts[existingIdx] = newPost; // Update existing post
       } else {
@@ -919,6 +994,10 @@ ${xmlItems}
   // Listen to GET requests for validation & configuration checks from Blog Studio
   app.get("/api/blogstudio-webhook", handleChannelPing);
   app.get("/api/posts-ping", handleChannelPing);
+  app.get("/api/publish", handleChannelPing);
+  app.get("/api/webhook", handleChannelPing);
+  app.get("/publish", handleChannelPing);
+  app.get("/webhook", handleChannelPing);
  
   // Serve standard RSS XML fields on multiple standard locations
   app.get("/rss.xml", handleRssFeed);
@@ -947,7 +1026,12 @@ ${xmlItems}
   // Listen to POST requests across all possible configurations of endpoints
   app.post("/", handleIncomingPost);
   app.post("/api/posts", handleIncomingPost);
+  app.post("/api/posts/create", handleIncomingPost);
   app.post("/api/blogstudio-webhook", handleIncomingPost);
+  app.post("/api/publish", handleIncomingPost);
+  app.post("/api/webhook", handleIncomingPost);
+  app.post("/publish", handleIncomingPost);
+  app.post("/webhook", handleIncomingPost);
 
   // Serve ads.txt with correct content-type and headers
   app.get("/ads.txt", (req, res) => {
@@ -1132,6 +1216,18 @@ Sitemap: ${hostUrl}/sitemap.xml
 
           // Primary standard and Social SEO OpenGraph optimization variables
           injectOrReplaceMeta("description", description);
+
+          // Extract and inject top 10 dynamic SEO keywords
+          const dynamicKeywords = extractSeoKeywords({
+            title: post.title,
+            content: post.content,
+            category: post.category,
+            hashtags: post.hashtags
+          });
+          const keywordContent = dynamicKeywords.join(", ");
+          injectOrReplaceMeta("keywords", keywordContent);
+          injectOrReplaceMeta("news_keywords", keywordContent);
+
           injectOrReplaceMeta("og:title", title, true);
           injectOrReplaceMeta("og:description", description, true);
           injectOrReplaceMeta("og:url", canonical, true);
@@ -1215,8 +1311,8 @@ Sitemap: ${hostUrl}/sitemap.xml
         let html = fs.readFileSync(htmlPath, "utf-8");
         const pathname = req.path;
         
-        let title = "버진로드 (Virginroad) - 결혼 준비 & 신혼 금융 생활 백서";
-        let description = "결혼 준비부터 신혼부부 디딤돌대출, 버팀목대출, 신생아 특례대출 금리 계산기, 청약 가점 시뮬레이션까지 함께하는 신혼 금융 생활 백서, 버진로드입니다.";
+        let title = "버진로드 - 2026 신혼부부 디딤돌·버팀목대출 금리 계산기 & 청약 가점 시뮬레이터 | 결혼준비 금융 백서";
+        let description = "2026년 최신 기준 신혼부부 디딤돌대출·신생아 특례대출·버팀목전세대출 금리 계산기와 신혼특공 청약 가점 시뮬레이터를 무료로 제공합니다. 스드메·웨딩홀 견적 비교 및 혼수가전 패키지 혜택까지 예비·신혼부부를 위한 실전 금융 생활 백서 버진로드입니다.";
         let canonical = `https://virginroad.kr${pathname === "/" ? "" : pathname}`;
         let ogType = "website";
         let image = "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
@@ -1293,6 +1389,16 @@ Sitemap: ${hostUrl}/sitemap.xml
         };
 
         injectOrReplaceMeta("description", description);
+
+        // Extract and inject top 10 dynamic SEO keywords
+        const dynamicKeywords = extractSeoKeywords({
+          title,
+          category: pathname.startsWith("/category/") ? decodeURIComponent(pathname.replace("/category/", "")) : "신혼금융"
+        });
+        const keywordContent = dynamicKeywords.join(", ");
+        injectOrReplaceMeta("keywords", keywordContent);
+        injectOrReplaceMeta("news_keywords", keywordContent);
+
         injectOrReplaceMeta("og:title", title, true);
         injectOrReplaceMeta("og:description", description, true);
         injectOrReplaceMeta("og:url", canonical, true);
