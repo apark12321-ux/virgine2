@@ -197,6 +197,25 @@ function normalizeTitle(str: string): string {
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 
+function isRelevantWeddingPost(post: any): boolean {
+  if (!post || !post.title) return false;
+  const title = (post.title || "").toLowerCase();
+  const id = (post.id || "").toLowerCase();
+  
+  // Off-topic keywords to strictly exclude
+  const blockedTerms = [
+    "유튜브 쇼츠", "시청 지속시간", "쇼츠 알고리즘", "유튜브 조회수", 
+    "indexing api", "[c안]", "채널 성장", "유튜브 수익화", "인스타 릴스 알고리즘"
+  ];
+  
+  for (const term of blockedTerms) {
+    if (title.includes(term) || id.includes(term)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function loadLocalPosts(): any[] {
   try {
     if (fs.existsSync(LOCAL_POSTS_FILE)) {
@@ -205,6 +224,9 @@ function loadLocalPosts(): any[] {
       const seenIds = new Set<string>();
       const unique: any[] = [];
       for (const p of raw) {
+        if (!isRelevantWeddingPost(p)) {
+          continue;
+        }
         const norm = normalizeTitle(p.title);
         if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
           continue;
@@ -338,6 +360,7 @@ async function fetchMergedPosts(): Promise<any[]> {
   
   const combined = [...localPosts];
   firestorePosts.forEach(fp => {
+    if (!isRelevantWeddingPost(fp)) return;
     // Prevent duplicated items across files and DB
     if (!combined.some(p => p.id === fp.id || normalizeTitle(p.title) === normalizeTitle(fp.title) || slugify(p.title) === slugify(fp.title))) {
       combined.push(fp);
@@ -346,6 +369,7 @@ async function fetchMergedPosts(): Promise<any[]> {
 
   // Merge in high-quality default MOCK_POSTS so the REST api feed is never blank
   MOCK_POSTS.forEach(mp => {
+    if (!isRelevantWeddingPost(mp)) return;
     if (!combined.some(p => p.id === mp.id || normalizeTitle(p.title) === normalizeTitle(mp.title) || slugify(p.title) === slugify(mp.title))) {
       combined.push(mp);
     }

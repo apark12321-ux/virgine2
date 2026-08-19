@@ -9,7 +9,7 @@ import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
 import { expandContentIfNeeded } from "./lib/contentExpander";
-import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye } from "lucide-react";
+import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye, Copy, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
 import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType, recordExposuresBulk, fetchAllExposures } from "./lib/views";
@@ -17,6 +17,7 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { calculateReadTime, slugify, stripHtml, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
 import { extractSeoKeywords } from "./lib/seoKeywords";
+import { buildSmartGoogleSearch } from "./lib/searchHelper";
 
 type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
@@ -244,6 +245,8 @@ export default function App() {
     });
   };
 
+  const smartSearch = useMemo(() => buildSmartGoogleSearch(searchQuery), [searchQuery]);
+
   const calculateCtr = (viewsCount?: number, exposuresCount?: number): string => {
     const v = viewsCount || 0;
     const e = exposuresCount || 0;
@@ -352,9 +355,17 @@ export default function App() {
     const seenSlugs = new Set<string>();
     const uniquePosts: Post[] = [];
 
+    const isRelevant = (p: { title?: string; id?: string }) => {
+      if (!p || !p.title) return false;
+      const title = (p.title || "").toLowerCase();
+      const id = (p.id || "").toLowerCase();
+      const blocked = ["유튜브 쇼츠", "시청 지속시간", "쇼츠 알고리즘", "유튜브 조회수", "indexing api", "[c안]", "유튜브 수익화", "인스타 릴스 알고리즘"];
+      return !blocked.some(b => title.includes(b) || id.includes(b));
+    };
+
     // 실시간/자동 발행된 글 우선 등록
     realPosts.forEach(real => {
-      if (real && real.id && real.title) {
+      if (real && real.id && real.title && isRelevant(real)) {
         const norm = normalizeTitle(real.title);
         const slug = slugify(real.title);
         if (!seenTitles.has(norm) && !seenIds.has(real.id) && !seenSlugs.has(slug)) {
@@ -368,6 +379,7 @@ export default function App() {
 
     // 기본 MOCK_POSTS 중 아직 등록되지 않은 고유 글 보충
     MOCK_POSTS.forEach(mockPost => {
+      if (!isRelevant(mockPost)) return;
       const norm = normalizeTitle(mockPost.title);
       const slug = slugify(mockPost.title);
       if (!seenTitles.has(norm) && !seenIds.has(mockPost.id) && !seenSlugs.has(slug)) {
@@ -1809,35 +1821,118 @@ export default function App() {
                             )}
                           </div>
 
-                          {/* Google External Search Card */}
-                          <div className="mt-8 p-5 bg-gradient-to-r from-[#F0F4FF] via-[#F8FAFF] to-[#E8F0FE] border border-[#D0E2FF] rounded-2xl text-left shadow-sm">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          {/* Google Smart External Search Card */}
+                          <div className="mt-8 p-5 sm:p-6 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFF] to-[#E8F0FE] border border-[#BFDBFE] rounded-2xl text-left shadow-sm">
+                            {/* Header row */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#D0E2FF]">
                               <div className="flex items-start gap-3.5">
-                                <div className="w-10 h-10 rounded-xl bg-white border border-[#D0E2FF] shadow-xs flex items-center justify-center shrink-0 text-xl font-black text-[#4285F4]">
+                                <div className="w-11 h-11 rounded-xl bg-white border border-[#D0E2FF] shadow-xs flex items-center justify-center shrink-0 text-2xl font-black text-[#4285F4]">
                                   G
                                 </div>
                                 <div>
-                                  <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1A73E8] tracking-wider uppercase mb-0.5">
-                                    <span>GOOGLE EXTERNAL SEARCH</span>
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span className="text-[11px] font-extrabold text-[#1A73E8] tracking-wider uppercase bg-white px-2.5 py-0.5 rounded-full border border-[#D0E2FF]">
+                                      구글 맞춤 연동 검색
+                                    </span>
+                                    <span className="text-[11px] font-bold text-[#4338CA] bg-[#EEF2FF] px-2 py-0.5 rounded-full border border-[#C7D2FE]">
+                                      {smartSearch.intentBadge}
+                                    </span>
                                   </div>
-                                  <h4 className="text-[14px] font-bold text-[#1E1B2E] break-keep">
-                                    구글(Google)에서 '{searchQuery || "신혼부부 정책"}' 외부 검색 결과 확인하기
+                                  <h4 className="text-[15px] sm:text-[16px] font-bold text-[#1E1B2E] break-keep">
+                                    구글(Google)에서 &lsquo;{searchQuery || "신혼부부 맞춤 정보"}&rsquo; 정밀 검색 결과 탐색
                                   </h4>
-                                  <p className="text-[12px] text-[#5F6368] mt-1 leading-relaxed break-keep">
-                                    원하시는 포스팅을 찾지 못하셨다면, 구글 검색을 통해 실시간 정부 고시 및 외부 정책 자료 결과를 확인해 보세요.
-                                  </p>
                                 </div>
                               </div>
                               <a
-                                href={`https://www.google.com/search?q=${encodeURIComponent(searchQuery ? `${searchQuery} 신혼부부` : "신혼부부 디딤돌대출 버팀목대출")}`}
+                                href={smartSearch.primaryUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="shrink-0 px-4 py-2.5 bg-[#4285F4] hover:bg-[#1A73E8] text-white text-[13px] font-bold rounded-xl transition-colors shadow-sm inline-flex items-center justify-center gap-1.5 cursor-pointer w-full sm:w-auto"
+                                className="shrink-0 px-5 py-2.5 bg-[#4285F4] hover:bg-[#1A73E8] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm hover:shadow-md inline-flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                               >
-                                <span>구글 검색 연동</span>
-                                <ArrowUpRight className="w-4 h-4" />
+                                <span>구글에서 검색</span>
+                                <ExternalLink className="w-4 h-4" />
                               </a>
                             </div>
+
+                            {/* Refined Query Highlight Box */}
+                            <div className="mt-4 p-3.5 bg-white border border-[#D0E2FF] rounded-xl flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="text-[11px] font-bold text-[#64748B] mb-0.5">정제된 구글 추천 쿼리</div>
+                                <div className="text-[13.5px] font-bold text-[#1E293B] truncate font-mono">
+                                  {smartSearch.primaryQuery}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(smartSearch.primaryQuery);
+                                    showToast("정제된 검색어가 클립보드에 복사되었습니다.", "success");
+                                  } catch {
+                                    showToast("검색어 복사에 실패했습니다.", "error");
+                                  }
+                                }}
+                                className="shrink-0 px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] text-[12px] font-semibold rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                title="검색어 복사"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>복사</span>
+                              </button>
+                            </div>
+
+                            {/* Refined Contextual Suggestion Pills */}
+                            {smartSearch.refinedSuggestions.length > 0 && (
+                              <div className="mt-4 pt-3 border-t border-[#D0E2FF]/60">
+                                <div className="text-[11px] font-bold text-[#64748B] mb-2 flex items-center gap-1">
+                                  <span>💡 추천 세부 정밀 쿼리 (클릭 시 구글 즉시 이동)</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {smartSearch.refinedSuggestions.map((sug, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={sug.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-3 py-1.5 bg-white hover:bg-[#EEF2FF] border border-[#CBD5E1] hover:border-[#818CF8] text-[#334155] hover:text-[#4338CA] text-[12px] font-medium rounded-lg transition-all inline-flex items-center gap-1 shadow-2xs hover:shadow-xs break-keep"
+                                    >
+                                      <span>{sug.label}</span>
+                                      <ArrowUpRight className="w-3 h-3 text-[#94A3B8]" />
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Authoritative Government Portal Link if available */}
+                            {smartSearch.officialPortal && (
+                              <div className="mt-4 p-3.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-start gap-2.5">
+                                  <span className="text-xl">🏛️</span>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[13px] font-bold text-[#166534]">
+                                        {smartSearch.officialPortal.title}
+                                      </span>
+                                      <span className="text-[10px] font-extrabold text-[#15803D] bg-white px-2 py-0.5 rounded border border-[#86EFAC]">
+                                        {smartSearch.officialPortal.badge}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11.5px] text-[#15803D] mt-0.5 leading-snug break-keep">
+                                      {smartSearch.officialPortal.desc}
+                                    </p>
+                                  </div>
+                                </div>
+                                <a
+                                  href={smartSearch.officialPortal.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="shrink-0 px-3.5 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white text-[12px] font-bold rounded-lg transition-colors inline-flex items-center justify-center gap-1 cursor-pointer"
+                                >
+                                  <span>공식 포털 바로가기</span>
+                                  <ArrowUpRight className="w-3.5 h-3.5" />
+                                </a>
+                              </div>
+                            )}
                           </div>
                         </div>
 

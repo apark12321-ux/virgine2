@@ -1,22 +1,5 @@
 [
   {
-    "id": "youtube-shorts-algorithm-retention-guide",
-    "title": "유튜브 쇼츠 조회수 정체 탈출: 평균 시청 지속시간 85% 달성 공식",
-    "excerpt": "유튜브 쇼츠는 첫 3초 이탈률을 20% 미만으로 낮추고 평균 시청 비율 85% 이상을 확보해야 탐색 피드 확장이 발생합니다.",
-    "content": "<h2 class=\"text-2xl font-extrabold text-slate-900 mt-8 mb-4 border-b border-slate-200 pb-2\">1. 쇼츠 조회수 1만 회의 벽</h2>\n\n<p class=\"text-base text-slate-700 leading-relaxed my-4\">첫째는 <strong>피드 건너뛰기 비율</strong>이며, 둘째는 <strong>평균 시청 지속률</strong>입니다.</p>\n\n<div class=\"overflow-x-auto my-6\"><table class=\"w-full text-left border-collapse border border-slate-300 rounded-lg\"><thead><tr><th class=\"border border-slate-300 bg-slate-100 px-4 py-2 font-bold text-slate-800\">분석 항목</th><th class=\"border border-slate-300 bg-slate-100 px-4 py-2 font-bold text-slate-800\">롱폼</th><th class=\"border border-slate-300 bg-slate-100 px-4 py-2 font-bold text-slate-800\">쇼츠</th></tr></thead><tbody><tr class=\"border-b border-slate-200 hover:bg-slate-50\"><td class=\"border border-slate-200 px-4 py-2.5 text-slate-700\">핵심 지표</td><td class=\"border border-slate-200 px-4 py-2.5 text-slate-700\">클릭률</td><td class=\"border border-slate-200 px-4 py-2.5 text-slate-700\">잔존율</td></tr></tbody></table></div>\n<h2 class=\"text-2xl font-extrabold text-slate-900 mt-8 mb-4 border-b border-slate-200 pb-2\">2. 실전 3단계 제작 공식</h2>\n\n<p class=\"text-base text-slate-700 leading-relaxed my-4\">실전 가이드...</p>",
-    "category": "신혼가전",
-    "author": "안주영",
-    "date": "2026-08-17",
-    "image": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=1200",
-    "readTime": "9분",
-    "hashtags": [
-      "유튜브쇼츠",
-      "쇼츠수익화",
-      "시청지속시간",
-      "유튜브알고리즘"
-    ]
-  },
-  {
     "id": "auto-wed-20260816-7052",
     "title": "본식 스냅 및 DVD 영상 업체 선정 기준 — 1인 2캠 vs 2인 3캠 가성비 비교",
     "excerpt": "소중한 본식의 순간을 완벽히 담아내기 위한 스냅 및 DVD 업체 선정은 신중해야 합니다. 본 포스팅은 1인 2캠과 2인 3캠의 장단점을 명확히 비교하고, 2026년 최신 트렌드를 반영한 가성비 있는 업체 선정 기준과 실질적인 체크리스트를 제공합니다. 예산과 원하는 퀄리티에 맞춰 최적의 선택을 하십시오.",
@@ -559,23 +542,6 @@
       "증여세면제",
       "양가합산",
       "세무가이드"
-    ]
-  },
-  {
-    "id": "strategy-local-0622",
-    "title": "[C안] 최악의 상황 대비 및 넥스트 스텝 — 구글 Indexing API 도입 및 주력 사이트 올인 전략",
-    "excerpt": "수동 요청 후에도 색인이 지연될 시 구글 Indexing API를 도입하는 긴급 속도 기법 및 4개 매체 심사 반려 시 nutube.kr 등 주력 사이트 한 곳에 화력을 100% 모으는 선택과 집중 로드맵.",
-    "content": "<h3>1. 긴급 색인 속도 기법: '구글 Indexing API' 도입</h3><p>네이버나 구글 서치 콘솔을 통해 수동으로 색인 요청을 제출했음에도 불구하고, 3일 이내로 색인이 완료되지 않는 현상이 이어진다면 이는 최악의 신호입니다. 이 경우 개발 환경에서 연동한 API 기술 노하우를 응용하여 <strong>'구글 Indexing API'</strong>를 Express 서버에 직접 연동하는 긴급 자동화 기반을 구축해야 합니다.</p><p>글이 발행되는 즉시 Google Indexing API에 'URL_UPDATED' 이벤트를 날리도록 자동화 파이프라인(Webhook 및 API 호출)을 설정해 두면, 구글봇이 수 초 내로 접속하여 해당 포스트를 즉각 긁어가므로 색인 보장 속도를 극상으로 끌어올릴 수 있습니다.</p><h3>2. 4대 마스터 반려 대비: 주력 사이트(nutube.kr) 올인 전략</h3><p>만약 야심 차게 기획한 4개 서브 매체 모두가 애드센스 심사에서 반려되는 최악의 상황이 닥칠 경우, 리소스를 낭비하지 않고 즉각 <strong>선택과 집중</strong> 노선으로 선회해야 합니다.</p><p>이때 기획안과 구조가 가장 고도화되어 완성도가 뛰어난 <strong>주력 도메인 한 곳(예: nutube.kr)</strong>에 모든 일일 신규 가용 트래픽과 풍성한 전문성이 들어간 초고화질 콘텐츠, 내외부 백링크 화력을 100% 올인하여 우선 승인을 받아내는 것이 매우 바람직합니다.</p><h3>3. 넥스트 스텝: 서브 매체 하위 도메인 연동</h3><p>메인 주력 대표 도메인이 일단 한 번 애드센스 승인을 취득하고 나면, 나머지 서브 매체들은 승인 장벽 없이 하위 도메인(Subdomain) 형태로 주소만 묶어도 곧바로 수익화 광고 게재가 가능해집니다. 이처럼 리스크를 선제적으로 상쇄하고, 영리한 게이트웨이를 뚫어내어 전체 플랫폼의 안정화를 획득하는 것이 이번 <em>C안 전략</em>의 진정한 핵심 골자입니다.</p>",
-    "category": "결혼준비",
-    "author": "버진로드",
-    "date": "2026-06-22",
-    "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
-    "readTime": "8분",
-    "hashtags": [
-      "구글색인",
-      "IndexingAPI",
-      "애드센스승인",
-      "선택과집중"
     ]
   },
   {
