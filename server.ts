@@ -6,6 +6,7 @@ import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
 import { runAutoPublisherService } from "./src/lib/autoPublisher";
 import { extractSeoKeywords } from "./src/lib/seoKeywords";
+import { generateRealisticPostDateTime, formatPostDateTime } from "./src/lib/utils";
 
 const VIEWS_FILE = path.join(process.cwd(), "views.json");
 const EXPOSURES_FILE = path.join(process.cwd(), "exposures.json");
@@ -898,8 +899,8 @@ ${xmlItems}
       // 5. Excerpt extraction fallback
       const excerpt = seoDescription.trim() || (plainText.slice(0, 140) + (plainText.length > 140 ? "..." : ""));
       
-      // 6. Assemble beautiful Post object using Korea Standard Time (KST, UTC+9)
-      const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split("T")[0];
+      // 6. Assemble beautiful Post object using Korea Standard Time (KST, UTC+9) with realistic randomized posting time
+      const postDateTime = generateRealisticPostDateTime(req.body.date, postId);
       
       const newPost = {
         id: postId,
@@ -908,7 +909,7 @@ ${xmlItems}
         content: finalContent,
         category,
         author,
-        date: kstDate,
+        date: postDateTime,
         image,
         readTime,
         hashtags

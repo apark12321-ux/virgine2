@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { MOCK_POSTS } from "../constants";
+import { generateRealisticPostDateTime } from "./utils";
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 const SCHEDULE_FILE = path.join(process.cwd(), "auto-schedule.json");
@@ -496,7 +497,7 @@ ${faqList.map((faq, idx) => `<blockquote>
     content: contentHtml,
     category,
     author: "버진로드",
-    date: dateStr,
+    date: generateRealisticPostDateTime(dateStr, slugId),
     image: topic.image,
     readTime: "8분",
     hashtags: topic.hashtags
@@ -573,14 +574,15 @@ async function generatePostContent(
     }
 
     if (parsed.title && parsed.content) {
+      const generatedId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
       return {
-        id: `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`,
+        id: generatedId,
         title: parsed.title,
         excerpt: parsed.excerpt || topic.excerpt,
         content: parsed.content,
         category,
         author: "버진로드",
-        date: dateStr,
+        date: generateRealisticPostDateTime(dateStr, generatedId),
         image: topic.image,
         readTime: `${Math.max(6, Math.ceil(parsed.content.length / 280))}분`,
         hashtags: topic.hashtags

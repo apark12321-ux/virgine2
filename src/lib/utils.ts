@@ -14,12 +14,45 @@ export function calculateReadTime(content: string): string {
 }
 
 /**
+ * 현실적인 발행 시·분·초를 포함한 YYYY-MM-DD HH:mm:ss 생성
+ */
+export function generateRealisticPostDateTime(baseDateStr?: string, seedId?: string): string {
+  let datePart = baseDateStr;
+  if (!datePart) {
+    const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    datePart = kst.toISOString().split("T")[0];
+  } else {
+    datePart = datePart.replace(/\./g, "-").trim();
+    if (datePart.includes("T") || datePart.includes(" ")) {
+      datePart = datePart.split(/[T\s]/)[0];
+    }
+  }
+
+  // Realistic blogging peak publishing hours (08:00 ~ 22:00)
+  const peakHours = [8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+  let seed = 0;
+  const str = (seedId || Math.random().toString(36)) + datePart;
+  for (let i = 0; i < str.length; i++) {
+    seed = ((seed << 5) - seed + str.charCodeAt(i)) | 0;
+  }
+  const positiveSeed = Math.abs(seed);
+  const hour = String(peakHours[positiveSeed % peakHours.length]).padStart(2, "0");
+  const minute = String((positiveSeed * 7 + 13) % 60).padStart(2, "0");
+  const second = String((positiveSeed * 13 + 37) % 60).padStart(2, "0");
+
+  return `${datePart} ${hour}:${minute}:${second}`;
+}
+
+/**
  * 포스트 날짜와 시, 분, 초를 YYYY. MM. DD HH:mm:ss 형식으로 포맷팅
+ * - 이미 시간 정보가 포함되어 있으면 그대로 파싱하여 출력
+ * - YYYY-MM-DD 또는 YYYY.MM.DD 형식만 있는 경우, 게시글 id나 날짜 문자열을 시드로 활용하여
+ *   게시글마다 자연스럽고 고유한 시·분·초를 안정적으로 생성
  */
 export function formatPostDateTime(dateStr: string, id?: string): string {
   if (!dateStr) return "";
 
-  // Check if dateStr already has time component (e.g. ISO format or includes ":")
+  // 1. Check if dateStr already has time component (e.g. ISO format or includes ":")
   if (dateStr.includes(":") || dateStr.includes("T")) {
     const d = new Date(dateStr.includes("T") ? dateStr : dateStr.replace(" ", "T"));
     if (!isNaN(d.getTime())) {
@@ -37,7 +70,7 @@ export function formatPostDateTime(dateStr: string, id?: string): string {
     }
   }
 
-  // Parse YYYY-MM-DD or YYYY.MM.DD
+  // 2. Parse YYYY-MM-DD or YYYY.MM.DD
   const cleanDate = dateStr.replace(/\./g, "-").trim();
   const parts = cleanDate.split("-");
   if (parts.length >= 3) {
@@ -45,16 +78,17 @@ export function formatPostDateTime(dateStr: string, id?: string): string {
     const month = parts[1].padStart(2, "0");
     const day = parts[2].padStart(2, "0");
 
-    // Generate deterministic positive time (hh:mm:ss) from id and date if only date is present
+    // Generate deterministic, realistic peak time (hh:mm:ss) from id and date
     let seed = 0;
-    const strToHash = (id || "") + dateStr;
+    const strToHash = (id || "virginroad") + dateStr;
     for (let i = 0; i < strToHash.length; i++) {
       seed = ((seed << 5) - seed + strToHash.charCodeAt(i)) | 0;
     }
     const positiveSeed = Math.abs(seed);
-    const hour = String(9 + (positiveSeed % 13)).padStart(2, "0"); // 09:00 ~ 21:00
-    const minute = String(Math.floor(positiveSeed / 13) % 60).padStart(2, "0");
-    const second = String(Math.floor(positiveSeed / 780) % 60).padStart(2, "0");
+    const peakHours = [8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+    const hour = String(peakHours[positiveSeed % peakHours.length]).padStart(2, "0");
+    const minute = String((positiveSeed * 7 + 13) % 60).padStart(2, "0");
+    const second = String((positiveSeed * 13 + 37) % 60).padStart(2, "0");
 
     return `${year}. ${month}. ${day} ${hour}:${minute}:${second}`;
   }
