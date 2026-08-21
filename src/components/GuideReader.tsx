@@ -126,7 +126,31 @@ export function GuideReader({
           const docEl = document.documentElement;
           const scrollTop = window.scrollY || docEl.scrollTop;
           const scrollHeight = docEl.scrollHeight - docEl.clientHeight;
-          const progress = scrollHeight > 0 ? Math.min(100, Math.max(0, Math.round((scrollTop / scrollHeight) * 100))) : 0;
+
+          // Precise article-based reading progress calculation
+          let progress = 0;
+          if (articleContentRef.current) {
+            const rect = articleContentRef.current.getBoundingClientRect();
+            const articleTop = rect.top + scrollTop;
+            const articleHeight = rect.height;
+            const windowHeight = window.innerHeight;
+
+            const startOffset = Math.max(0, articleTop - 120);
+            const endOffset = articleTop + articleHeight - windowHeight * 0.7;
+            const totalDistance = endOffset - startOffset;
+
+            if (scrollTop <= startOffset) {
+              progress = startOffset > 0 ? Math.min(10, Math.round((scrollTop / startOffset) * 10)) : 0;
+            } else if (scrollTop >= endOffset || (scrollHeight > 0 && scrollTop >= scrollHeight - 80)) {
+              progress = 100;
+            } else if (totalDistance > 0) {
+              const currentDistance = scrollTop - startOffset;
+              progress = Math.min(100, Math.max(10, Math.round(10 + (currentDistance / totalDistance) * 90)));
+            }
+          } else if (scrollHeight > 0) {
+            progress = Math.min(100, Math.max(0, Math.round((scrollTop / scrollHeight) * 100)));
+          }
+
           setReadingProgress(progress);
 
           // If a click navigation is currently in progress, let the click handler control active state
@@ -236,15 +260,26 @@ export function GuideReader({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
       {/* ========================================================================= */}
+      {/* TOP FIXED READING PROGRESS BAR                                            */}
+      {/* ========================================================================= */}
+      <div
+        className="fixed top-0 left-0 right-0 h-[3.5px] bg-black/5 z-[100] pointer-events-none"
+        aria-hidden="true"
+      >
+        <div
+          className="relative h-full bg-gradient-to-r from-[#E8745F] via-[#FF8A65] to-[#E8745F] transition-[width] duration-150 ease-out shadow-[0_1px_8px_rgba(232,116,95,0.5)]"
+          style={{ width: `${readingProgress}%` }}
+        >
+          {readingProgress > 0 && readingProgress < 100 && (
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#E8745F]" />
+          )}
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
       {/* 1. MAIN ARTICLE READING COLUMN (col-span-8)                               */}
       {/* ========================================================================= */}
       <div className="lg:col-span-8 bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-8 lg:p-10 shadow-xs">
-        {/* Top Reading Progress Line */}
-        <div
-          className="fixed top-0 left-0 right-0 h-1 bg-[#E8745F] z-50 transition-all duration-150"
-          style={{ width: `${readingProgress}%` }}
-        />
-
         {/* Breadcrumbs */}
         <nav aria-label="breadcrumb" className="text-[12.5px] font-medium text-[#64748B] mb-5">
           <ol className="flex items-center gap-1.5">
