@@ -1,29 +1,14 @@
 import { useState, useEffect } from "react";
-import { Search, X, Menu } from "lucide-react";
+import { Search, X, Menu, BookOpen, Calculator, User } from "lucide-react";
 
 interface NavbarProps {
   onSearch: (query: string) => void;
   onNavigate: (page: string) => void;
   searchQuery?: string;
+  currentPage?: string;
 }
 
-// Logo: interlocking rings filled with coral gradient
-function LogoIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 36 36" className={className} fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#E8745F" />
-          <stop offset="100%" stopColor="#D45A45" />
-        </linearGradient>
-      </defs>
-      <circle cx="13" cy="18" r="9.5" stroke="url(#ringGrad)" strokeWidth="2.5" />
-      <circle cx="23" cy="18" r="9.5" stroke="#1E1B2E" strokeWidth="2.5" />
-    </svg>
-  );
-}
-
-export function Navbar({ onSearch, onNavigate, searchQuery = "" }: NavbarProps) {
+export function Navbar({ onSearch, onNavigate, searchQuery = "", currentPage = "home" }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -41,149 +26,192 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "" }: NavbarProps) 
   };
 
   const navItems = [
+    { label: "전체글", page: "home" },
     { label: "신혼금융", page: "category-신혼금융" },
     { label: "신혼가전", page: "category-신혼가전" },
     { label: "결혼준비", page: "category-결혼준비" },
     { label: "정책정보", page: "policy" },
-    { label: "금리 계산기", page: "tools-didimdol" },
-    { label: "가점 계산기", page: "tools-cheongyak" },
+    { label: "블로그 소개", page: "about" },
   ];
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAFBFF]/95 backdrop-blur-sm transition-shadow duration-200 ${
-          isScrolled ? "border-b border-[#E2E4F0] shadow-sm" : "border-b border-transparent"
+      <header
+        className={`sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-all duration-200 ${
+          isScrolled ? "border-b border-[#E2E8F0] shadow-xs" : "border-b border-[#F1F5F9]"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto px-5 lg:px-10">
-          <div className="flex items-center justify-between h-[68px]">
-            {/* Logo */}
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-[64px] sm:h-[70px]">
+            {/* 1. Blog Title & Author Identity Logo */}
             <button
               onClick={goHome}
-              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-3 text-left hover:opacity-90 transition-opacity cursor-pointer"
               id="site-logo"
-              aria-label="버진로드 홈"
+              aria-label="버진로드 블로그 홈"
             >
-              <LogoIcon className="w-8 h-8 shrink-0" />
-              <div className="flex flex-col items-start leading-none">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-heading text-[21px] font-extrabold tracking-[-0.025em] text-[#111827]">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1E1B2E] to-[#332D4E] flex items-center justify-center text-white font-bold text-[18px] shadow-xs shrink-0">
+                V
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5 leading-none">
+                  <span className="font-heading text-[20px] sm:text-[22px] font-black tracking-tight text-[#111827]">
                     버진로드
                   </span>
-                  <span className="font-badge text-[12px] font-extrabold text-[#E8745F] tracking-[0.08em] uppercase">
-                    Virginroad
+                  <span className="text-[11px] font-extrabold text-[#E8745F] bg-[#EEF0FB] px-1.5 py-0.5 rounded tracking-wider uppercase">
+                    BLOG
                   </span>
                 </div>
-                <span className="font-badge text-[12px] font-extrabold text-[#4F46E5] mt-1 tracking-tight">
-                  신혼 금융 생활 백서
+                <span className="text-[11px] sm:text-[12px] font-medium text-[#64748B] mt-1 tracking-tight">
+                  신혼부부 금융·청약·가전 실전 가이드
                 </span>
               </div>
             </button>
 
-            {/* Desktop nav */}
-            <div className="hidden md:flex items-center gap-1.5">
-              {navItems.map((item) => (
-                <button
-                  key={item.page}
-                  onClick={() => onNavigate(item.page)}
-                  className="font-heading px-4 py-2.5 text-[16px] font-bold text-[#111827] hover:text-[#4F46E5] hover:bg-[#EEF0FB] rounded-xl transition-all cursor-pointer tracking-tight"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
+            {/* 2. Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+              {navItems.map((item) => {
+                const isActive =
+                  (item.page === "home" && currentPage === "home") ||
+                  (item.page.startsWith("category-") && currentPage === item.page) ||
+                  (item.page === "policy" && currentPage === "policy") ||
+                  (item.page === "about" && currentPage === "about");
 
-            {/* Right */}
-            <div className="flex items-center gap-1">
-              {/* Desktop search */}
-              <div className="hidden md:block relative">
-                {isSearchOpen ? (
-                  <div className="flex items-center bg-[#F5F6FD] rounded-lg pl-3 pr-1 h-10 w-64 border border-[#E2E4F0]">
-                    <Search className="w-4 h-4 text-[#8A87A0] shrink-0" />
-                    <input
-                      type="text"
-                      autoFocus
-                      value={searchQuery}
-                      onChange={(e) => onSearch(e.target.value)}
-                      placeholder="검색어를 입력하세요"
-                      className="bg-transparent border-0 outline-none text-[14px] text-[#1E1B2E] placeholder:text-[#8A87A0] flex-1 px-2"
-                    />
-                    <button
-                      onClick={() => {
-                        onSearch("");
-                        setIsSearchOpen(false);
-                      }}
-                      className="p-1.5 rounded text-[#8A87A0] hover:text-[#4F46E5] hover:bg-white transition-colors cursor-pointer"
-                      aria-label="검색 닫기"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
+                return (
                   <button
-                    onClick={() => setIsSearchOpen(true)}
-                    className="p-2.5 rounded-lg text-[#3F3D56] hover:text-[#4F46E5] hover:bg-[#EEF0FB] transition-colors cursor-pointer"
-                    aria-label="검색"
+                    key={item.page}
+                    onClick={() => {
+                      onNavigate(item.page);
+                      if (item.page === "home") onSearch("");
+                    }}
+                    className={`px-3.5 py-2 text-[14.5px] font-semibold rounded-lg transition-all cursor-pointer ${
+                      isActive
+                        ? "text-[#1E1B2E] bg-[#F1F5F9] font-bold"
+                        : "text-[#475569] hover:text-[#1E1B2E] hover:bg-[#F8FAFC]"
+                    }`}
                   >
-                    <Search className="w-4 h-4" />
+                    {item.label}
                   </button>
-                )}
-              </div>
+                );
+              })}
+            </nav>
 
-              {/* Mobile: hamburger */}
-              <button
-                onClick={() => setIsMobileMenuOpen((v) => !v)}
-                className="md:hidden p-2.5 rounded-lg text-[#3F3D56] hover:bg-[#EEF0FB] transition-colors cursor-pointer"
-                aria-label="메뉴"
-              >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-[#E2E4F0] bg-white">
-            <div className="px-5 py-4 space-y-1">
-              <div className="flex items-center bg-[#F5F6FD] rounded-lg pl-3 pr-1 h-11 mb-3 border border-[#E2E4F0]">
-                <Search className="w-4 h-4 text-[#8A87A0] shrink-0" />
+            {/* 3. Search & Quick Tool */}
+            <div className="flex items-center gap-2">
+              {/* Search Bar / Trigger */}
+              <div className="relative hidden sm:block">
                 <input
                   type="text"
+                  placeholder="블로그 내 검색..."
                   value={searchQuery}
                   onChange={(e) => onSearch(e.target.value)}
-                  placeholder="검색어를 입력하세요"
-                  className="bg-transparent border-0 outline-none text-[15px] text-[#1E1B2E] placeholder:text-[#8A87A0] flex-1 px-2"
+                  className="w-[180px] lg:w-[220px] h-9 pl-8 pr-3 bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#1E1B2E] focus:bg-white text-[13px] rounded-full outline-none transition-all placeholder:text-[#94A3B8]"
                 />
+                <Search className="w-4 h-4 text-[#94A3B8] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 {searchQuery && (
                   <button
                     onClick={() => onSearch("")}
-                    className="p-1.5 rounded text-[#8A87A0] hover:text-[#4F46E5] cursor-pointer"
-                    aria-label="검색어 지우기"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
 
-              {navItems.map((item) => (
-                <button
-                  key={item.page}
-                  onClick={() => {
-                    onNavigate(item.page);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-3 text-[16px] font-semibold text-[#1E1B2E] hover:bg-[#EEF0FB] hover:text-[#4F46E5] rounded-lg transition-colors cursor-pointer"
-                >
-                  {item.label}
-                </button>
-              ))}
+              {/* Mobile Search Toggle */}
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="sm:hidden p-2 text-[#475569] hover:text-[#1E1B2E] rounded-lg"
+                aria-label="검색창 열기"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              {/* Calculator Shortcut */}
+              <button
+                onClick={() => onNavigate("tools-didimdol")}
+                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-bold text-[#5B21B6] bg-[#F5F3FF] hover:bg-[#EDE9FE] border border-[#DDD6FE] rounded-lg transition-colors cursor-pointer"
+              >
+                <Calculator className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <span>금리 계산기</span>
+              </button>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 text-[#475569] hover:text-[#1E1B2E] rounded-lg"
+                aria-label="메뉴 열기"
+              >
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Search Dropdown */}
+          {isSearchOpen && (
+            <div className="sm:hidden pb-3 pt-1 border-t border-[#F1F5F9]">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="포스팅 검색어 입력..."
+                  value={searchQuery}
+                  onChange={(e) => onSearch(e.target.value)}
+                  className="w-full h-10 pl-9 pr-8 bg-[#F8FAFC] border border-[#E2E8F0] text-[14px] rounded-lg outline-none"
+                  autoFocus
+                />
+                <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
+                {searchQuery && (
+                  <button
+                    onClick={() => onSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Nav Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-[#E2E8F0] px-4 py-4 space-y-2">
+            {navItems.map((item) => (
+              <button
+                key={item.page}
+                onClick={() => {
+                  onNavigate(item.page);
+                  setIsMobileMenuOpen(false);
+                  if (item.page === "home") onSearch("");
+                }}
+                className="w-full text-left px-3 py-2.5 text-[15px] font-semibold text-[#1E1B2E] hover:bg-[#F8FAFC] rounded-lg transition-colors"
+              >
+                {item.label}
+              </button>
+            ))}
+            <div className="pt-3 mt-3 border-t border-[#F1F5F9] flex gap-2">
+              <button
+                onClick={() => {
+                  onNavigate("tools-didimdol");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex-1 py-2 text-center text-[13px] font-bold text-[#5B21B6] bg-[#F5F3FF] rounded-lg"
+              >
+                디딤돌 금리 계산기
+              </button>
+              <button
+                onClick={() => {
+                  onNavigate("tools-cheongyak");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex-1 py-2 text-center text-[13px] font-bold text-[#5B21B6] bg-[#F5F3FF] rounded-lg"
+              >
+                청약 가점 계산기
+              </button>
             </div>
           </div>
         )}
-      </nav>
-      <div className="h-[68px]" />
+      </header>
     </>
   );
 }

@@ -1,7 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import { Sidebar } from "./components/Sidebar";
 import { PostCard } from "./components/PostCard";
+import { GuideReader } from "./components/GuideReader";
+import { AdSenseUnit } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
@@ -9,22 +12,21 @@ import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
 import { expandContentIfNeeded } from "./lib/contentExpander";
-import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Eye, Copy, ExternalLink } from "lucide-react";
+import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Copy, ExternalLink, Clock, User, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
-import { recordView, fetchAllViews, fetchView, formatViews, handleFirestoreError, OperationType, recordExposuresBulk, fetchAllExposures } from "./lib/views";
+import { fetchAllViews, fetchAllExposures, handleFirestoreError, OperationType, recordExposuresBulk } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { calculateReadTime, slugify, stripHtml, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
-import { extractSeoKeywords } from "./lib/seoKeywords";
+import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { slugify, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
 import { buildSmartGoogleSearch } from "./lib/searchHelper";
 
 type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
 const SITE_URL = "https://virginroad.kr";
 const SITE_NAME = "버진로드";
-const DEFAULT_TITLE = "버진로드 - 2026 신혼부부 디딤돌·버팀목대출 금리 계산기 & 청약 가점 시뮬레이터 | 결혼준비 금융 백서";
-const DEFAULT_DESCRIPTION = "2026년 최신 기준 신혼부부 디딤돌대출·신생아 특례대출·버팀목전세대출 금리 계산기와 신혼특공 청약 가점 시뮬레이터를 무료로 제공합니다. 스드메·웨딩홀 견적 비교 및 혼수가전 패키지 혜택까지 예비·신혼부부를 위한 실전 금융 생활 백서 버진로드입니다.";
+const DEFAULT_TITLE = "버진로드 - 2026 신혼부부 금융·청약·가전 실전 가이드";
+const DEFAULT_DESCRIPTION = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우와 계산기를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
 
 function pageFromUrl(): Page {
   if (typeof window === "undefined") return "home";
@@ -106,20 +108,23 @@ function setArticleJsonLd(post: Post | null) {
   const slug = slugify(post.title) || post.id;
   const data = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     "headline": post.title,
     "description": post.excerpt,
     "image": [post.image],
     "datePublished": post.date,
     "dateModified": post.updated || post.date,
-    "author": { "@type": "Person", "name": post.author || "버진로드" },
+    "author": {
+      "@type": "Organization",
+      "name": "버진로드",
+      "url": `${SITE_URL}/about`
+    },
     "publisher": {
       "@type": "Organization",
       "name": "상상아트",
       "alternateName": SITE_NAME,
       "url": SITE_URL,
-      "logo": { "@type": "ImageObject", "url": `${SITE_URL}/icon.svg` },
-      "taxID": "272-14-01256"
+      "logo": { "@type": "ImageObject", "url": `${SITE_URL}/icon.svg` }
     },
     "mainEntityOfPage": { "@type": "WebPage", "@id": `${SITE_URL}/post/${slug}` },
     "articleSection": post.category,
@@ -154,68 +159,6 @@ function setBreadcrumbJsonLd(post: Post | null) {
   el.textContent = JSON.stringify(data);
 }
 
-function setFaqJsonLd(extra: PostExtra | null) {
-  const id = "faq-jsonld";
-  let el = document.getElementById(id) as HTMLScriptElement | null;
-  if (!extra || !extra.aeoFaq || extra.aeoFaq.length === 0) {
-    if (el) el.remove();
-    return;
-  }
-  if (!el) {
-    el = document.createElement("script");
-    el.id = id;
-    el.type = "application/ld+json";
-    document.head.appendChild(el);
-  }
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": extra.aeoFaq.map(faq => ({
-      "@type": "Question",
-      "name": faq.q,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.a
-      }
-    }))
-  };
-  el.textContent = JSON.stringify(data);
-}
-
-function setWebSiteJsonLd() {
-  const id = "website-jsonld";
-  let el = document.getElementById(id) as HTMLScriptElement | null;
-  if (!el) {
-    el = document.createElement("script");
-    el.id = id;
-    el.type = "application/ld+json";
-    document.head.appendChild(el);
-  }
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": SITE_NAME,
-    "url": SITE_URL,
-    "description": DEFAULT_DESCRIPTION,
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": `${SITE_URL}/?q={search_term_string}`
-      },
-      "query-input": "required name=search_term_string"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "상상아트",
-      "alternateName": SITE_NAME,
-      "url": SITE_URL,
-      "logo": `${SITE_URL}/icon.svg`
-    }
-  };
-  el.textContent = JSON.stringify(data);
-}
-
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>(() => pageFromUrl());
   const [searchQuery, setSearchQuery] = useState(() => {
@@ -224,13 +167,12 @@ export default function App() {
     return params.get("q") || "";
   });
   const [realPosts, setRealPosts] = useState<Post[]>([]);
-  const [, setUser] = useState<User | null>(null);
-  const [views, setViews] = useState<Record<string, number>>({});
-  const [exposures, setExposures] = useState<Record<string, number>>({});
+  const [, setUser] = useState<FirebaseUser | null>(null);
+  const [, setViews] = useState<Record<string, number>>({});
+  const [, setExposures] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
-  const [shareSuccess, setShareSuccess] = useState<boolean>(false);
   
-  // Custom Floating Toast Notification State
+  // Custom Toast Notification State
   const [toast, setToast] = useState<{
     id: string;
     message: string;
@@ -246,14 +188,6 @@ export default function App() {
   };
 
   const smartSearch = useMemo(() => buildSmartGoogleSearch(searchQuery), [searchQuery]);
-
-  const calculateCtr = (viewsCount?: number, exposuresCount?: number): string => {
-    const v = viewsCount || 0;
-    const e = exposuresCount || 0;
-    if (e === 0) return "0.0";
-    const adjustedE = Math.max(e, v);
-    return ((v / adjustedE) * 100).toFixed(1);
-  };
 
   useEffect(() => {
     if (!toast) return;
@@ -309,7 +243,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // 1. Fetch from our backend REST API which merges local & cloud posts
+    // 1. Fetch from our backend REST API
     fetch("/api/posts")
       .then(res => {
         if (!res.ok) throw new Error("API response error");
@@ -322,7 +256,7 @@ export default function App() {
       })
       .catch(err => console.error("Failed to fetch merged API posts:", err));
 
-    // 2. Fallback live subscription to Firestore posts if connection is active
+    // 2. Firestore live subscription
     const q = query(collection(db, "posts"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const posts = snapshot.docs.map(doc => ({
@@ -342,14 +276,13 @@ export default function App() {
       try {
         handleFirestoreError(error, OperationType.GET, "posts");
       } catch (err) {
-        console.warn("Handled posts onSnapshot warning gracefully:", err);
+        console.warn("Handled posts onSnapshot warning:", err);
       }
     });
     return () => unsubscribe();
   }, []);
 
   const allPosts = useMemo(() => {
-    // 1. 실시간 서버/DB 게시글(realPosts)과 기본 MOCK_POSTS를 병합하며 중복을 완전 제거합니다.
     const seenTitles = new Set<string>();
     const seenIds = new Set<string>();
     const seenSlugs = new Set<string>();
@@ -363,7 +296,6 @@ export default function App() {
       return !blocked.some(b => title.includes(b) || id.includes(b));
     };
 
-    // 실시간/자동 발행된 글 우선 등록
     realPosts.forEach(real => {
       if (real && real.id && real.title && isRelevant(real)) {
         const norm = normalizeTitle(real.title);
@@ -377,7 +309,6 @@ export default function App() {
       }
     });
 
-    // 기본 MOCK_POSTS 중 아직 등록되지 않은 고유 글 보충
     MOCK_POSTS.forEach(mockPost => {
       if (!isRelevant(mockPost)) return;
       const norm = normalizeTitle(mockPost.title);
@@ -390,30 +321,25 @@ export default function App() {
       }
     });
 
-    const combined = uniquePosts;
-
-    // Dynamically sanitize any fallback branding to 버진로드 (Virginroad) with safety guards
-    const sanitized = combined.map(p => {
-      const author = p.author ? p.author.replace(/편집부|에디터|편집국|기자/g, "").trim() || "버진로드" : "버진로드";
+    const sanitized = uniquePosts.map(p => {
+      const author = "버진로드";
       const title = (p.title || "").replace(/홈코노미뉴스/g, "버진로드");
       const excerpt = (p.excerpt || "").replace(/홈코노미뉴스/g, "버진로드");
       let content = (p.content || "")
         .replace(/홈코노미뉴스/g, "버진로드")
-        .replace(/버진로드 편집부의 정밀 취재에 따르면/g, "직접 검토하고 분석한 결과에 따르면")
-        .replace(/버진로드 편집부에서/g, "직접 꼼꼼하게 정리한")
+        .replace(/버진로드 편집부의 정밀 취재에 따르면/g, "공식 고시 자료를 확인한 결과에 따르면")
+        .replace(/버진로드 편집부에서/g, "꼼꼼하게 정리한")
         .replace(/버진로드 편집부/g, "버진로드");
-      // 만약 MOCK_POSTS에 포함되지 않은 게시글인 경우(예: DB/자동발행 글) 콘텐츠 확장 및 이미지 최적화를 적용합니다.
+
       if (!MOCK_POSTS.some(mp => mp.id === p.id)) {
         content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id, p.image);
       }
       return { ...p, author, title, excerpt, content };
     });
 
-    // parsePostTimestamp를 활용하여 일자 및 시간 순으로 정확하게 내림차순 정렬 (최신 글이 최상단 노출)
     return sanitized.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
   }, [realPosts]);
 
-  // 전체 조회수 및 노출수 로드 (글 목록이 준비되면)
   useEffect(() => {
     if (allPosts.length === 0) return;
     const postIds = allPosts.map((p) => p.id);
@@ -423,9 +349,7 @@ export default function App() {
 
   const filteredPosts = useMemo(() => {
     let posts = allPosts;
-    if (currentPage === "home") {
-      // show all
-    } else if (currentPage.startsWith("category-")) {
+    if (currentPage.startsWith("category-")) {
       const category = currentPage.replace("category-", "");
       posts = posts.filter(p => p.category === category);
     }
@@ -438,226 +362,76 @@ export default function App() {
     return posts;
   }, [currentPage, searchQuery, allPosts]);
 
-  // 필터링된 게시글 노출 기록 (노출수 일괄 증가 및 반영)
   useEffect(() => {
     if (filteredPosts.length === 0) return;
     const ids = filteredPosts.map(p => p.id);
-    recordExposuresBulk(ids).then((success) => {
-      if (success) {
-        fetchAllExposures(ids).then((latestExposures) => {
-          setExposures((prev) => ({ ...prev, ...latestExposures }));
-        });
-      }
-    });
+    recordExposuresBulk(ids);
   }, [filteredPosts]);
 
   const currentPost = useMemo(() => {
-    if (currentPage.startsWith("post-")) {
-      const key = currentPage.replace("post-", "");
-      return (
-        allPosts.find(p => slugify(p.title) === key) ||
-        allPosts.find(p => p.id === key) ||
-        null
-      );
-    }
-    return null;
+    if (!currentPage.startsWith("post-")) return null;
+    const key = currentPage.replace("post-", "");
+    return allPosts.find(p => p.id === key || slugify(p.title) === key) || null;
   }, [currentPage, allPosts]);
 
-  useEffect(() => {
-    setOpenFaqIdx(null);
-  }, [currentPost]);
+  // Current Post Navigation (Prev / Next)
+  const { prevPost, nextPost } = useMemo(() => {
+    if (!currentPost) return { prevPost: null, nextPost: null };
+    const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
+    const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+    const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+    return { prevPost: prev, nextPost: next };
+  }, [currentPost, allPosts]);
 
-  useEffect(() => {
-    if (!currentPost) return;
-    const slug = slugify(currentPost.title) || currentPost.id;
-    const desired = `/post/${slug}`;
-    if (window.location.pathname !== desired) {
-      window.history.replaceState({}, "", desired);
-    }
-  }, [currentPost]);
+  // Related Posts in same category
+  const relatedPosts = useMemo(() => {
+    if (!currentPost) return [];
+    return allPosts
+      .filter(p => p.category === currentPost.category && p.id !== currentPost.id)
+      .slice(0, 3);
+  }, [currentPost, allPosts]);
 
-  // 글 조회 시 조회수 기록
-  useEffect(() => {
-    if (!currentPost) return;
-    const id = currentPost.id;
-    
-    // 로컬 상태 즉시 증가 (Optimistic Update)
-    setViews((prev) => {
-      const currentVal = prev[id] || 0;
-      return { ...prev, [id]: currentVal + 1 };
-    });
-
-    recordView(id).then((next) => {
-      if (typeof next === "number") {
-        setViews((prev) => ({ ...prev, [id]: next }));
-      } else {
-        fetchView(id).then((v) => {
-          if (typeof v === "number") setViews((prev) => ({ ...prev, [id]: v }));
-        });
-      }
-    });
-  }, [currentPost]);
-
+  // Dynamic SEO & Title
   useEffect(() => {
     let title = DEFAULT_TITLE;
     let description = DEFAULT_DESCRIPTION;
-    let canonical = `${SITE_URL}/`;
-    let ogType: "website" | "article" = "website";
-    let ogImage = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&h=630&q=80";
-    let ogImageAlt = "버진로드 (Virginroad) - 결혼 준비 & 신혼 금융 생활 백서";
+    let canonical = SITE_URL + "/";
+    let ogImage = `${SITE_URL}/og-image.png`;
+    let ogImageAlt = "버진로드 블로그";
 
     if (currentPost) {
       const slug = slugify(currentPost.title) || currentPost.id;
-      title = `${currentPost.title} | ${SITE_NAME}`;
-      description = currentPost.excerpt || stripHtml(currentPost.content).slice(0, 155);
+      title = `${currentPost.title} - 버진로드`;
+      description = currentPost.excerpt;
       canonical = `${SITE_URL}/post/${slug}`;
-      ogType = "article";
-      ogImage = currentPost.image;
+      ogImage = currentPost.image || ogImage;
       ogImageAlt = currentPost.title;
-    } else if (currentPage === "about") {
-      title = `소개 | ${SITE_NAME}`;
-      description = `${SITE_NAME}는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.`;
-      canonical = `${SITE_URL}/about`;
-      ogImage = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&h=630&q=80";
-      ogImageAlt = `${SITE_NAME} 서비스 소개`;
-    } else if (currentPage === "policy") {
-      title = `2026 가정경제·생활정책 핵심 정보 | ${SITE_NAME}`;
-      description = `2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 한눈에 정리합니다. 정책 변경 시 신속 반영.`;
-      canonical = `${SITE_URL}/policy`;
-      ogImage = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&h=630&q=80";
-      ogImageAlt = "2026 가정경제·생활정책 핵심 가이드";
-    } else if (currentPage === "privacy") {
-      title = `개인정보 처리방침 | ${SITE_NAME}`;
-      description = `${SITE_NAME}의 개인정보 수집 및 이용에 관한 안내입니다.`;
-      canonical = `${SITE_URL}/privacy`;
-    } else if (currentPage === "partnership") {
-      title = `제휴 및 비즈니스 문의 | ${SITE_NAME}`;
-      description = `${SITE_NAME}와 광고, 콘텐츠 협업, 파트너십 문의를 위한 안내 페이지입니다.`;
-      canonical = `${SITE_URL}/partnership`;
-    } else if (currentPage === "announcement") {
-      title = `공지사항 | ${SITE_NAME}`;
-      description = `${SITE_NAME}의 서비스 운영 관련 공지사항을 안내합니다.`;
-      canonical = `${SITE_URL}/announcement`;
-    } else if (currentPage === "terms") {
-      title = `이용약관 | ${SITE_NAME}`;
-      description = `${SITE_NAME} 서비스 이용에 관한 약관입니다.`;
-      canonical = `${SITE_URL}/terms`;
-    } else if (currentPage === "tools-didimdol") {
-      title = `디딤돌 우대금리 계산기 | ${SITE_NAME}`;
-      description = `한국주택금융공사 2026년 5월 1일 공시 기준으로 본인 가구의 디딤돌대출 우대금리와 월 상환액을 시뮬레이션해 드립니다. 자녀·청약통장·전자계약 우대를 단계별로 확인하세요.`;
-      canonical = `${SITE_URL}/tools/didimdol`;
-      ogImage = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&h=630&q=80";
-      ogImageAlt = "디딤돌대출 우대금리 및 월 상환액 시뮬레이터";
-    } else if (currentPage === "tools-cheongyak") {
-      title = `신혼부부 특별공급 가점 계산기 | ${SITE_NAME}`;
-      description = `「주택공급에 관한 규칙」 별표1 기준으로 신혼부부 특별공급 가점과 일반 청약가점제 점수를 동시에 계산해 드립니다. 자녀·혼인 기간·청약통장·신생아 가산까지 단계별 확인.`;
-      canonical = `${SITE_URL}/tools/cheongyak`;
-      ogImage = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&h=630&q=80";
-      ogImageAlt = "신혼부부 특별공급 청약가점 시뮬레이터";
     } else if (currentPage.startsWith("category-")) {
-      const cat = currentPage.replace("category-", "");
-      const catMeta: Record<string, { title: string; description: string; image: string; alt: string }> = {
-        "신혼금융": {
-          title: `신혼금융 | ${SITE_NAME} - 신혼부부 대출·청약·세제·재무 가이드`,
-          description: "신혼·출산 가구의 주거 대출(디딤돌·보금자리·신생아특례), 청약 전략, 세제 혜택, 자산 형성까지. 가정의 재무 의사결정에 필요한 정책·금융 정보를 정리한 섹션입니다.",
-          image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&w=1200&h=630&q=80",
-          alt: "버진로드 신혼금융 섹션 - 대출 및 세제 가이드"
-        },
-        "신혼가전": {
-          title: `신혼가전 | ${SITE_NAME} - 삼성·LG 신혼가전 및 인테리어 가이드`,
-          description: "삼성·LG 신혼가전 패키지 비교, 평수별 적정 사이즈, 빌트인 가전 선택 기준, 한샘·이케아·리바트·일룸 가구 비교 등 신혼집 꾸리기 실용 가이드를 모았습니다.",
-          image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&h=630&q=80",
-          alt: "버진로드 신혼가전 및 인테리어 패키지 비교"
-        },
-        "결혼준비": {
-          title: `결혼준비 | ${SITE_NAME} - 스드메·웨딩홀·타임라인 완벽 정리`,
-          description: "스드메 견적의 실제, 웨딩홀 종류별 장단점, 결혼 준비 타임라인, 예단·예물 협상 기준 등 결혼을 앞둔 가구를 위한 풍성한 자료가 한가득 수록되어 있습니다.",
-          image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&h=630&q=80",
-          alt: "버진로드 결혼준비 타임라인 및 웨딩홀 체크리스트"
-        },
-        "정책정보": {
-          title: `정책정보 | ${SITE_NAME} - 2026 정부지원금 및 신혼 정책 총정리`,
-          description: "신생아특례, 부모급여, 결혼세액공제, 아동수당, 청년도약계좌 등 2026년 신혼·출산 가구에 꼭 필요한 최신 지원 정책을 한눈에 정리했습니다.",
-          image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&h=630&q=80",
-          alt: "버진로드 정책정보 - 2026 정부지원금 및 신혼 정책 총정리"
-        }
-      };
-
-      if (catMeta[cat]) {
-        title = catMeta[cat].title;
-        description = catMeta[cat].description;
-        ogImage = catMeta[cat].image;
-        ogImageAlt = catMeta[cat].alt;
-      } else {
-        title = `${cat} | ${SITE_NAME}`;
-        description = `${cat} 관련 가정경제·생활정책 정보를 모았습니다.`;
-        ogImage = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&h=630&q=80";
-        ogImageAlt = `${cat} 정보 - ${SITE_NAME}`;
-      }
-      canonical = `${SITE_URL}/category/${encodeURIComponent(cat)}`;
+      const category = currentPage.replace("category-", "");
+      title = `${category} 글 모음 - 버진로드 블로그`;
+      description = `${category}에 관한 실전 팁과 최신 정책 가이드를 모아둔 공간입니다.`;
+      canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
+    } else if (currentPage === "about") {
+      title = "블로그 소개 및 안내 - 버진로드";
+      description = "예비·신혼부부의 주거 마련과 현명한 자산 관리를 위한 실전 가이드 블로그 버진로드 소개입니다.";
+      canonical = `${SITE_URL}/about`;
+    } else if (currentPage === "privacy") {
+      title = "개인정보 처리방침 - 버진로드";
+      canonical = `${SITE_URL}/privacy`;
+    } else if (currentPage === "terms") {
+      title = "이용약관 및 면책고지 - 버진로드";
+      canonical = `${SITE_URL}/terms`;
     }
 
     document.title = title;
     setMeta("description", description);
     setCanonical(canonical);
-    setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
-    setMeta("googlebot", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
-
-    // Dynamic SEO 10 Keywords Extraction from content, title, tags, and category
-    let dynamicKeywords: string[] = [];
-    if (currentPost) {
-      dynamicKeywords = extractSeoKeywords({
-        title: currentPost.title,
-        content: currentPost.content,
-        category: currentPost.category,
-        hashtags: currentPost.hashtags
-      });
-    } else if (currentPage.startsWith("category-")) {
-      const cat = currentPage.replace("category-", "");
-      dynamicKeywords = extractSeoKeywords({
-        title,
-        category: cat
-      });
-    } else if (currentPage === "tools-didimdol" || currentPage === "tools-cheongyak" || currentPage === "policy") {
-      dynamicKeywords = extractSeoKeywords({
-        title,
-        category: "신혼금융"
-      });
-    } else {
-      dynamicKeywords = extractSeoKeywords({
-        title,
-        category: "신혼금융"
-      });
-    }
-
-    const keywordContent = dynamicKeywords.join(", ");
-    setMeta("keywords", keywordContent);
-    setMeta("news_keywords", keywordContent);
-
-    // Open Graph Tags
-    setMeta("og:type", ogType, "property");
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
-    setMeta("og:url", canonical, "property");
-    setMeta("og:site_name", SITE_NAME, "property");
-    setMeta("og:locale", "ko_KR", "property");
     setMeta("og:image", ogImage, "property");
-    setMeta("og:image:width", "1200", "property");
-    setMeta("og:image:height", "630", "property");
-    setMeta("og:image:alt", ogImageAlt, "property");
-
-    // Twitter Card Tags
-    setMeta("twitter:card", "summary_large_image");
-    setMeta("twitter:title", title);
-    setMeta("twitter:description", description);
-    setMeta("twitter:image", ogImage);
-    setMeta("twitter:image:alt", ogImageAlt);
-    setMeta("twitter:domain", "virginroad.kr");
-    setMeta("twitter:url", canonical);
+    setMeta("og:url", canonical, "property");
     setArticleJsonLd(currentPost);
     setBreadcrumbJsonLd(currentPost);
-    setWebSiteJsonLd();
-    setFaqJsonLd(currentPost ? (POST_EXTRA_MAP[currentPost.id] || null) : null);
   }, [currentPage, currentPost]);
 
   const handleNavigate = (page: string) => {
@@ -670,492 +444,292 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  return (
-    <div className="min-h-screen bg-[#FAFBFF] text-[#1E1B2E]">
-      <Navbar onSearch={setSearchQuery} onNavigate={handleNavigate} searchQuery={searchQuery} />
+  const activeCategory = currentPage.startsWith("category-") ? currentPage.replace("category-", "") : undefined;
 
-      <main>
+  return (
+    <div className="min-h-screen bg-[#FDFDFE] text-[#1E1B2E] font-sans antialiased selection:bg-[#E8745F] selection:text-white">
+      <Navbar
+        onSearch={setSearchQuery}
+        onNavigate={handleNavigate}
+        searchQuery={searchQuery}
+        currentPage={currentPage}
+      />
+
+      <main className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         <AnimatePresence mode="wait">
-          {currentPage === "home" && !searchQuery && (
-            <motion.section
-              key="hero"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+          {/* ========================================================================= */}
+          {/* 1. HOME / CATEGORY / SEARCH (2-COLUMN EDITORIAL BLOG LAYOUT)             */}
+          {/* ========================================================================= */}
+          {!currentPost &&
+            currentPage !== "about" &&
+            currentPage !== "privacy" &&
+            currentPage !== "terms" &&
+            currentPage !== "announcement" &&
+            currentPage !== "partnership" &&
+            currentPage !== "policy" &&
+            currentPage !== "tools-didimdol" &&
+            currentPage !== "tools-cheongyak" && (
+              <motion.div
+                key="blog-feed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start"
+              >
+                {/* Main Article Stream (col-span-8) */}
+                <div className="lg:col-span-8 space-y-8">
+                  {/* Blog Channel Greeting Banner (When on Home without search) */}
+                  {currentPage === "home" && !searchQuery && (
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-7 shadow-xs">
+                      <div className="flex items-center gap-2 mb-2 text-[12px] font-bold text-[#E8745F]">
+                        <span className="w-2 h-2 rounded-full bg-[#E8745F]" />
+                        <span>버진로드</span>
+                      </div>
+                      <h1 className="text-[22px] sm:text-[26px] font-extrabold text-[#111827] leading-[1.35] tracking-tight mb-3 break-keep">
+                        &ldquo;디딤돌 대출부터 청약, 혼수가전 견적까지 알짜 정보만 정리합니다.&rdquo;
+                      </h1>
+                      <p className="text-[14.5px] leading-relaxed text-[#475569] break-keep">
+                        결혼 준비와 신혼 생활에 꼭 필요한 대출 우대금리, 청약 가점 팁, 가전 비교 노하우를 보기 쉽게 모아둔 블로그입니다.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Category Header (When on specific category) */}
+                  {activeCategory && !searchQuery && (
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs flex items-center justify-between">
+                      <div>
+                        <span className="text-[11px] font-extrabold text-[#E8745F] uppercase tracking-wider">
+                          카테고리
+                        </span>
+                        <h1 className="text-[24px] font-bold text-[#111827] mt-0.5 tracking-tight">
+                          {activeCategory}
+                        </h1>
+                        <p className="text-[13.5px] text-[#64748B] mt-1">
+                          총 {filteredPosts.length}편의 실전 가이드가 등록되어 있습니다.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleNavigate("home")}
+                        className="text-[12.5px] font-semibold text-[#64748B] hover:text-[#111827] px-3 py-1.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]"
+                      >
+                        전체글 보기
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Search Query Header */}
+                  {searchQuery && (
+                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[12px] font-medium text-[#64748B]">검색어</p>
+                        <h2 className="text-[18px] font-bold text-[#111827]">
+                          &lsquo;{searchQuery}&rsquo; 검색 결과 ({filteredPosts.length}건)
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          handleNavigate("home");
+                        }}
+                        className="text-[13px] font-semibold text-[#E8745F] hover:underline shrink-0"
+                      >
+                        검색 초기화
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Category Filter Tabs */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate("home")}
+                      className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                        currentPage === "home" && !searchQuery
+                          ? "bg-[#1E1B2E] text-white"
+                          : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
+                      }`}
+                    >
+                      전체 ({allPosts.length})
+                    </button>
+                    {CATEGORIES.map((cat) => {
+                      const count = allPosts.filter((p) => p.category === cat).length;
+                      const isActive = activeCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => handleNavigate(`category-${cat}`)}
+                          className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                            isActive
+                              ? "bg-[#1E1B2E] text-white"
+                              : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
+                          }`}
+                        >
+                          {cat} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Posts Grid & In-feed Ads */}
+                  {filteredPosts.length > 0 ? (
+                    <div className="space-y-6">
+                      {/* Featured 1st Post (Only on clean home) */}
+                      {currentPage === "home" && !searchQuery && filteredPosts.length > 0 && (
+                        <PostCard
+                          post={filteredPosts[0]}
+                          onClick={(id) => handleNavigate(`post-${id}`)}
+                          featured={true}
+                        />
+                      )}
+
+                      {/* Top In-feed AdSense Slot */}
+                      <AdSenseUnit slot="home-feed-01" label="광고 / Ad" format="fluid" />
+
+                      {/* Main Posts 2-column Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {(currentPage === "home" && !searchQuery ? filteredPosts.slice(1, 7) : filteredPosts.slice(0, 6)).map(
+                          (post) => (
+                            <PostCard
+                              key={post.id}
+                              post={post}
+                              onClick={(id) => handleNavigate(`post-${id}`)}
+                            />
+                          )
+                        )}
+                      </div>
+
+                      {/* Middle In-feed AdSense Slot */}
+                      <AdSenseUnit slot="home-feed-02" label="광고 / Ad" format="fluid" />
+
+                      {/* Remaining Posts */}
+                      {(currentPage === "home" && !searchQuery ? filteredPosts.slice(7) : filteredPosts.slice(6)).length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {(currentPage === "home" && !searchQuery ? filteredPosts.slice(7) : filteredPosts.slice(6)).map(
+                            (post) => (
+                              <PostCard
+                                key={post.id}
+                                post={post}
+                                onClick={(id) => handleNavigate(`post-${id}`)}
+                              />
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Clean No-Result & Smart Google Search Section */
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center space-y-6 shadow-xs">
+                      <div className="max-w-md mx-auto">
+                        <div className="w-12 h-12 rounded-full bg-[#F1F5F9] text-[#64748B] flex items-center justify-center mx-auto text-xl mb-3">
+                          🔍
+                        </div>
+                        <h3 className="text-[19px] font-bold text-[#111827] mb-2">
+                          &lsquo;{searchQuery}&rsquo; 검색 결과가 없습니다
+                        </h3>
+                        <p className="text-[13.5px] text-[#64748B] leading-relaxed mb-5">
+                          단어의 철자를 확인하시거나, 아래의 맞춤형 구글 검색을 활용해 관련 정책 자료를 탐색해 보세요.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery("");
+                            handleNavigate("home");
+                          }}
+                          className="px-5 py-2.5 bg-[#1E1B2E] text-white text-[13px] font-bold rounded-xl hover:bg-[#332D4E] transition-colors"
+                        >
+                          전체 포스팅 목록으로 돌아가기
+                        </button>
+                      </div>
+
+                      {/* Smart Google Search Card */}
+                      <div className="mt-6 p-5 bg-[#F8FAFC] border border-[#BFDBFE] rounded-xl text-left">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
+                          <div>
+                            <span className="text-[11px] font-extrabold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
+                              구글 맞춤 연계 검색
+                            </span>
+                            <h4 className="text-[15px] font-bold text-[#1E1B2E] mt-1">
+                              구글에서 &lsquo;{searchQuery}&rsquo; 추천 검색어로 검색하기
+                            </h4>
+                          </div>
+                          <a
+                            href={smartSearch.primaryUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 bg-[#2563EB] text-white text-[12.5px] font-bold rounded-lg inline-flex items-center gap-1.5 hover:bg-[#1D4ED8] transition-colors shrink-0"
+                          >
+                            <span>구글 검색</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                        <div className="pt-3 flex items-center justify-between text-[13px] text-[#475569]">
+                          <span className="font-mono font-medium truncate">{smartSearch.primaryQuery}</span>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(smartSearch.primaryQuery);
+                                showToast("검색어가 클립보드에 복사되었습니다.", "success");
+                              } catch {
+                                showToast("복사에 실패했습니다.", "error");
+                              }
+                            }}
+                            className="text-[11.5px] text-[#64748B] hover:text-[#111827] flex items-center gap-1 shrink-0 ml-3"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>복사</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sticky Sidebar (col-span-4) */}
+                <div className="lg:col-span-4 lg:sticky lg:top-24">
+                  <Sidebar
+                    posts={allPosts}
+                    categories={CATEGORIES}
+                    activeCategory={activeCategory}
+                    onNavigate={handleNavigate}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+          {/* ========================================================================= */}
+          {/* 2. POST DETAIL VIEW (EDITORIAL ARTICLE + TABLE OF CONTENTS + SIDEBAR)     */}
+          {/* ========================================================================= */}
+          {currentPost && (
+            <motion.article
+              key="post-detail"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
-              {/* HERO — warm gradient background, dense info */}
-              <div className="gradient-warm relative overflow-hidden">
-                <div className="absolute top-10 right-10 w-64 h-64 bg-[#4F46E5] rounded-full opacity-30 blur-3xl" />
-                <div className="absolute bottom-10 left-10 w-48 h-48 bg-[#6366F1] rounded-full opacity-20 blur-2xl" />
-
-                <div className="max-w-[1400px] mx-auto px-5 lg:px-10 py-10 lg:py-16 relative">
-                  <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                    {/* Left: Hero text */}
-                    <div className="lg:col-span-7">
-                      <div className="inline-flex items-center gap-2 mb-4">
-                        <span className="inline-flex items-center gap-1.5 bg-black/40 border border-white/25 text-[#38BDF8] text-[14px] sm:text-[15px] font-extrabold px-4 py-1.5 rounded-full backdrop-blur-md shadow-md">
-                          버진로드 · 신혼 금융 생활 백서
-                        </span>
-                      </div>
-                      <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold tracking-[-0.03em] leading-[1.18] text-white mb-6 break-keep drop-shadow-sm">
-                        결혼 준비부터 금융 계산·시뮬레이션까지,<br />
-                        <span className="text-[#38BDF8] drop-shadow-md">우리 집 맞춤 정답</span>을 찾아드립니다.
-                      </h1>
-                      <p className="text-[18px] sm:text-[20px] font-bold leading-[1.8] text-white/95 max-w-2xl break-keep mb-8 drop-shadow">
-                        디딤돌·버팀목 대출 금리 시뮬레이션부터 신혼특공 청약 가점 계산, 스드메·웨딩홀 견적 분석 및 혼수가전 패키지 비교까지 예비·신혼부부를 위한 필수 금융 생활 백서입니다.
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        {[
-                          { label: "💰 디딤돌대출 금리계산", page: "category-신혼금융" },
-                          { label: "🏠 신혼특공 청약가점", page: "category-신혼금융" },
-                          { label: "👶 신생아특례 우대금리", page: "category-신혼금융" },
-                          { label: "📱 혼수가전 패키지비교", page: "category-신혼가전" },
-                          { label: "💍 스드메·웨딩홀 견적", page: "category-결혼준비" },
-                          { label: "📊 2026 정부지원금", page: "category-정책정보" },
-                        ].map((chip) => (
-                          <button
-                            key={chip.label}
-                            onClick={() => handleNavigate(chip.page)}
-                            className="text-[15px] sm:text-[17px] font-extrabold text-white bg-[#0F172A]/80 hover:bg-[#0F172A] border-2 border-white/30 hover:border-[#38BDF8] px-5 py-2.5 rounded-2xl transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98] backdrop-blur-md cursor-pointer"
-                          >
-                            {chip.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Right: Trust card */}
-                    <div className="lg:col-span-5">
-                      <div className="bg-white/90 backdrop-blur-sm border border-[#E2E4F0] rounded-2xl p-6 lg:p-8 shadow-sm">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
-                          <span className="text-[11px] font-bold text-[#22C55E] tracking-wide">버진로드는 이렇게 일해요</span>
-                        </div>
-                        <h3 className="text-[18px] font-bold text-[#1E1B2E] mb-5 break-keep">
-                          신뢰할 수 있는 실무 정보
-                        </h3>
-                        <ul className="space-y-4">
-                          <li className="flex gap-3">
-                            <span className="text-[#E8745F] text-[15px] font-bold shrink-0 mt-0.5">✓</span>
-                            <div>
-                              <p className="text-[14px] font-bold text-[#1E1B2E] leading-snug">공식 출처만 인용해요</p>
-                              <p className="text-[12px] text-[#8A87A0] mt-0.5 leading-snug break-keep">주택도시기금·국세청·복지로 같은 정부 자료에 근거합니다.</p>
-                            </div>
-                          </li>
-                          <li className="flex gap-3">
-                            <span className="text-[#E8745F] text-[15px] font-bold shrink-0 mt-0.5">✓</span>
-                            <div>
-                              <p className="text-[14px] font-bold text-[#1E1B2E] leading-snug">바뀌면 바로 고쳐요</p>
-                              <p className="text-[12px] text-[#8A87A0] mt-0.5 leading-snug break-keep">금리·세제·지원금이 바뀌면 빠르게 업데이트합니다.</p>
-                            </div>
-                          </li>
-                          <li className="flex gap-3">
-                            <span className="text-[#E8745F] text-[15px] font-bold shrink-0 mt-0.5">✓</span>
-                            <div>
-                              <p className="text-[14px] font-bold text-[#1E1B2E] leading-snug">우리 집 기준으로 알려줘요</p>
-                              <p className="text-[12px] text-[#8A87A0] mt-0.5 leading-snug break-keep">평균이 아니라 조건별로 달라지는 실제 선택지를 짚어드려요.</p>
-                            </div>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* === 많이 찾는 주제 (빠른 진입 태그 바) === */}
-              <div className="border-y border-[#E2E4F0] bg-[#FAFBFF]">
-                <div className="max-w-[1400px] mx-auto px-5 lg:px-10 py-4">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#B0432F] shrink-0">
-                      <TrendingUp className="w-4 h-4" />
-                      많이 찾는 주제
-                    </span>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {[
-                        { label: "디딤돌 금리 계산", page: "tools-didimdol" },
-                        { label: "신혼특공 가점", page: "tools-cheongyak" },
-                        { label: "신생아 특례대출", page: "category-신혼금융" },
-                        { label: "부모급여·아동수당", page: "category-신혼금융" },
-                        { label: "공공임대 자격", page: "category-신혼금융" },
-                        { label: "결혼세액공제", page: "policy" },
-                      ].map((t, i) => (
-                        <button
-                          key={t.label}
-                          onClick={() => handleNavigate(t.page)}
-                          className="inline-flex items-center gap-1 text-[12.5px] font-medium text-[#3F3D56] hover:text-[#E8745F] transition-colors cursor-pointer"
-                        >
-                          <span className="text-[#B5B3C8] font-bold tabular-nums">{i + 1}</span>
-                          {t.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* === POLICY HUB 요약 (정책·금리 대시보드) === */}
-              <PolicyHub compact={true} onNavigate={handleNavigate} />
-
-              {/* === 버진로드 E-E-A-T 에디토리얼 선언 및 자산 마스터 플랜 (AdSense Quality Boost) === */}
-              <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-12 lg:pt-16">
-                <div className="bg-gradient-to-r from-[#1E1B2E] via-[#2F294E] to-[#1E1B2E] rounded-3xl p-6 sm:p-10 lg:p-12 text-white shadow-md relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-[#E8745F]/10 rounded-full blur-3xl -mr-20 -mt-20" />
-                  <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#4F46E5]/10 rounded-full blur-3xl -ml-20 -mb-20" />
-                  
-                  <div className="relative">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-[12px] font-bold text-[#FFB4A2] mb-5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#E8745F]" />
-                      버진로드 스페셜 에디토리얼 (Virginroad Editorial)
-                    </div>
-                    
-                    <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-bold tracking-[-0.025em] leading-[1.25] text-white mb-6 break-keep">
-                      신혼 가계의 지속 가능한 성장을 위한 5대 자산 마스터 플랜
-                    </h2>
-                    
-                    <p className="text-[14.5px] leading-[1.8] text-white/80 max-w-3xl break-keep mb-8">
-                      19년간 수많은 예비부부들의 주택 자금과 결혼 준비 상담을 현장에서 전담해 온 전문 자문위원회에서 전달하는 핵심 가이드입니다. 
-                      복잡한 정책 대출 자격과 가전·웨딩 견적 속에서 예산을 획기적으로 아끼고 안정적인 신혼 생활을 시작하실 수 있도록 19년 실전 경험이 축적된 5가지 골든 룰을 안내합니다.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left mt-8">
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
-                        <span className="text-[24px] block mb-3">📈</span>
-                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">DSR·LTV 최적화</h4>
-                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
-                          대출 신청 시 무리한 영끌보다는 가능 한도의 30% 이하 소액 신청 우대를 결합해 금리를 연 소수점 이하 단위까지 극한으로 인하합니다.
-                        </p>
-                      </div>
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
-                        <span className="text-[24px] block mb-3">🎯</span>
-                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">배우자 통장 50% 룰</h4>
-                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
-                          2024년 청약 규칙 개정으로 배우자 청약저축 납입 기간과 횟수의 50%(최대 3점)를 소급 가산하여 부부 합산 청약 경쟁력을 극대화합니다.
-                        </p>
-                      </div>
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
-                        <span className="text-[24px] block mb-3">👶</span>
-                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">신생아 배정 전략</h4>
-                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
-                          만 2세 이하 자녀가 있는 가구에 부여되는 신혼특공 추가 가산점 3점과 함께 물량의 상당 부분을 우선 배정하는 전용 트랙을 노립니다.
-                        </p>
-                      </div>
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
-                        <span className="text-[24px] block mb-3">🏦</span>
-                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">1.5억 증여공제</h4>
-                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
-                          혼인 신고 전후 2년 이내(총 4년) 양가 부모로부터 각각 최대 1.5억 원(부부 합산 최대 3억 원)까지 증여세 면제 한도를 세법상 투명하게 신고하는 법.
-                        </p>
-                      </div>
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
-                        <span className="text-[24px] block mb-3">🏠</span>
-                        <h4 className="font-bold text-[14.5px] text-[#FFB4A2] mb-2 leading-tight">체적 최적화 혼수</h4>
-                        <p className="text-[12.5px] text-white/70 leading-[1.6] break-keep">
-                          신혼집 전용면적(59㎡, 84㎡)과 빌트인 유무에 맞춰 삼성 비스포크, LG 오브제 패키지의 실제 치수를 정밀 분석하여 과다 예산 낭비를 막습니다.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* === 주요 정책 서비스 바로가기 === */}
-              <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-10 lg:pt-14">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-5 bg-[#E8745F] rounded-full" />
-                  <h2 className="text-[16px] font-bold text-[#1E1B2E]">주요 정책 서비스 바로가기</h2>
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[
-                    { icon: "🏦", title: "주택도시기금", desc: "디딤돌·버팀목 대출 신청", url: "https://nhuf.molit.go.kr" },
-                    { icon: "🏠", title: "청약홈", desc: "청약 일정·가점 계산기", url: "https://www.applyhome.co.kr" },
-                    { icon: "👶", title: "복지로", desc: "부모급여·아동수당 신청", url: "https://www.bokjiro.go.kr" },
-                    { icon: "📋", title: "홈택스", desc: "결혼세액공제·연말정산", url: "https://www.hometax.go.kr" },
-                  ].map((link) => (
-                    <a
-                      key={link.title}
-                      href={link.url}
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-3 bg-white border border-[#E2E4F0] hover:border-[#FFD2BD] hover:bg-[#F5F6FD] rounded-xl p-4 transition-all"
-                    >
-                      <span className="text-[24px] shrink-0">{link.icon}</span>
-                      <div className="min-w-0">
-                        <p className="text-[14px] font-bold text-[#1E1B2E] group-hover:text-[#E8745F] transition-colors flex items-center gap-1">
-                          {link.title}
-                          <ArrowUpRight className="w-3.5 h-3.5 opacity-50" />
-                        </p>
-                        <p className="text-[12px] text-[#8A87A0] leading-snug break-keep">{link.desc}</p>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {/* === 카테고리 빠른 진입 그리드 === */}
-              <div className="max-w-[1400px] mx-auto px-5 lg:px-10 pt-10 lg:pt-14">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-5 bg-[#4F46E5] rounded-full" />
-                  <h2 className="text-[16px] font-bold text-[#1E1B2E]">카테고리</h2>
-                </div>
-                <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-                  {[
-                    { icon: "💰", label: "신혼금융", page: "category-신혼금융", count: allPosts.filter(p => p.category === "신혼금융").length },
-                    { icon: "🏠", label: "신혼가전", page: "category-신혼가전", count: allPosts.filter(p => p.category === "신혼가전").length },
-                    { icon: "💍", label: "결혼준비", page: "category-결혼준비", count: allPosts.filter(p => p.category === "결혼준비").length },
-                    { icon: "📊", label: "정책정보", page: "policy", count: null },
-                    { icon: "🧮", label: "금리 계산기", page: "tools-didimdol", count: null },
-                    { icon: "🎯", label: "가점 계산기", page: "tools-cheongyak", count: null },
-                  ].map((c) => (
-                    <button
-                      key={c.label}
-                      onClick={() => handleNavigate(c.page)}
-                      className="group flex flex-col items-center justify-center gap-2 bg-white border border-[#E2E4F0] hover:border-[#C7C9F0] hover:bg-[#F5F6FD] rounded-xl py-5 px-2 transition-all cursor-pointer"
-                    >
-                      <span className="text-[28px] group-hover:scale-110 transition-transform">{c.icon}</span>
-                      <span className="text-[13px] font-bold text-[#1E1B2E] group-hover:text-[#4F46E5] transition-colors text-center leading-tight break-keep">
-                        {c.label}
-                      </span>
-                      {c.count !== null && (
-                        <span className="text-[11px] text-[#8A87A0] font-medium">{c.count}개 글</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* === CATEGORY SECTIONS — info-dense === */}
-              <div className="max-w-[1400px] mx-auto px-5 lg:px-10">
-                {(() => {
-                  const byCategory = (cat: string, n: number) =>
-                    allPosts.filter(p => p.category === cat).slice(0, n);
-
-                  const finPosts = byCategory("신혼금융", 5);
-                  const appPosts = byCategory("신혼가전", 4);
-                  const wedPosts = byCategory("결혼준비", 4);
-
-                  return (
-                    <>
-                      {/* 신혼금융 — 1 large + 4 list */}
-                      {finPosts.length >= 4 && (
-                        <section className="py-12 lg:py-16">
-                          <div className="flex items-end justify-between mb-8">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-1 h-6 bg-[#E8745F] rounded-full" />
-                                <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8745F]">
-                                  Category 01
-                                </p>
-                              </div>
-                              <h2 className="text-[24px] sm:text-[30px] font-bold text-[#1E1B2E] tracking-[-0.025em]">
-                                💰 신혼금융
-                              </h2>
-                              <p className="text-[13px] text-[#5B5870] mt-1">
-                                주거 대출·청약·세금·자산관리, 가정 재무의 핵심 결정
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleNavigate("category-신혼금융")}
-                              className="text-[13px] font-bold text-[#E8745F] hover:text-[#B0432F] inline-flex items-center gap-1.5 bg-[#EEF0FB] hover:bg-[#FFD2BD] px-4 py-2 rounded-full transition-all cursor-pointer"
-                            >
-                              전체 {allPosts.filter(p => p.category === "신혼금융").length}개 보기
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-                            {/* Large feature */}
-                            <button
-                              onClick={() => handleNavigate(`post-${finPosts[0].id}`)}
-                              className="group text-left lg:col-span-6 card-warm p-0 overflow-hidden flex flex-col bg-white"
-                            >
-                              <div className="aspect-[5/3] overflow-hidden bg-[#F5F6FD] relative">
-                                <img
-                                  src={finPosts[0].image || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800"}
-                                  alt={finPosts[0].title}
-                                  referrerPolicy="no-referrer"
-                                  loading="lazy"
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                />
-                                <div className="absolute top-3 left-3">
-                                  <span className="badge-new">최신</span>
-                                </div>
-                              </div>
-                              <div className="p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-[11px] font-bold text-[#E8745F]">신혼금융</span>
-                                  <span className="w-1 h-1 bg-[#B5B3C8] rounded-full" />
-                                  <span className="text-[11px] text-[#8A87A0]">
-                                    {formatPostDateTime(finPosts[0].date, finPosts[0].id)}
-                                  </span>
-                                </div>
-                                <h3 className="text-[19px] sm:text-[21px] font-bold leading-[1.35] text-[#1E1B2E] mb-2.5 break-keep group-hover:text-[#E8745F] transition-colors">
-                                  {finPosts[0].title}
-                                </h3>
-                                <p className="text-[14px] leading-[1.6] text-[#3F3D56] line-clamp-2 break-keep">
-                                  {finPosts[0].excerpt}
-                                </p>
-                              </div>
-                            </button>
-
-                            {/* List items */}
-                            <div className="lg:col-span-6 card-warm p-2 lg:p-3 flex flex-col bg-white">
-                              <ul className="flex flex-col justify-between h-full divide-y divide-[#EDEEF7]">
-                                {finPosts.slice(1, 5).map((post, idx) => (
-                                  <li key={post.id} className="flex-1 flex items-center">
-                                    <button
-                                      onClick={() => handleNavigate(`post-${post.id}`)}
-                                      className="group flex items-center gap-3 w-full text-left p-3 hover:bg-[#F5F6FD] rounded-lg transition-colors cursor-pointer"
-                                    >
-                                      <span className="flex items-center justify-center w-7 h-7 bg-[#EEF0FB] text-[#B0432F] text-[11px] font-bold rounded-full shrink-0 tabular-nums">
-                                        {idx + 2}
-                                      </span>
-                                      <div className="min-w-0 flex-1">
-                                        <h4 className="text-[14px] font-bold leading-[1.4] text-[#1E1B2E] break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors mb-1">
-                                          {post.title}
-                                        </h4>
-                                        <p className="text-[11px] text-[#8A87A0] font-medium tabular-nums">
-                                          {formatPostDateTime(post.date, post.id)}
-                                        </p>
-                                      </div>
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </section>
-                      )}
-
-                      {/* 신혼가전 */}
-                      {appPosts.length >= 4 && (
-                        <section className="py-12 lg:py-16 border-t border-[#E2E4F0]">
-                          <div className="flex items-end justify-between mb-8">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-1 h-6 bg-[#E8745F] rounded-full" />
-                                <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8745F]">
-                                  Category 02
-                                </p>
-                              </div>
-                              <h2 className="text-[24px] sm:text-[30px] font-bold text-[#1E1B2E] tracking-[-0.025em]">
-                                🏠 신혼가전
-                              </h2>
-                              <p className="text-[13px] text-[#5B5870] mt-1">
-                                혼수가전 비교, 인테리어 예산, 실용 구매 가이드
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleNavigate("category-신혼가전")}
-                              className="text-[13px] font-bold text-[#E8745F] hover:text-[#B0432F] inline-flex items-center gap-1.5 bg-[#EEF0FB] hover:bg-[#FFD2BD] px-4 py-2 rounded-full transition-all cursor-pointer"
-                            >
-                              전체 {allPosts.filter(p => p.category === "신혼가전").length}개 보기
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
-                            {appPosts.map(post => (
-                              <PostCard
-                                key={post.id}
-                                post={post}
-                                views={views[post.id]}
-                                exposures={exposures[post.id]}
-                                onClick={(id) => handleNavigate(`post-${id}`)}
-                              />
-                            ))}
-                          </div>
-                        </section>
-                      )}
-
-                      {/* 결혼준비 */}
-                      {wedPosts.length >= 4 && (
-                        <section className="py-12 lg:py-16 border-t border-[#E2E4F0]">
-                          <div className="flex items-end justify-between mb-8">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-1 h-6 bg-[#E8745F] rounded-full" />
-                                <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8745F]">
-                                  Category 03
-                                </p>
-                              </div>
-                              <h2 className="text-[24px] sm:text-[30px] font-bold text-[#1E1B2E] tracking-[-0.025em]">
-                                💍 결혼준비
-                              </h2>
-                              <p className="text-[13px] text-[#5B5870] mt-1">
-                                스드메·예식장·청첩장, 결혼 준비 의사결정
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleNavigate("category-결혼준비")}
-                              className="text-[13px] font-bold text-[#E8745F] hover:text-[#B0432F] inline-flex items-center gap-1.5 bg-[#EEF0FB] hover:bg-[#FFD2BD] px-4 py-2 rounded-full transition-all cursor-pointer"
-                            >
-                              전체 {allPosts.filter(p => p.category === "결혼준비").length}개 보기
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
-                            {wedPosts.map(post => (
-                              <PostCard
-                                key={post.id}
-                                post={post}
-                                views={views[post.id]}
-                                exposures={exposures[post.id]}
-                                onClick={(id) => handleNavigate(`post-${id}`)}
-                              />
-                            ))}
-                          </div>
-                        </section>
-                      )}
-
-                      {/* All posts CTA strip */}
-                      <section className="py-12 lg:py-16">
-                        <div className="gradient-coral rounded-3xl p-8 lg:p-14 text-center text-white relative overflow-hidden">
-                          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
-                          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24" />
-                          <div className="relative">
-                            <p className="text-[11px] font-bold tracking-[0.25em] uppercase opacity-80 mb-3">
-                              Browse All
-                            </p>
-                            <h2 className="text-[26px] sm:text-[34px] font-bold tracking-[-0.025em] mb-4 break-keep">
-                              필요한 정보를<br />카테고리별로 빠르게 찾아보세요.
-                            </h2>
-                            <p className="text-[14px] sm:text-[15px] opacity-90 mb-7 break-keep max-w-lg mx-auto">
-                              신혼금융·신혼가전·결혼준비, 본인 가구 상황에 맞는 글을
-                              카테고리별로 정리해 두었습니다.
-                            </p>
-                            <div className="flex flex-wrap justify-center gap-2.5">
-                              {CATEGORIES.map(cat => {
-                                const count = allPosts.filter(p => p.category === cat).length;
-                                return (
-                                  <button
-                                    key={cat}
-                                    onClick={() => handleNavigate(`category-${cat}`)}
-                                    className="inline-flex items-center gap-2 px-5 h-11 bg-white text-[#E8745F] text-[14px] font-bold rounded-full hover:bg-[#F5F6FD] transition-colors shadow-sm cursor-pointer"
-                                  >
-                                    {cat}
-                                    <span className="px-2 py-0.5 bg-[#EEF0FB] text-[#B0432F] text-[11px] rounded-full">
-                                      {count}
-                                    </span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-                    </>
-                  );
-                })()}
-              </div>
-            </motion.section>
+              <GuideReader
+                post={currentPost}
+                allPosts={allPosts}
+                categories={CATEGORIES}
+                prevPost={prevPost}
+                nextPost={nextPost}
+                relatedPosts={relatedPosts}
+                onNavigate={handleNavigate}
+                showToast={showToast}
+              />
+            </motion.article>
           )}
 
-          {/* POLICY HUB — 정책정보 전체 페이지 */}
+          {/* ========================================================================= */}
+          {/* 3. POLICY HUB VIEW                                                        */}
+          {/* ========================================================================= */}
           {currentPage === "policy" && (
             <motion.div
               key="policy-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
@@ -1163,11 +737,13 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* DIDIMDOL CALCULATOR */}
+          {/* ========================================================================= */}
+          {/* 4. CALCULATORS (DIDIMDOL & CHEONGYAK)                                     */}
+          {/* ========================================================================= */}
           {currentPage === "tools-didimdol" && (
             <motion.div
               key="tools-didimdol-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
@@ -1175,11 +751,10 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* CHEONGYAK CALCULATOR */}
           {currentPage === "tools-cheongyak" && (
             <motion.div
               key="tools-cheongyak-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
@@ -1187,47 +762,55 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ABOUT */}
+          {/* ========================================================================= */}
+          {/* 5. ABOUT / PRIVACY / TERMS PAGES                                          */}
+          {/* ========================================================================= */}
           {currentPage === "about" && (
             <motion.div
               key="about-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
+              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
-              <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
-                버진로드 소개
-              </h1>
-              <p className="text-[16px] leading-[1.8] text-[#3F3D56] mb-10 break-keep">
-                버진로드(Virginroad)는 결혼 준비, 신혼 가전, 그리고 디딤돌/버팀목 대출이나 청약 가점 시뮬레이션 등 예비·신혼부부의 주거 마련과 금융 의사결정에 필요한 정보를 직접 꼼꼼히 조사하고 계산하여 공유하는 개인 전문 블로그입니다. 복잡한 규정 뒤에 가려진 '우리 집만의 정답'을 확실한 공공 기준 자료에 의거해 알기 쉽게 짚어드립니다.
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#F1F5F9]">
+                <div className="w-16 h-16 rounded-2xl bg-[#1E1B2E] text-white flex items-center justify-center font-black text-[24px] shadow-sm shrink-0">
+                  V
+                </div>
+                <div>
+                  <h1 className="text-[26px] sm:text-[32px] font-extrabold text-[#111827] mb-1">
+                    버진로드(Virginroad) 소개
+                  </h1>
+                  <p className="text-[14px] text-[#64748B]">
+                    예비·신혼부부를 위한 금융·청약·결혼준비 팁 공유 블로그
+                  </p>
+                </div>
+              </div>
+
+              <h2>1. 블로그 소개</h2>
+              <p>
+                버진로드(Virginroad)는 결혼 준비와 신혼 초기에 마주하는 주택 대출, 청약, 혼수가전 등 복잡한 정보들을 알기 쉽게 풀어내는 블로그입니다.
+              </p>
+              <p>
+                디딤돌·버팀목 대출의 우대금리 챙기는 법부터 신혼특공 가점 계산 팁, 가전 매장 견적 비교 노하우까지 유용한 정보들을 깔끔하게 정리해 두고 있습니다.
               </p>
 
-              <h2>우리의 목표</h2>
-              <p>단 한 번뿐인 결혼식을 올리고 새로운 가정을 이룰 때 마주하는 수많은 결정들이 있습니다. 생소한 청약가점 계산부터 디딤돌대출 금리에 자녀 수나 청약통장 회차가 미치는 인하 혜택까지, 각종 규정과 혜택 정보는 세밀하고 복잡하게 얽혀 있습니다. 버진로드는 정확한 사실 관계(Fact)를 기초로 쉽고 명확하게 계산해 가이드 라인을 전달함으로써 현명한 가계의 시작을 완벽히 조력하겠습니다.</p>
-
-              <h2>주요 카테고리</h2>
+              <h2>2. 주요 카테고리</h2>
               <ul>
-                <li><strong>신혼금융:</strong> 디딤돌·버팀목·신생아특례대출 비교, 신혼특공 청약 전략, 혼인 증여재산 공제 1억 5천만원 활용법, 신혼희망타운, IRP·연금저축 세제혜택까지</li>
-                <li><strong>신혼가전:</strong> 삼성·LG 신혼가전 패키지 비교, 평수별 가전 사이즈, 빌트인 vs 일반 가전 선택 기준, 한샘·이케아·리바트·일룸 가구 비교</li>
-                <li><strong>결혼준비:</strong> 스드메 견적의 실제, 웨딩홀 종류별 1인당 식대, 결혼 준비 타임라인, 예단·예물 협상 기준</li>
+                <li><strong>신혼금융:</strong> 디딤돌 대출, 신생아 특례, 버팀목 전세대출 팁 및 금리 계산기</li>
+                <li><strong>청약·주거:</strong> 신혼부부 특별공급 가점 계산 및 청약 팁</li>
+                <li><strong>혼수·가전:</strong> 삼성·LG 다품목 할인 견적 노하우 및 오픈점 비교 팁</li>
+                <li><strong>결혼준비:</strong> 스드메·웨딩홀 예산 관리 및 절세 팁</li>
               </ul>
 
-              <h2>콘텐츠 제작 원칙</h2>
+              <h2>3. 운영 안내 및 문의</h2>
               <ul>
-                <li><strong>1차 자료 우선:</strong> 국토교통부, 한국주택금융공사, 주택도시기금, 청약홈, 국세청, 통계청 등 공공기관의 공식 발표를 기준으로 합니다.</li>
-                <li><strong>본인 상황에 적용 가능한 방법론:</strong> 평균값 나열이 아닌, 본인 가구에 적용해 결정할 수 있는 판단 기준을 제공합니다.</li>
-                <li><strong>출처 명시:</strong> 본문에 인용된 공공 자료는 원문 링크를 함께 제공해 독자가 직접 확인할 수 있도록 합니다.</li>
-                <li><strong>면책 고지:</strong> 세무·법률·금융 등 전문 분야 정보는 일반 안내 목적임을 명시하고, 중요 결정에는 전문가 상담을 권장합니다.</li>
-              </ul>
-
-              <h2>기업 정보</h2>
-              <ul>
-                <li><strong>운영 주체:</strong> 상상아트</li>
+                <li><strong>블로그명:</strong> 버진로드 (Virginroad)</li>
+                <li><strong>운영:</strong> 상상아트 (대표: 박아람)</li>
                 <li><strong>사업자등록번호:</strong> 272-14-01256</li>
                 <li><strong>통신판매업 신고번호:</strong> 제2023-화성동탄-1098호</li>
+                <li><strong>소재지:</strong> 경기도 화성시 동탄대로</li>
                 <li><strong>문의 이메일:</strong> <a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a></li>
-                <li><strong>대표 사이트:</strong> <a href="https://virginroad.kr" rel="noopener noreferrer">https://virginroad.kr</a></li>
               </ul>
             </motion.div>
           )}
@@ -1235,888 +818,93 @@ export default function App() {
           {currentPage === "privacy" && (
             <motion.div
               key="privacy-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
+              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
-              <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
+              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
                 개인정보 처리방침
               </h1>
-              <p className="text-[16px] leading-[1.8] text-[#3F3D56] mb-10 break-keep">
-                상상아트(이하 '회사')는 「개인정보 보호법」 등 관련 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 이용자의 권익을 보호하며 안전하게 관리하고 있습니다.
+              <p className="text-[14.5px] leading-relaxed text-[#475569] mb-8">
+                버진로드는 방문자의 개인정보를 소중하게 다루며 안전하게 보호합니다.
               </p>
 
-              <h2>제1조 (개인정보의 처리 목적)</h2>
-              <p>회사는 다음의 목적을 위하여 최소한의 개인정보를 수집 및 처리하고 있으며, 다음 목적 이외의 용도로는 절대 이용하지 않습니다.</p>
-              <ul>
-                <li><strong>웹사이트 운영 및 통계 분석:</strong> 방문자수 통계, 국가별/브라우저별 통계 및 시뮬레이션 계산 사용량 분석</li>
-                <li><strong>일반 제휴 및 이메일 문의 응대:</strong> 이메일을 통한 사업 제휴 제안 및 서비스 관련 문의 사항의 사실 확인 및 처리 결과 회신</li>
-                <li><strong>제3자 광고 게재 및 분석:</strong> Google AdSense 솔루션을 적용한 타겟 맞춤형 온라인 광고 배너 송출 및 클릭 로그 분석</li>
-              </ul>
+              <h2>1. 개인정보 수집 안내</h2>
+              <p>본 블로그는 별도의 회원가입 없이 모든 포스팅과 계산기를 무료로 이용하실 수 있습니다. 접속 과정에서 일반적인 웹 통계용 쿠키나 접속 로그가 생성될 수 있습니다.</p>
 
-              <h2>제2조 (개인정보의 처리 및 보유 기간)</h2>
-              <p>회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 수집 시에 동의를 받은 보유·이용기간 내에서 개인정보를 처리·보유합니다.</p>
-              <ul>
-                <li><strong>이메일 문의 정보:</strong> 관련 법령 저작권 처리에 관한 사항 보존을 위하여 1년간 보관 후 지체 없이 영구 파기</li>
-                <li><strong>자동 수집 로그 및 기기 식별정보:</strong> 사이트 보증 관리 및 보안 인시던트 차단을 위해 최대 6개월 보유 후 파기</li>
-              </ul>
+              <h2>2. 쿠키(Cookie) 안내</h2>
+              <p>
+                웹사이트 품질 향상 및 맞춤형 콘텐츠 제공을 위해 브라우저 쿠키가 활용될 수 있으며, 브라우저 설정을 통해 언제든지 쿠키 저장을 차단할 수 있습니다.
+              </p>
 
-              <h2>제3조 (수집하는 개인정보의 항목)</h2>
-              <p>회사는 별도의 회원가입 절차 없이 모든 콘텐츠와 계산기를 완전 무료로 열람하고 이용하도록 구조를 취하고 있습니다. 다만 서비스를 이용하는 과정에서 아래 정보가 자동 생성되거나 문의 접수를 위해 자발적으로 제공하는 항목에 한해 수집될 수 있습니다.</p>
-              <ul>
-                <li><strong>자동 수집 항목:</strong> 이용자의 접속 IP 주소, OS 운영체제 종류, 웹 브라우저 제품 정보, 사이트 방문 시간 및 세션 쿠키(Cookie)</li>
-                <li><strong>문의 시 수집 항목:</strong> 성명 또는 닉네임, 문의 이메일 주소, 자발적 기재 내용</li>
-              </ul>
-
-              <h2>제4조 (개인정보의 제3자 제공 및 위탁)</h2>
-              <p>회사는 이용자의 개인정보를 제1조(개인정보의 처리 목적)에서 명시한 범위 내에서만 처리하며, 사전 동의를 받았거나 사법 당국의 법령에 따른 강제 명령이 있는 외에는 제3자에게 임의로 제공하거나 위탁하지 않습니다.</p>
-
-              <h2>제5조 (쿠키에 관한 고지)</h2>
-              <p>1. 본 서비스는 이용자 편의 및 브라우저 세션 관리를 위해 쿠키(Cookie)를 활용할 수 있습니다.<br />
-              2. <strong>쿠키 설치 허용 여부에 관한 제어 수단:</strong> 이용자는 언제든 사용하는 웹 브라우저의 옵션을 조절하여 쿠키 저장을 거부하거나 경고를 받도록 처리할 수 있습니다.</p>
-
-              <h2>제6조 (정보주체의 권리·의무 및 그 행사방법)</h2>
-              <p>1. 이용자는 회사에 대해 언제든지 개인정보의 열람, 정정, 삭제, 처리정지 요구 등의 권리를 신속히 행사할 수 있습니다.<br />
-              2. 권리 행사는 이메일(<a href="mailto:apark12321@gmail.com" className="text-[#4F46E5] hover:underline">apark12321@gmail.com</a>)을 통해 서면 신청하실 수 있으며, 접수 즉시 확인하여 처리 완료를 전달해 드립니다.</p>
-
-              <h2>제7조 (개인정보의 파기절차 및 방법)</h2>
-              <p>회사는 수집 목적이 완료되거나 보유 기간이 만료된 이용자의 개인정보는 물리적, 기술적으로 완전히 파기합니다. 파일 형태의 수집 기록은 복구할 수 없는 방식으로 영구 포맷 소거하며, 문서 형태는 전문 분쇄기를 이용하여 처분합니다.</p>
-
-              <h2>제8조 (개인정보의 안전성 확보 조치)</h2>
-              <p>회사는 개인정보를 취급함에 있어 안전성 확보를 위해 다음 각 호의 대책을 기본 수립하고 적용하고 있습니다.</p>
-              <ul>
-                <li>안전한 서버 가동망 구축 및 대외 불법 침입 시도 상시 탐지 차단 방화벽 적용</li>
-                <li>개인정보 열람 담당 책임자의 인원 수 세밀 통제 및 정기 보안 교육 실시</li>
-              </ul>
-
-              <h2>제9조 (개인정보 보호책임자 정보)</h2>
-              <p>회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 이용자의 불만 처리 및 피해 구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 운영하고 있습니다.</p>
-              <ul>
-                <li><strong>개인정보 보호책임자:</strong> 상상아트 사이트 운영본부</li>
-                <li><strong>담당 이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#4F46E5] hover:underline">apark12321@gmail.com</a></li>
-              </ul>
-
-              <h2>제10조 (개인정보 처리방침의 변경 고지)</h2>
-              <p>본 개인정보 처리방침은 법령 개정 및 보완, 서비스 개편에 따라 변경될 수 있으며, 개정이 있을 시에는 시행 최소 7일 전 사이트의 공지사항 목록을 통하여 명확히 안내할 것을 천명합니다.</p>
+              <h2>3. 문의처</h2>
+              <p>궁금한 점이 있으시다면 이메일(<a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a>)로 문의해 주시기 바랍니다.</p>
             </motion.div>
           )}
 
           {currentPage === "terms" && (
             <motion.div
               key="terms-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
+              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
-              <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
-                이용약관
+              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
+                이용약관 및 면책고지
               </h1>
-              <p className="text-[16px] leading-[1.8] text-[#3F3D56] mb-10 break-keep">
-                본 약관은 버진로드(이하 "서비스")가 제공하는 웹사이트 서비스 및 관련 계산 도구, 콘텐츠 이용과 관련하여 회사(상상아트)와 이용자의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.
+              <p className="text-[14.5px] leading-relaxed text-[#475569] mb-8">
+                본 약관은 버진로드 블로그의 콘텐츠 이용에 관한 권리와 의무를 규정합니다.
               </p>
 
-              <h2>제1조 (목적)</h2>
-              <p>본 약관은 회사가 운영하는 "버진로드" 웹사이트(이하 "사이트")에서 제공하는 제반 콘텐츠, 결혼 준비 정보, 대출 금리 계산기 및 가점 시뮬레이션 도구(이하 "서비스")를 이용자가 이용함에 있어 필요한 준수 사항 및 권리와 의무를 정의합니다.</p>
+              <h2>1. 저작권 보호</h2>
+              <p>본 블로그에 게재된 모든 텍스트, 이미지, 계산 알고리즘 및 편집물의 저작권은 상상아트 및 버진로드에 있습니다. 사전 서면 동의 없는 무단 전재, 크롤링, 상업적 재배포를 금합니다.</p>
 
-              <h2>제2조 (정의)</h2>
-              <p>본 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
-              <ul>
-                <li><strong>이용자:</strong> 사이트에 접속하여 본 약관에 따라 서비스를 이용하는 모든 방문객 및 사용자</li>
-                <li><strong>콘텐츠:</strong> 회사가 제공하는 텍스트, 이미지, 계산표, 분석 의견, 제보 기고글 등 일체의 정보 자료</li>
-                <li><strong>계산 도구:</strong> 디딤돌 금리 계산기, 청약 가점 계산기 등 사이트 내에서 제공하는 모의 시뮬레이터</li>
-              </ul>
-
-              <h2>제3조 (약관의 효력 및 개정)</h2>
-              <p>1. 본 약관은 사이트 화면에 게시하거나 기타의 방법으로 이용자에게 공시함으로써 효력을 발생합니다.<br />
-              2. 회사는 약관의 규제에 관한 법률 등 관련 법령을 위배하지 않는 범위 내에서 본 약관을 개정할 수 있습니다.<br />
-              3. 이용자는 정기적으로 사이트를 방문하여 약관의 변경 사항을 확인해야 할 의무가 있으며, 개정된 약관의 공지 이후에도 서비스를 계속 사용하는 경우 변경된 약관 조항에 동의한 것으로 간주됩니다.</p>
-
-              <h2>제4조 (서비스의 제공 및 변경)</h2>
-              <p>1. 회사는 이용자에게 신혼 금융, 신혼 가전, 결혼 준비 콘텐츠 및 각종 금융 시뮬레이션 계산 도구를 제공합니다.<br />
-              2. 제공되는 모든 시뮬레이션 및 데이터 결과물은 공공기관의 공식 발표자료에 근거하여 작동하나, 개별 가구의 구체적인 가점이나 실행 금리는 금융기관 및 담당 기관의 직접적인 기준과 차이가 있을 수 있으므로 전적인 법적 보증 문서로 사용될 수 없습니다.<br />
-              3. 회사는 필요한 경우 서비스의 내용을 수정하거나 중단할 수 있으며, 이로 발생하는 간접 결과에 책임을 지지 않습니다.</p>
-
-              <h2>제5조 (이용자의 의무 및 제한)</h2>
-              <p>이용자는 다음 각 호의 행위를 하여서는 안 됩니다.</p>
-              <ul>
-                <li>회사 또는 제3자의 저작권 등 지적재산권을 침해하는 행위</li>
-                <li>사이트 내의 데이터를 비정상적인 방법(크롤러, 매크로 등 자동 수집 도구)으로 수집하여 무단 데이터베이스화하는 행위</li>
-                <li>사이트의 시스템 안전성을 위협하거나 임의로 코드를 주입, 변조하려는 일체의 해킹 시도</li>
-                <li>타인의 명예를 훼손하거나 유해한 정보를 유포하는 일체의 행위</li>
-              </ul>
-
-              <h2>제6조 (저작권의 귀속 및 이용제한)</h2>
-              <p>1. 회사가 자체 디자인하고 작성하여 사이트에 게재한 모든 글, 그래픽, 계산 시뮬레이션 알고리즘 및 레이아웃의 전반 저작권은 상상아트에 귀속됩니다.<br />
-              2. 이용자는 사이트 내 정보를 사전 서면 복제 승인 없이 상업적 용도로 전재, 배포, 인용, 복제하는 행위를 엄격히 금지합니다. 출처를 표기한 부분 인용의 경우에도 사이트 운영 목적을 저해하는 무단 스크랩은 엄격히 차단됩니다.</p>
-
-              <h2>제7조 (책임의 한계와 제3자 서비스 면책)</h2>
-              <p>1. 본 사이트 내 게재된 콘텐츠는 단순 가이드 및 일반적인 참고 목적으로 제공되는 것이며, 투자, 세법 적용, 실제 청약 및 대출 실행 관련 최종 의사결정의 주 책임은 전적으로 이용자 본인에게 있습니다.<br />
-              2. 본 사이트는 Google AdSense 등 제3자 광고 파트너사가 송출하는 광고 및 마케팅 정보를 포함하고 있으며, 해당 제3자 광고 링크를 통해 이동하는 외부 사이트에서 이루어진 정보 및 거래에 대해 회사는 일체의 귀속 책임을 부담하지 않습니다.</p>
-
-              <h2>제8조 (관할 법원)</h2>
-              <p>본 서비스 이용과 관련하여 회사와 이용자 간 분쟁이 발생하는 경우, 민사소송법상의 관할 법원을 합의 법원으로 지정하여 해결합니다.</p>
+              <h2>2. 면책 조항 (Disclaimer)</h2>
+              <p>
+                본 블로그에서 제공하는 대출 금리 계산, 청약 가점 시뮬레이션 및 정책 가이드는 공식 자료를 기반으로 정성껏 작성되었으나, 실제 대출 한도와 청약 당첨 여부는 금융기관 및 청약 주관처의 심사 결과에 따라 달라질 수 있습니다. 최종 금융·청약 의사결정의 책임은 이용자 본인에게 있습니다.
+              </p>
             </motion.div>
           )}
 
           {currentPage === "announcement" && (
             <motion.div
               key="announcement-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
+              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
-              <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
+              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
                 공지사항
               </h1>
-              <p className="text-[16px] leading-[1.8] text-[#3F3D56] mb-10 break-keep">
-                버진로드 운영에 관한 안내 사항을 공지합니다.
-              </p>
-
-              <h2>2026년 5월 13일</h2>
-              <h3>인기 가전·가구 비교 목록 최신 갱신완료</h3>
-              <p>2026년 봄 결혼 가전 입주 시즌에 맞춰 삼성 비스포크와 LG 오브제 컬렉션의 가격 단품 시세를 새로 동조 갱신해 드렸습니다.</p>
-
-              <h2>2026년 3월 15일</h2>
-              <h3>버진로드 정식 서비스 오픈</h3>
-              <p>신혼 생활 정책 및 금융 정보를 다루는 블로그 버진로드가 오픈되었습니다. 유용한 계산기들과 알기 쉬운 실전 가이드를 전해드립니다.</p>
+              <h2>버진로드 블로그 운영 안내</h2>
+              <p>2026년 기준 최신 신혼부부 정책 및 디딤돌 대출 조건 개정안이 전 포스팅에 반영되었습니다.</p>
             </motion.div>
           )}
 
           {currentPage === "partnership" && (
             <motion.div
               key="partnership-page"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[1000px] mx-auto px-6 sm:px-10 lg:px-16 py-12 lg:py-20 article-body bg-white min-h-screen mt-4"
+              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
-              <h1 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.025em] leading-[1.2] text-[#1E1B2E] mb-6 break-keep">
+              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
                 제휴 및 비즈니스 문의
               </h1>
-              <p className="text-[16px] leading-[1.8] text-[#3F3D56] mb-10 break-keep">
-                금융, 보험, 웨딩, 인테리어 분야와의 제휴나 협업 기고 제보를 환영합니다.
-              </p>
-              <p>제휴 문의 이메일: <a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a> (담당자 앞)</p>
+              <p>신혼 금융, 인테리어, 가전 및 웨딩 관련 협업 및 기고 제보는 아래 이메일로 연락주시면 검토 후 회신드리겠습니다.</p>
+              <p>이메일: <a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a></p>
             </motion.div>
-          )}
-
-          {currentPost ? (
-            <motion.article
-              key="post-detail"
-              initial={{ y: 12, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="max-w-[1400px] mx-auto px-5 lg:px-10 py-10 lg:py-16 bg-white min-h-screen mt-4"
-            >
-              <div className="lg:max-w-[860px]">
-                {/* Breadcrumb */}
-                <nav aria-label="breadcrumb" className="mb-6 text-[13px] font-badge font-semibold text-[#6B7280]">
-                  <ol className="flex flex-wrap items-center gap-2">
-                    <li>
-                      <button onClick={() => handleNavigate("home")} className="hover:text-[#1E1B2E] transition-colors cursor-pointer">홈</button>
-                    </li>
-                    <li aria-hidden="true" className="text-[#9CA3AF]">/</li>
-                    <li>
-                      <button onClick={() => handleNavigate(`category-${currentPost.category}`)} className="hover:text-[#1E1B2E] transition-colors cursor-pointer text-[#4F46E5]">
-                        {currentPost.category}
-                      </button>
-                    </li>
-                  </ol>
-                </nav>
-
-                {/* Category Badge */}
-                <div className="mb-4">
-                  <span className="font-badge inline-flex items-center text-[13px] font-extrabold px-3.5 py-1.5 rounded-full bg-[#EEF0FB] text-[#B0432F] tracking-tight">
-                    {currentPost.category}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h1 className="font-heading text-[30px] sm:text-[38px] lg:text-[44px] font-extrabold leading-[1.24] tracking-[-0.03em] text-[#111827] mb-6 break-keep">
-                  {currentPost.title}
-                </h1>
-
-                {/* Excerpt */}
-                <p className="font-sans text-[18px] sm:text-[20px] font-medium leading-[1.8] text-[#374151] mb-8 break-keep tracking-[-0.015em]">
-                  {currentPost.excerpt}
-                </p>
-
-                {/* Meta */}
-                <div className="font-badge flex items-center justify-between py-5 border-y border-[#E2E8F0] mb-10">
-                  <div className="flex items-center text-[14px] sm:text-[15px] font-semibold text-[#4B5563]">
-                    <span className="tabular-nums">{formatPostDateTime(currentPost.date, currentPost.id)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="w-9 h-9 rounded-lg text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors cursor-pointer"
-                      title="공유"
-                      aria-label="이 글 공유하기"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(window.location.href);
-                          showToast("포스트 주소가 클립보드에 성공적으로 복사되었습니다!", "success");
-                        } catch {
-                          showToast("주소 복사에 실패했습니다. 주소창의 링크를 복사해주세요.", "error");
-                        }
-                      }}
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="w-9 h-9 rounded-lg text-[#3F3D56] hover:text-[#1E1B2E] hover:bg-[#F1F3F9] flex items-center justify-center transition-colors hidden sm:flex cursor-pointer"
-                      title="인쇄"
-                      aria-label="이 글 인쇄하기"
-                      onClick={() => {
-                        showToast("인쇄 화면을 준비하고 있습니다...", "info");
-                        setTimeout(() => {
-                          window.print();
-                        }, 500);
-                      }}
-                    >
-                      <Printer className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Body + Sidebar grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-                <div className="lg:col-span-8 min-w-0">
-                  <div className="aspect-[16/10] overflow-hidden mb-10 bg-[#F1F3F9] rounded-lg">
-                    <img
-                      src={currentPost.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
-                      alt={currentPost.title}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Persona Card */}
-                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 mb-8 flex items-start gap-4">
-                      <img
-                        src={POST_EXTRA_MAP[currentPost.id].persona.avatar}
-                        alt={POST_EXTRA_MAP[currentPost.id].persona.name}
-                        referrerPolicy="no-referrer"
-                        className="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                          <span className="text-[14px] font-bold text-[#1E1B2E]" id={`persona-name-${currentPost.id}`}>{POST_EXTRA_MAP[currentPost.id].persona.name}</span>
-                          <span className="text-[11px] font-medium text-[#4F46E5] bg-[#EEF2FF] px-2.5 py-0.5 rounded-full border border-[#C7D2FE]">
-                            {POST_EXTRA_MAP[currentPost.id].persona.role}
-                          </span>
-                          <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
-                            {POST_EXTRA_MAP[currentPost.id].persona.badge}
-                          </span>
-                        </div>
-                        <p className="text-[13px] text-[#475569] leading-relaxed break-keep">
-                          &ldquo;{POST_EXTRA_MAP[currentPost.id].persona.message}&rdquo;
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div
-                    className="article-body"
-                    dangerouslySetInnerHTML={{ __html: currentPost.content }}
-                  />
-
-                  {/* Official Policy Source Card */}
-                  {currentPost && POST_EXTRA_MAP[currentPost.id] && (
-                    <div className="mt-10 p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl" id={`geo-source-${currentPost.id}`}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-                        <h4 className="text-[14px] font-bold text-[#1E1B2E] flex items-center gap-1.5">
-                          📌 참고 공식 출처 및 정책 기준
-                        </h4>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-[12px] text-[#475569]">
-                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
-                          <div className="text-[11px] text-[#8A87A0] mb-0.5">주관/담당 기구</div>
-                          <div className="font-semibold text-[#1E1B2E] break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.agency}</div>
-                        </div>
-                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
-                          <div className="text-[11px] text-[#8A87A0] mb-0.5">행정 고시 및 근거</div>
-                          <div className="font-semibold text-[#1E1B2E] leading-normal break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.basis}</div>
-                        </div>
-                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0]">
-                          <div className="text-[11px] text-[#8A87A0] mb-0.5">적용 지역</div>
-                          <div className="font-semibold text-[#1E1B2E] break-keep">{POST_EXTRA_MAP[currentPost.id].geoSource.region}</div>
-                        </div>
-                        <div className="bg-white p-3 rounded-lg border border-[#E2E8F0] flex items-center justify-between">
-                          <div>
-                            <div className="text-[11px] text-[#8A87A0] mb-0.5">검증 기준</div>
-                            <div className="font-bold text-[#10B981]">{POST_EXTRA_MAP[currentPost.id].geoSource.trustIndex}</div>
-                          </div>
-                          <span className="text-[10px] font-extrabold text-white bg-[#10B981] px-2 py-0.5 rounded shrink-0">공식자료</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* FAQ Accordion */}
-                  {currentPost && POST_EXTRA_MAP[currentPost.id] && POST_EXTRA_MAP[currentPost.id].aeoFaq.length > 0 && (
-                    <div className="mt-8 p-5 bg-white border border-[#E2E4F0] rounded-xl shadow-sm" id={`aeo-faq-${currentPost.id}`}>
-                      <h4 className="text-[14px] font-bold text-[#1E1B2E] mb-4 flex items-center gap-1.5">
-                        💬 자주 묻는 질문 (FAQ)
-                      </h4>
-                      <div className="space-y-2.5">
-                        {POST_EXTRA_MAP[currentPost.id].aeoFaq.map((faq, idx) => {
-                          const isOpen = openFaqIdx === idx;
-                          return (
-                            <div key={idx} className="border border-[#EEF0FB] rounded-lg overflow-hidden">
-                              <button
-                                onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                                className="w-full flex items-center justify-between p-3.5 text-left bg-[#F8FAFD] hover:bg-[#EEF0FB] transition-colors cursor-pointer"
-                              >
-                                <span className="text-[13px] font-bold text-[#1E1B2E] leading-relaxed flex items-start gap-1.5 break-keep">
-                                  <span className="text-[#E8745F] font-extrabold shrink-0">Q.</span> {faq.q}
-                                </span>
-                                <span className="text-[11px] text-[#E8745F] font-semibold shrink-0 ml-2 whitespace-nowrap">
-                                  {isOpen ? "닫기 ▲" : "열기 ▼"}
-                                </span>
-                              </button>
-                              {isOpen && (
-                                <div className="p-4 bg-white border-t border-[#EEF0FB] text-[13px] text-[#3F3D56] leading-[1.7] break-keep">
-                                  <strong className="text-[#10B981] font-extrabold mr-1">A.</strong> {faq.a}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {currentPost.hashtags && currentPost.hashtags.length > 0 && (
-                    <div className="mt-12 pt-8 border-t border-[#D5D8E8]">
-                      <div className="flex flex-wrap gap-2">
-                        {currentPost.hashtags.map(tag => (
-                          <span
-                            key={tag}
-                            className="text-[12px] text-[#3F3D56] bg-[#F1F3F9] px-3 py-1.5 rounded-full"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="lg:col-span-4 space-y-6">
-                  {/* 인기 글 */}
-                  <div className="bg-white border border-[#E2E4F0] rounded-xl overflow-hidden shadow-sm">
-                    <div className="bg-[#3730A3] px-4 py-3">
-                      <h3 className="text-[14px] font-bold text-white flex items-center gap-1.5">
-                        <TrendingUp className="w-4 h-4" /> 인기 글
-                      </h3>
-                    </div>
-                    <ul className="divide-y divide-[#EDEEF7]">
-                      {["fin-39", "fin-38", "fin-41", "fin-43", "fin-44"]
-                        .map(id => allPosts.find(p => p.id === id))
-                        .filter((p): p is Post => Boolean(p) && p!.id !== currentPost.id)
-                        .slice(0, 5)
-                        .map((post, i) => (
-                          <li key={post.id}>
-                            <button
-                              onClick={() => handleNavigate(`post-${post.id}`)}
-                              className="group flex gap-2.5 w-full text-left p-3 hover:bg-[#F5F6FD] transition-colors cursor-pointer"
-                            >
-                              <span className="flex items-center justify-center w-5 h-5 bg-[#EEF0FB] text-[#3730A3] text-[11px] font-bold rounded shrink-0 mt-0.5 tabular-nums">
-                                {i + 1}
-                              </span>
-                              <span className="text-[13px] font-medium text-[#1E1B2E] leading-[1.45] break-keep line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
-                                {post.title}
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-
-                  {/* 같은 카테고리 최신 글 */}
-                  <div className="bg-white border border-[#E2E4F0] rounded-xl overflow-hidden shadow-sm">
-                    <div className="bg-[#4F46E5] px-4 py-3">
-                      <h3 className="text-[14px] font-bold text-white">📰 {currentPost.category} 최신</h3>
-                    </div>
-                    <ul className="divide-y divide-[#EDEEF7]">
-                      {allPosts
-                        .filter(p => p.category === currentPost.category && p.id !== currentPost.id)
-                        .slice(0, 5)
-                        .map((post) => (
-                          <li key={post.id}>
-                            <button
-                              onClick={() => handleNavigate(`post-${post.id}`)}
-                              className="group flex flex-col gap-1 w-full text-left p-3 hover:bg-[#F5F6FD] transition-colors cursor-pointer"
-                            >
-                              <span className="text-[13px] font-medium text-[#1E1B2E] leading-[1.45] break-keep line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
-                                {post.title}
-                              </span>
-                              <span className="text-[11px] text-[#8A87A0] tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
-                            </button>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-
-                  {/* 실용 도구 바로가기 */}
-                  <div className="bg-white border border-[#E2E4F0] rounded-xl overflow-hidden shadow-sm">
-                    <div className="bg-[#312E81] px-4 py-3">
-                      <h3 className="text-[14px] font-bold text-white">🧮 실용 계산기</h3>
-                    </div>
-                    <div className="p-3 space-y-2">
-                      <button
-                        onClick={() => handleNavigate("tools-didimdol")}
-                        className="w-full text-left text-[13px] font-medium text-[#3F3D56] bg-[#F5F6FD] hover:bg-[#EEF0FB] hover:text-[#4F46E5] border border-[#E2E4F0] rounded-lg px-3 py-2.5 transition-colors cursor-pointer"
-                      >
-                        디딤돌 우대금리 계산기
-                      </button>
-                      <button
-                        onClick={() => handleNavigate("tools-cheongyak")}
-                        className="w-full text-left text-[13px] font-medium text-[#3F3D56] bg-[#F5F6FD] hover:bg-[#EEF0FB] hover:text-[#4F46E5] border border-[#E2E4F0] rounded-lg px-3 py-2.5 transition-colors cursor-pointer"
-                      >
-                        신혼특공 가점 계산기
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.article>
-          ) : (
-            (currentPage.startsWith("category-") || searchQuery) && (
-              <motion.section
-                key="post-list"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="max-w-[1400px] mx-auto px-5 lg:px-10 py-12 lg:py-16"
-              >
-                {/* Section header */}
-                <div className="mb-8 lg:mb-10">
-                  {(() => {
-                    const categoryName = currentPage === "home" ? "" : currentPage.replace("category-", "");
-                    const isCategory = currentPage.startsWith("category-");
-                    const isSearching = !!searchQuery;
-                    const title = isSearching
-                      ? `'${searchQuery}' 검색 결과`
-                      : (isCategory ? categoryName : "전체 글");
-                    const desc = isSearching
-                      ? `총 ${filteredPosts.length}개의 글이 검색되었습니다.`
-                      : (isCategory
-                        ? ({
-                            "신혼금융": "디딤돌, 보금자리, 신생아특례대출부터 신혼특공·혼인 증여공제, 출산·육아 지원 정책까지 — 가정의 재무·정책 의사결정에 필요한 정보를 모았습니다.",
-                            "신혼가전": "삼성·LG 패키지 비교, 평수별 가전 사이즈, 빌트인 선택 기준 등 신혼집을 꾸리는데 필요한 실용 가이드를 정리했습니다.",
-                            "결혼준비": "스드메 견적의 진실, 웨딩홀 종류별 장단점, 6개월 타임라인 등 결혼을 앞둔 두 사람을 위한 현실적인 안내입니다.",
-                          } as Record<string, string>)[categoryName] || "본 카테고리의 글을 모았습니다."
-                        : "버진로드의 모든 글을 한자리에서 확인하세요.");
-
-                    return (
-                      <div className="flex items-end justify-between gap-6 flex-wrap">
-                        <div className="max-w-2xl">
-                          <h2 className="text-[26px] sm:text-[32px] lg:text-[40px] font-bold text-[#1E1B2E] tracking-[-0.025em] break-keep leading-[1.2] mb-3">
-                            {title}
-                          </h2>
-                          <p className="text-[14px] sm:text-[15px] text-[#3F3D56] leading-[1.7] break-keep max-w-xl">
-                            {desc}
-                          </p>
-                        </div>
-                        {isSearching && (
-                          <button
-                            type="button"
-                            onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
-                            className="text-[13px] font-semibold text-[#3F3D56] hover:text-[#1E1B2E] inline-flex items-center gap-1 cursor-pointer"
-                            aria-label="검색 닫기"
-                          >
-                            <ArrowRight className="w-3.5 h-3.5 rotate-180" /> 검색 닫기
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Category tabs */}
-                <div className="flex gap-1.5 overflow-x-auto pb-4 mb-8 hide-scrollbar border-b border-[#D5D8E8]">
-                  <button
-                    className={`whitespace-nowrap px-4 h-9 rounded-full text-[13px] font-semibold transition-colors cursor-pointer ${
-                      currentPage === "home" && !searchQuery
-                        ? "bg-[#1E1B2E] text-white"
-                        : "bg-white text-[#3F3D56] hover:bg-[#F1F3F9] border border-[#D5D8E8]"
-                    }`}
-                    onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
-                  >
-                    전체
-                  </button>
-                  {CATEGORIES.map(cat => (
-                    <button
-                      key={cat}
-                      className={`whitespace-nowrap px-4 h-9 rounded-full text-[13px] font-semibold transition-colors cursor-pointer ${
-                        currentPage === `category-${cat}`
-                          ? "bg-[#1E1B2E] text-white"
-                          : "bg-white text-[#3F3D56] hover:bg-[#F1F3F9] border border-[#D5D8E8]"
-                      }`}
-                      onClick={() => handleNavigate(`category-${cat}`)}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Main + Sidebar layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-                  <div className="lg:col-span-9">
-                    {filteredPosts.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-12 lg:gap-x-6 lg:gap-y-14">
-                        {filteredPosts.map((post, idx) => (
-                          <motion.div
-                            key={post.id}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: Math.min(idx, 8) * 0.04 }}
-                          >
-                            <PostCard
-                              post={post}
-                              views={views[post.id]}
-                              exposures={exposures[post.id]}
-                              onClick={(id) => handleNavigate(`post-${id}`)}
-                              index={idx}
-                            />
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-10 px-6 bg-white border border-[#E2E4F0] rounded-2xl shadow-sm text-left">
-                        {/* 1. Header & Re-search prompt */}
-                        <div className="text-center max-w-xl mx-auto mb-10">
-                          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#FFD2BD]/40 text-[#E8745F] text-2xl mb-4">
-                            🔍
-                          </div>
-                          <h3 className="text-[20px] sm:text-[22px] font-bold text-[#1E1B2E] mb-2 break-keep">
-                            {searchQuery ? `'${searchQuery}'` : "요청하신"} 검색 결과가 없습니다
-                          </h3>
-                          <p className="text-[14px] text-[#5B5870] leading-relaxed break-keep mb-6">
-                            입력하신 단어의 철자가 정확한지 확인하시거나, 아래의 인기 태그 및 카테고리를 활용해 원하시는 정보를 탐색해 보세요.
-                          </p>
-                          <div className="flex flex-wrap items-center justify-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
-                              className="px-5 py-2.5 bg-[#1E1B2E] hover:bg-[#3730A3] text-white text-[13px] font-bold rounded-xl transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1.5"
-                            >
-                              전체 글 목록 보기
-                            </button>
-                            {searchQuery && (
-                              <button
-                                type="button"
-                                onClick={() => setSearchQuery("")}
-                                className="px-5 py-2.5 bg-[#EEF0FB] hover:bg-[#E2E6F8] text-[#1E1B2E] text-[13px] font-bold rounded-xl transition-colors cursor-pointer"
-                              >
-                                검색어 초기화
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Google Smart External Search Card */}
-                          <div className="mt-8 p-5 sm:p-6 bg-gradient-to-br from-[#F0F4FF] via-[#F8FAFF] to-[#E8F0FE] border border-[#BFDBFE] rounded-2xl text-left shadow-sm">
-                            {/* Header row */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#D0E2FF]">
-                              <div className="flex items-start gap-3.5">
-                                <div className="w-11 h-11 rounded-xl bg-white border border-[#D0E2FF] shadow-xs flex items-center justify-center shrink-0 text-2xl font-black text-[#4285F4]">
-                                  G
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                    <span className="text-[11px] font-extrabold text-[#1A73E8] tracking-wider uppercase bg-white px-2.5 py-0.5 rounded-full border border-[#D0E2FF]">
-                                      구글 맞춤 연동 검색
-                                    </span>
-                                    <span className="text-[11px] font-bold text-[#4338CA] bg-[#EEF2FF] px-2 py-0.5 rounded-full border border-[#C7D2FE]">
-                                      {smartSearch.intentBadge}
-                                    </span>
-                                  </div>
-                                  <h4 className="text-[15px] sm:text-[16px] font-bold text-[#1E1B2E] break-keep">
-                                    구글(Google)에서 &lsquo;{searchQuery || "신혼부부 맞춤 정보"}&rsquo; 정밀 검색 결과 탐색
-                                  </h4>
-                                </div>
-                              </div>
-                              <a
-                                href={smartSearch.primaryUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="shrink-0 px-5 py-2.5 bg-[#4285F4] hover:bg-[#1A73E8] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm hover:shadow-md inline-flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-                              >
-                                <span>구글에서 검색</span>
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            </div>
-
-                            {/* Refined Query Highlight Box */}
-                            <div className="mt-4 p-3.5 bg-white border border-[#D0E2FF] rounded-xl flex items-center justify-between gap-3">
-                              <div className="min-w-0">
-                                <div className="text-[11px] font-bold text-[#64748B] mb-0.5">정제된 구글 추천 쿼리</div>
-                                <div className="text-[13.5px] font-bold text-[#1E293B] truncate font-mono">
-                                  {smartSearch.primaryQuery}
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  try {
-                                    await navigator.clipboard.writeText(smartSearch.primaryQuery);
-                                    showToast("정제된 검색어가 클립보드에 복사되었습니다.", "success");
-                                  } catch {
-                                    showToast("검색어 복사에 실패했습니다.", "error");
-                                  }
-                                }}
-                                className="shrink-0 px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] text-[12px] font-semibold rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
-                                title="검색어 복사"
-                              >
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>복사</span>
-                              </button>
-                            </div>
-
-                            {/* Refined Contextual Suggestion Pills */}
-                            {smartSearch.refinedSuggestions.length > 0 && (
-                              <div className="mt-4 pt-3 border-t border-[#D0E2FF]/60">
-                                <div className="text-[11px] font-bold text-[#64748B] mb-2 flex items-center gap-1">
-                                  <span>💡 추천 세부 정밀 쿼리 (클릭 시 구글 즉시 이동)</span>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  {smartSearch.refinedSuggestions.map((sug, idx) => (
-                                    <a
-                                      key={idx}
-                                      href={sug.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="px-3 py-1.5 bg-white hover:bg-[#EEF2FF] border border-[#CBD5E1] hover:border-[#818CF8] text-[#334155] hover:text-[#4338CA] text-[12px] font-medium rounded-lg transition-all inline-flex items-center gap-1 shadow-2xs hover:shadow-xs break-keep"
-                                    >
-                                      <span>{sug.label}</span>
-                                      <ArrowUpRight className="w-3 h-3 text-[#94A3B8]" />
-                                    </a>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Authoritative Government Portal Link if available */}
-                            {smartSearch.officialPortal && (
-                              <div className="mt-4 p-3.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div className="flex items-start gap-2.5">
-                                  <span className="text-xl">🏛️</span>
-                                  <div>
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-[13px] font-bold text-[#166534]">
-                                        {smartSearch.officialPortal.title}
-                                      </span>
-                                      <span className="text-[10px] font-extrabold text-[#15803D] bg-white px-2 py-0.5 rounded border border-[#86EFAC]">
-                                        {smartSearch.officialPortal.badge}
-                                      </span>
-                                    </div>
-                                    <p className="text-[11.5px] text-[#15803D] mt-0.5 leading-snug break-keep">
-                                      {smartSearch.officialPortal.desc}
-                                    </p>
-                                  </div>
-                                </div>
-                                <a
-                                  href={smartSearch.officialPortal.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="shrink-0 px-3.5 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white text-[12px] font-bold rounded-lg transition-colors inline-flex items-center justify-center gap-1 cursor-pointer"
-                                >
-                                  <span>공식 포털 바로가기</span>
-                                  <ArrowUpRight className="w-3.5 h-3.5" />
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 2. Popular Search Tags */}
-                        <div className="pt-8 border-t border-[#EDEEF7] mb-10">
-                          <div className="flex items-center gap-2 mb-4">
-                            <span className="text-[16px]">🔥</span>
-                            <h4 className="text-[15px] font-bold text-[#1E1B2E]">많은 예비·신혼부부가 찾는 인기 키워드</h4>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {[
-                              { label: "디딤돌대출", kw: "디딤돌" },
-                              { label: "신생아특례", kw: "신생아" },
-                              { label: "청약가점", page: "tools-cheongyak" },
-                              { label: "결혼세액공제", kw: "세액공제" },
-                              { label: "혼수가전", kw: "가전" },
-                              { label: "스드메견적", kw: "스드메" },
-                              { label: "부모급여", kw: "부모급여" },
-                              { label: "버팀목전세", kw: "버팀목" },
-                            ].map((tag) => (
-                              <button
-                                key={tag.label}
-                                type="button"
-                                onClick={() => {
-                                  if (tag.page) {
-                                    setSearchQuery("");
-                                    handleNavigate(tag.page as Page);
-                                  } else if (tag.kw) {
-                                    setSearchQuery(tag.kw);
-                                  }
-                                }}
-                                className="px-3.5 py-2 bg-[#FAFBFF] hover:bg-[#EEF0FB] border border-[#E2E4F0] hover:border-[#3730A3] rounded-lg text-[13px] font-semibold text-[#3F3D56] hover:text-[#3730A3] transition-all cursor-pointer inline-flex items-center gap-1"
-                              >
-                                <span className="text-[#E8745F]">#</span> {tag.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 3. Core Categories & Calculators */}
-                        <div className="pt-8 border-t border-[#EDEEF7] mb-10">
-                          <div className="flex items-center gap-2 mb-4">
-                            <span className="text-[16px]">📂</span>
-                            <h4 className="text-[15px] font-bold text-[#1E1B2E]">주요 카테고리 및 계산기 바로가기</h4>
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {[
-                              { title: "💰 신혼금융", desc: "대출·청약·세금", page: "category-신혼금융" },
-                              { title: "🏠 신혼가전", desc: "삼성·LG 패키지", page: "category-신혼가전" },
-                              { title: "💍 결혼준비", desc: "스드메·웨딩홀", page: "category-결혼준비" },
-                              { title: "🧮 금리 계산기", desc: "디딤돌 우대금리", page: "tools-didimdol" },
-                              { title: "🎯 가점 계산기", desc: "신혼특공 가점", page: "tools-cheongyak" },
-                            ].map((cat) => (
-                              <button
-                                key={cat.title}
-                                type="button"
-                                onClick={() => {
-                                  setSearchQuery("");
-                                  handleNavigate(cat.page as Page);
-                                }}
-                                className="p-4 bg-[#F8FAFC] hover:bg-[#EEF2FF] border border-[#E2E8F0] hover:border-[#C7D2FE] rounded-xl text-left transition-all cursor-pointer group"
-                              >
-                                <div className="text-[14px] font-bold text-[#1E1B2E] group-hover:text-[#4F46E5] transition-colors mb-1">
-                                  {cat.title}
-                                </div>
-                                <div className="text-[11.5px] text-[#64748B]">
-                                  {cat.desc}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 4. Recommended Popular Articles */}
-                        <div className="pt-8 border-t border-[#EDEEF7]">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[16px]">⭐</span>
-                              <h4 className="text-[15px] font-bold text-[#1E1B2E]">지금 가장 많이 읽는 버진로드 추천 가이드</h4>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => { setSearchQuery(""); handleNavigate("home"); }}
-                              className="text-[12px] font-bold text-[#E8745F] hover:underline"
-                            >
-                              전체 글 보기 →
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            {allPosts.slice(0, 3).map((post) => (
-                              <button
-                                key={post.id}
-                                type="button"
-                                onClick={() => {
-                                  setSearchQuery("");
-                                  handleNavigate(`post-${post.id}` as Page);
-                                }}
-                                className="group p-3.5 bg-[#FAFBFF] hover:bg-[#F5F6FD] border border-[#E2E4F0] rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between"
-                              >
-                                <div>
-                                  <div className="text-[11px] font-bold text-[#E8745F] mb-1">
-                                    {post.category}
-                                  </div>
-                                  <h5 className="text-[13.5px] font-bold text-[#1E1B2E] group-hover:text-[#3730A3] transition-colors leading-snug line-clamp-2 break-keep mb-2">
-                                    {post.title}
-                                  </h5>
-                                </div>
-                                <div className="text-[11px] text-[#8A87A0] mt-2 tabular-nums">
-                                  {formatPostDateTime(post.date, post.id)}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sidebar */}
-                  <aside className="lg:col-span-3 space-y-6">
-                    {/* 인기 글 */}
-                    <div className="bg-white border border-[#E2E4F0] rounded-xl overflow-hidden shadow-sm">
-                      <div className="bg-[#3730A3] px-4 py-3">
-                        <h3 className="text-[14px] font-bold text-white flex items-center gap-1.5">
-                          <TrendingUp className="w-4 h-4" /> 인기 글
-                        </h3>
-                      </div>
-                      <ul className="divide-y divide-[#EDEEF7]">
-                        {["fin-39", "fin-38", "fin-41", "fin-43", "fin-44"]
-                          .map(id => allPosts.find(p => p.id === id))
-                          .filter((p): p is Post => Boolean(p))
-                          .slice(0, 5)
-                          .map((post, i) => (
-                            <li key={post.id}>
-                              <button
-                                onClick={() => handleNavigate(`post-${post.id}`)}
-                                className="group flex gap-2.5 w-full text-left p-3 hover:bg-[#F5F6FD] transition-colors cursor-pointer"
-                              >
-                                <span className="flex items-center justify-center w-5 h-5 bg-[#EEF0FB] text-[#3730A3] text-[11px] font-bold rounded shrink-0 mt-0.5 tabular-nums">
-                                  {i + 1}
-                                </span>
-                                <span className="text-[13px] font-medium text-[#1E1B2E] leading-[1.45] break-keep line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
-                                  {post.title}
-                                </span>
-                              </button>
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-
-                    {/* 최신 글 */}
-                    <div className="bg-white border border-[#E2E4F0] rounded-xl overflow-hidden shadow-sm">
-                      <div className="bg-[#4F46E5] px-4 py-3">
-                        <h3 className="text-[14px] font-bold text-white">📰 최신 글</h3>
-                      </div>
-                      <ul className="divide-y divide-[#EDEEF7]">
-                        {[...allPosts]
-                          .slice(0, 5)
-                          .map((post) => (
-                            <li key={post.id}>
-                              <button
-                                onClick={() => handleNavigate(`post-${post.id}`)}
-                                className="group flex flex-col gap-1 w-full text-left p-3 hover:bg-[#F5F6FD] transition-colors cursor-pointer"
-                              >
-                                <span className="text-[13px] font-medium text-[#1E1B2E] leading-[1.45] break-keep line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
-                                  {post.title}
-                                </span>
-                                <span className="text-[11px] text-[#8A87A0] tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
-                              </button>
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  </aside>
-                </div>
-              </motion.section>
-            )
           )}
         </AnimatePresence>
       </main>
 
       <Footer onNavigate={handleNavigate} />
 
-      {/* Dynamic Iframe-Safe Floating Toast Notification */}
+      {/* Floating Toast Notification */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -2125,32 +913,12 @@ export default function App() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 bg-[#1E1B2E] text-white px-5 py-3.5 rounded-xl shadow-xl border border-[#3E385C]/60 max-w-[90%] sm:max-w-md w-max"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2.5 bg-[#1E1B2E] text-white px-5 py-3 rounded-xl shadow-xl border border-[#3E385C]/60 text-[13.5px] font-semibold"
           >
-            {toast.type === "success" && (
-              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 shrink-0">
-                <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            )}
-            {toast.type === "error" && (
-              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 shrink-0">
-                <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            )}
-            {toast.type === "info" && (
-              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 shrink-0">
-                <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            )}
-            <p className="text-[13.5px] font-medium leading-tight tracking-tight">
-              {toast.message}
-            </p>
+            {toast.type === "success" && <span className="text-emerald-400">✓</span>}
+            {toast.type === "error" && <span className="text-rose-400">✕</span>}
+            {toast.type === "info" && <span className="text-indigo-400">ℹ</span>}
+            <span>{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
