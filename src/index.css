@@ -516,3 +516,72 @@
   border-radius: 999px;
   letter-spacing: 0.05em;
 }
+
+/* 1인칭 주인공 시점 실전 경험기 UI 스타일 */
+.first-person-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #F8FAFD;
+  border: 1.5px solid #E2E8F0;
+  border-left: 4px solid #E8745F;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .first-person-badge {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.first-person-badge .badge-tag {
+  display: inline-flex;
+  align-items: center;
+  background: #1E1B2E;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.first-person-badge .badge-desc {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.story-lead {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1E293B;
+  background: #FFF8F6;
+  border-left: 3px solid #E8745F;
+  padding: 16px 20px;
+  border-radius: 0 12px 12px 0;
+  line-height: 1.8;
+  margin-bottom: 28px;
+  word-break: keep-all;
+}
+
+.story-closing {
+  font-size: 16.5px;
+  font-weight: 600;
+  color: #1E293B;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 20px 24px;
+  border-radius: 14px;
+  line-height: 1.85;
+  margin-top: 36px;
+  word-break: keep-all;
+}
+

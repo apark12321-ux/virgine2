@@ -87,15 +87,6 @@ export function Footer({ onNavigate }: FooterProps) {
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate("about")}
-                  className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
-                >
-                  블로그 소개
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
                   onClick={() => onNavigate("privacy")}
                   className="hover:text-[#1E1B2E] font-semibold text-[#1E1B2E] transition-colors cursor-pointer"
                 >

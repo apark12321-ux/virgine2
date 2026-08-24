@@ -3,6 +3,7 @@ import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { MOCK_POSTS } from "../constants";
 import { generateRealisticPostDateTime } from "./utils";
+import { expandContentIfNeeded } from "./contentExpander";
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 const SCHEDULE_FILE = path.join(process.cwd(), "auto-schedule.json");
@@ -501,37 +502,14 @@ export function generateRichProceduralArticle(
     ];
   }
 
-  const contentHtml = `
-<h3>1. ${topic.title} — 2026 핵심 결론 및 요약</h3>
-<p>신혼부부와 예비가구에게 가장 중요한 실무 의사결정의 핵심은 <strong>정확한 정책 기준 파악과 사전 조건 충족</strong>입니다. 오늘 버진로드에서 심층 분석하는 <strong>"${topic.title}"</strong> 가이드는 2026년 최신 공식 기준을 바탕으로 독자 여러분이 실질적인 혜택을 100% 누리실 수 있도록 체계적으로 구성되었습니다.</p>
-<p>실제 조사 데이터에 따르면, 사전 체크리스트를 준수하고 세부 우대 조항을 꼼꼼히 챙긴 가구일수록 예산 절감 효과가 <strong>평균 25% 이상</strong> 높게 나타났습니다. 아래 표와 단계별 실천 항목을 꼼꼼히 확인해 보세요.</p>
-
-<h3>2. 2026년 최신 기준 핵심 비교 및 필수 체크포인트</h3>
-<table>
-  <thead>
-    <tr>
-      ${tableHeader.map(h => `<th>${h}</th>`).join("\n      ")}
-    </tr>
-  </thead>
-  <tbody>
-    ${tableRows.map(row => `<tr>\n      ${row.map((col, idx) => idx === 0 ? `<td><strong>${col}</strong></td>` : `<td>${col}</td>`).join("\n      ")}\n    </tr>`).join("\n    ")}
-  </tbody>
-</table>
-
-<h3>3. 단계별 실전 실행 가이드 (Step-by-Step)</h3>
-<ul>
-  ${steps.map(s => `<li><strong>${s.split(":")[0]}:</strong>${s.split(":")[1] || ""}</li>`).join("\n  ")}
-</ul>
-
-<h3>4. 현직 전문가가 전하는 실전 주의사항 및 팁</h3>
-<p>많은 분들이 <strong>${mainTag}</strong> 및 <strong>${subTag}</strong> 진행 시 서류 유효기간(통상 1개월)을 놓치거나 세부 특약 조항을 누락하여 불이익을 겪곤 합니다. 계약서 작성 시에는 반드시 구두 약속이 아닌 <strong>공식 서면 특약</strong>으로 명기하고, 온라인 정부24 및 공공기관 포털을 통해 사전 자격 검증을 2회 이상 실시하시기 바랍니다.</p>
-
-<h3>5. 자주 묻는 질문 (FAQ)</h3>
-${faqList.map((faq, idx) => `<blockquote>
-  <p><strong>Q${idx + 1}. ${faq.q}</strong><br />
-  A. ${faq.a}</p>
-</blockquote>`).join("\n")}
-`.trim();
+  const contentHtml = expandContentIfNeeded(
+    topic.title,
+    category,
+    topic.hashtags,
+    "",
+    slugId,
+    topic.image
+  );
 
   const exactDateTime = targetTimeStr
     ? `${dateStr} ${targetTimeStr}`
@@ -571,8 +549,8 @@ async function generatePostContent(
     const ai = new GoogleGenAI({ apiKey });
     const prompt = `
 [System Role]
-당신은 AI 검색 엔진(Generative Engine) 및 구글 검색(E-E-A-T)에 최적화된 콘텐츠를 작성하는 대한민국 수석 신혼 전문 테크니컬 라이터 '버진로드'입니다. 
-당신의 목표는 작성한 글이 네이버 AI 브리핑, ChatGPT 검색, 구글 AI 오버뷰 등에서 '가장 신뢰할 수 있는 1순위 출처'로 인용되도록 글의 구조와 형식을 완벽하게 설계하는 것입니다.
+당신은 결혼 준비, 신혼집 매매 및 정책 대출, 신혼가전 견적을 직접 겪은 1인칭 주인공 시점의 실전 경험자 '버진로드'입니다. 
+당신의 목표는 직접 발품 팔고 겪은 100% 생생한 경험담(1인칭 시점)과 정확한 2026년 팩트 수치를 결합하여, 네이버 AI 브리핑, ChatGPT 검색, 구글 AI 오버뷰 등에서 '가장 신뢰할 수 있는 1순위 출처'로 인용되도록 글을 작성하는 것입니다.
 
 [주제 정보]
 - 포스팅 제목: ${topic.title}
@@ -580,18 +558,17 @@ async function generatePostContent(
 - 발행 일자: ${dateStr}
 
 [Writing Rules - 반드시 지킬 것]
-1. 두괄식 원칙 (Bottom-line First): 글의 첫 번째 문단에 사용자의 질문에 대한 가장 핵심적인 답변과 결론을 명확히 제시할 것. (서론을 길게 쓰지 말 것)
-2. 구조화된 데이터 (Structured Data): 줄글을 최소화하고, 비교나 나열이 필요한 정보는 반드시 HTML Table(<table>)과 불렛포인트(<ul>, <li>)로 정리할 것.
-3. 명확한 수치와 사실 기반 (Fact & Numbers): 모호한 표현(많은, 좋은 등)을 배제하고, 정확한 2026년 기준 수치, 연도, 통계, 우대금리 퍼센트, 소득 한도, 공식 출처를 기재하여 AI가 팩트로 인식하게 할 것.
-4. 신뢰도 구축 (Citation Format): 주택도시기금, 국토교통부, 한국부동산원, 공정거래위원회 등 공신력 있는 공식 기준을 바탕으로 기술할 것.
-5. 가독성 & 모바일 최적화: 2~3문장 단위로 단락을 나누고, 핵심 키워드는 <strong>으로 강조할 것.
-6. FAQ & 체크리스트: 본문 후반부에 독자들이 자주 묻는 질문 3가지(FAQ)와 실천 체크리스트를 포함할 것.
+1. 1인칭 주인공 시점 (First-person Storytelling): "제가 직접 알아보고 겪었던", "우리 부부가 매일 밤 고민했던", "은행/매장 3곳을 직접 발품 팔아 확인한" 등 1인칭 화자의 진솔한 경험담으로 서술할 것.
+2. 두괄식 원칙 (Bottom-line First): 글의 첫 단락에 직접 겪은 핵심 결론과 문제 해결 포인트를 명확히 제시할 것.
+3. 구조화된 팩트 데이터 (Structured Data): 비교 데이터는 반드시 HTML Table(<table>)과 불렛포인트(<ul>, <li>)로 정리할 것.
+4. 명확한 수치와 사실 기반 (Fact & Numbers): 모호한 표현을 배제하고, 실제 견적 금액, 우대금리 퍼센트, 소득 기준 수치를 명시할 것.
+5. 실전 노하우 & FAQ: 내가 직접 겪은 실전 팁과 예비부부들이 가장 궁금해하는 질문 2~3가지를 포함할 것.
 
 응답은 반드시 아래 JSON 형식으로만 반환하세요:
 {
   "title": "${topic.title}",
-  "excerpt": "핵심 결론과 수치를 담은 명확한 2~3문장의 요약문",
-  "content": "HTML 본문 (<h3>, <p>, <ul>, <li>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <strong>, <blockquote> 태그만 사용)"
+  "excerpt": "직접 겪은 핵심 경험과 수치를 담은 명확한 2~3문장의 요약문",
+  "content": "HTML 본문 (<div class=\"first-person-badge\">...</div>, <p class=\"story-lead\">...</p>, <h3>, <p>, <ul>, <li>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <strong>, <blockquote> 태그 사용)"
 }
 `;
 

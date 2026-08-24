@@ -3,26 +3,32 @@
 // 실제 결혼과 신혼집 마련, 가전 구입을 직접 겪은 작성자의 팩트 기반 스토리텔링
 // ────────────────────────────────────────────────────────────
 
-export function getCharCountNoSpaces(html: string): number {
-  if (!html) return 0;
-  const cleanText = html.replace(/<[^>]*>/g, "").replace(/\s+/g, "");
-  return cleanText.length;
+export interface StoryStructure {
+  introHook: string;
+  backgroundStory: string;
+  turningPoint: string;
+  practicalGuide: string;
+  dataComparisonTable: {
+    headers: string[];
+    rows: string[][];
+  };
+  myRealTips: string[];
+  honestFaq: { q: string; a: string }[];
+  closing: string;
 }
 
-export function expandContentIfNeeded(
-  title: string,
-  category: "신혼금융" | "신혼가전" | "결혼준비",
-  hashtags: string[] = [],
-  originalContent: string = "",
-  _id: string = "",
-  _postImage: string = ""
-): string {
-  // 이미 충분한 본문이 있더라도 1인칭 경험기 포맷인지 확인
-  if (originalContent && originalContent.includes("first-person-badge")) {
-    return originalContent.trim();
-  }
-
+/**
+ * 1인칭 시점 실제 경험 바탕 블로그 포스팅 HTML 생성기
+ */
+export function generateFirstPersonStoryHtml(params: {
+  title: string;
+  category: "신혼금융" | "신혼가전" | "결혼준비";
+  excerpt: string;
+  hashtags?: string[];
+}): string {
+  const { title, category, excerpt, hashtags = [] } = params;
   const tag1 = hashtags[0] || "신혼실전기록";
+  const tag2 = hashtags[1] || "직접겪은후기";
 
   if (category === "신혼금융") {
     return `

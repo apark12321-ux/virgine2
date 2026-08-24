@@ -31,7 +31,6 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "", currentPage = "
     { label: "신혼가전", page: "category-신혼가전" },
     { label: "결혼준비", page: "category-결혼준비" },
     { label: "정책정보", page: "policy" },
-    { label: "블로그 소개", page: "about" },
   ];
 
   return (
