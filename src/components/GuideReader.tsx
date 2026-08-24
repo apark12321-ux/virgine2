@@ -15,7 +15,8 @@ import {
   BookOpen,
   Hash,
   Sparkles,
-  Layers
+  Layers,
+  Calendar
 } from "lucide-react";
 
 export interface TocItem {
@@ -364,13 +365,17 @@ export function GuideReader({
         </div>
 
         {/* Featured Image */}
-        <div className="aspect-[16/10] overflow-hidden rounded-xl bg-[#F8FAFC] mb-8 border border-[#F1F5F9]">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-[#F8FAFC] mb-8 border border-[#F1F5F9]">
           <img
             src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=1200"}
             alt={post.title}
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover"
           />
+          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/70 backdrop-blur-xs text-white text-[12px] font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+            <Calendar className="w-3.5 h-3.5 text-[#FFB199]" />
+            <span className="tabular-nums">{formatPostDateTime(post.date, post.id).split(" ")[0]}</span>
+          </div>
         </div>
 
         {/* In-Article Mobile/Tablet Quick TOC Box */}
