@@ -453,7 +453,7 @@ export function CheongyakCalculator() {
               민간분양 신혼부부 특별공급에 전략적으로 접수하는 것이 실질 당첨 확률을 높이는 영리한 방법론이 될 수 있습니다.
             </p>
 
-            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-4">2. 청약 전문가가 해설하는 자주 묻는 질문 (FAQ)</h3>
+            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-4">2. 자주 묻는 질문 (FAQ)</h3>
             
             <div className="space-y-3 mt-4">
               {FAQ_DATA.map((faq, idx) => {

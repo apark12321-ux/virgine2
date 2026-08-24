@@ -31,17 +31,17 @@ export interface PostExtra {
 export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   "fin-39": {
     persona: {
-      name: "김민용 자문위원",
-      role: "19년 차 신혼부부 금융 전문 자문위원",
+      name: "버진로드",
+      role: "신혼 내집마련 실전 팁",
       avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=120",
-      badge: "실전자문",
-      message: "19년 동안 수많은 신혼부부를 상담하며 디딤돌대출 우대금리를 단 0.1%p라도 더 받게 도와드린 실전 경험과 서류 준비 노하우를 담았습니다."
+      badge: "실전팁",
+      message: "디딤돌대출 우대금리를 0.1%p라도 더 챙기려면 전자계약과 청약통장 서류를 계약 전 미리 준비해 두는 것이 핵심입니다."
     },
     geoSource: {
-      agency: "국토교통부 (주택도시보증공사 HUG)",
-      region: "수도권 및 전국 주요 광역시·시군구",
-      basis: "2026년 주택도시기금 대출 운용 지침 공시 기준",
-      trustIndex: "국토교통부 공식 고시 기준"
+      agency: "주택도시기금 (HUG)",
+      region: "전국",
+      basis: "2026년 주택도시기금 대출 운용 기준",
+      trustIndex: "주택도시기금 공식 기준"
     },
     aeoFaq: [
       {
@@ -62,16 +62,16 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "fin-38": {
     persona: {
-      name: "이지현 선임위원",
-      role: "19년 차 신혼부부 청약 컨설턴트",
+      name: "버진로드",
+      role: "신혼 청약 실전 팁",
       avatar: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=120",
-      badge: "청약전문",
-      message: "19년간 현장에서 맞벌이 소득 기준 때문에 안타깝게 특공 자격을 놓치던 신혼부부들을 봐왔습니다. 2026년 개편안으로 바뀐 청약 당첨 전략을 짚어드립니다."
+      badge: "청약팁",
+      message: "맞벌이 부부라면 2026년 개편된 소득 기준과 부부 중복 청약 규정을 잘 활용하면 당첨 확률을 크게 높일 수 있습니다."
     },
     geoSource: {
-      agency: "국토교통부 주택기금과 및 청약홈(Applyhome)",
-      region: "수도권 및 전국 공공·민영 분양 사업지",
-      basis: "주택공급에 관한 규칙 개정안 (2026년 기준)",
+      agency: "한국부동산원 청약홈(Applyhome)",
+      region: "수도권 및 전국",
+      basis: "주택공급에 관한 규칙 (2026년 기준)",
       trustIndex: "청약홈 공식 공시 규정"
     },
     aeoFaq: [
@@ -89,16 +89,16 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "fin-41": {
     persona: {
-      name: "전지은 수석위원",
-      role: "19년 차 가계 재무 자문 전문가",
+      name: "버진로드",
+      role: "가계 재무 실전 팁",
       avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=120",
-      badge: "재무컨설팅",
-      message: "19년 재무 상담 노하우를 토대로, 신생아 특례와 일반 디딤돌 사이에서 30년 총 이자가 수천만 원 차이 나는 결정적 선택 분기점을 명확히 계산해 드립니다."
+      badge: "재무팁",
+      message: "신생아 특례와 일반 디딤돌 사이에서 우대금리 기간과 이후 변동 폭을 꼼꼼히 따져보고 결정하세요."
     },
     geoSource: {
       agency: "한국주택금융공사(HF) / 주택도시보증공사(HUG)",
-      region: "전국 17개 광역시·도 전역",
-      basis: "저출산 대책 관련 정책자금 대출 운용 지침",
+      region: "전국",
+      basis: "정책자금 대출 운용 기준",
       trustIndex: "주택금융공사 공식 가이드라인"
     },
     aeoFaq: [
@@ -116,16 +116,16 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "fin-43": {
     persona: {
-      name: "최규호 수석연구원",
-      role: "19년 차 주거복지 및 공공임대 자문위원",
+      name: "버진로드",
+      role: "공공임대 실전 팁",
       avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
-      badge: "주거복지",
-      message: "19년 동안 LH·SH 공공임대 입주를 안내해 드린 경험을 바탕으로, 신혼부부가 가장 확실하게 당첨 확률을 높이는 가점 및 서류 전략을 제시합니다."
+      badge: "임대팁",
+      message: "공공임대는 소득 및 자산 기준 검증이 매우 꼼꼼하므로, 서류 발급 시 건강보험 보수월액을 사전에 확인하는 것이 필수입니다."
     },
     geoSource: {
       agency: "LH 한국토지주택공사 / SH 서울주택도시공사",
-      region: "수도권 주요 공공주택지구 및 전국 시·도",
-      basis: "2026년 공공주택 입주자 모집 종합 계획",
+      region: "전국",
+      basis: "2026년 공공주택 입주자 모집 계획",
       trustIndex: "LH 청약플러스 공식 모집공고"
     },
     aeoFaq: [
@@ -143,17 +143,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "fin-44": {
     persona: {
-      name: "한영찬 선임위원",
-      role: "19년 차 청년·신혼 주거 정책 연구원",
+      name: "버진로드",
+      role: "청년·신혼 주거 팁",
       avatar: "https://images.unsplash.com/photo-1507398941214-572c25f4b1dc?auto=format&fit=crop&q=80&w=120",
-      badge: "정책자문",
-      message: "신청 시기 제한으로 번번이 기회를 놓치셨던 분들을 위해, 2026년부터 상시 신청으로 전환된 월세 지원 제도의 핵심 자격 조건을 정리했습니다."
+      badge: "주거팁",
+      message: "2026년부터 상시 신청으로 전환된 월세 지원 제도의 핵심 자격 조건을 꼼꼼히 확인하고 혜택을 놓치지 마세요."
     },
     geoSource: {
-      agency: "보건복지부 및 국토교통부 (복지로 주관)",
-      region: "전국 시·군·구 행정복지센터",
-      basis: "2026년 청년 및 신혼부부 주거 지원 추진 지침",
-      trustIndex: "복지로 공식 안내서"
+      agency: "보건복지부 / 국토교통부 (복지로)",
+      region: "전국",
+      basis: "2026년 청년 및 신혼부부 주거 지원 지침",
+      trustIndex: "복지로 공식 안내"
     },
     aeoFaq: [
       {
@@ -170,17 +170,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "fin-01": {
     persona: {
-      name: "백마크 대표컨설턴트",
-      role: "19년 차 금융·주택대출 전문 자문위원",
+      name: "버진로드",
+      role: "대출 비교 실전 팁",
       avatar: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=120",
-      badge: "대출자문",
-      message: "디딤돌, 보금자리론, 신생아특례 중 내 집 마련 자금 구조에 꼭 맞는 정책 대출을 한눈에 비교할 수 있도록 핵심 조건들을 정리해 드립니다."
+      badge: "대출팁",
+      message: "디딤돌, 보금자리론, 신생아특례 중 내 집 마련 자금 구조에 꼭 맞는 정책 대출을 한눈에 비교해 보세요."
     },
     geoSource: {
       agency: "한국주택금융공사(HF) / 주택도시보증공사(HUG)",
-      region: "대한민국 전역 은행 및 공사 금융 지점",
-      basis: "주택도시기금 대출 업무 처리 모범규준",
-      trustIndex: "한국주택금융공사 정식 공시"
+      region: "전국",
+      basis: "주택도시기금 대출 업무 기준",
+      trustIndex: "한국주택금융공사 공시"
     },
     aeoFaq: [
       {
@@ -193,17 +193,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-12": {
     persona: {
-      name: "정혜선 칼럼니스트",
-      role: "19년 차 신혼가전·리빙 전문 칼럼니스트",
+      name: "버진로드",
+      role: "신혼가전 견적 팁",
       avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120",
-      badge: "가전전문",
-      message: "매장에서 '패키지로 한 번에 계약해야 제일 싸다'는 권유에 혹하지 않고, 살면서 정말 필요한 필수 가전만 우선순위로 구입하는 가전 수칙을 안내합니다."
+      badge: "가전팁",
+      message: "매장에서 풀 패키지로 한 번에 계약하기보다, 살면서 정말 필요한 필수 가전 위주로 우선순위를 잡는 것이 지혜롭습니다."
     },
     geoSource: {
-      agency: "한국소비자원 가전제품 품목별 리포트",
-      region: "전국 가전 전문 매장 및 온·오프라인 공식 대리점",
-      basis: "신혼 가전 구매 실태 및 만족도 조사 자료",
-      trustIndex: "소비자원 공식 리포트"
+      agency: "한국소비자원",
+      region: "전국",
+      basis: "신혼 가전 구매 실태 자료",
+      trustIndex: "소비자원 공식 자료"
     },
     aeoFaq: [
       {
@@ -216,17 +216,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-13": {
     persona: {
-      name: "윤수경 총괄디렉터",
-      role: "19년 차 신혼집 공간 인테리어 전문가",
+      name: "버진로드",
+      role: "공간배치 실전 팁",
       avatar: "https://images.unsplash.com/photo-1516534775068-ba3e84589d90?auto=format&fit=crop&q=80&w=120",
-      badge: "공간디자인",
-      message: "19년간 다양한 평형대의 신혼집 공간 배치를 디자이닝해 온 노하우로, 질리지 않고 고급스러운 소프트 미니멀리즘 인테리어 팁을 소개합니다."
+      badge: "배치팁",
+      message: "신혼집 평형에 맞춰 가구와 가전의 동선을 미리 줄자로 실측하면 가구가 답답해 보이는 것을 막을 수 있습니다."
     },
     geoSource: {
-      agency: "한국실내건축가협회 및 주거공간 트렌드 리포트",
-      region: "수도권 및 전국 신축·리모델링 아파트 단지",
-      basis: "2026 주거 공간 디자인 모범 가이드",
-      trustIndex: "실내건축 협회 공식 자료"
+      agency: "실내건축 가이드",
+      region: "전국",
+      basis: "주거 공간 배치 가이드",
+      trustIndex: "실내건축 표준 자료"
     },
     aeoFaq: [
       {
@@ -239,17 +239,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-01": {
     persona: {
-      name: "송혁재 수석위원",
-      role: "19년 차 혼수가전 전문 컨설턴트",
+      name: "버진로드",
+      role: "혼수가전 견적 팁",
       avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120",
-      badge: "가전컨설팅",
-      message: "19년 동안 삼성 비스포크와 LG 오브제 컬렉션을 실무에서 다뤄온 경험으로, 복잡한 캐시백과 사은품 조건 속에서 '진짜 체감가'를 낮추는 실속 팁을 공개합니다."
+      badge: "가전팁",
+      message: "복잡한 캐시백과 사은품 조건 속에서 통장에서 최종 지출되는 '진짜 체감가'를 낮추는 것이 핵심입니다."
     },
     geoSource: {
-      agency: "한국가전유통협회 및 유통 채널 공식 가이드",
-      region: "전국 가전 플래그십 스토어 및 백화점 가전 매장",
-      basis: "2026년 브랜드별 가전 패키지 할인 공시 기준",
-      trustIndex: "가전 유통협회 공인 기준"
+      agency: "가전 유통 가이드",
+      region: "전국",
+      basis: "가전 패키지 할인 기준",
+      trustIndex: "가전 유통 기준"
     },
     aeoFaq: [
       {
@@ -262,17 +262,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-02": {
     persona: {
-      name: "임성태 수석설계사",
-      role: "19년 차 실내건축 및 공간 레이아웃 전문가",
+      name: "버진로드",
+      role: "가전 사이즈 팁",
       avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=120",
-      badge: "공간배치",
-      message: "거실 폭과 시청 거리를 계산하지 않은 과도한 TV 구매는 시각적 피로감을 유발합니다. 18평, 24평, 32평형별 최적의 가전 사이즈 기준을 정립해 드립니다."
+      badge: "사이즈팁",
+      message: "거실 폭과 시청 거리를 계산하여 눈이 편안한 TV와 냉장고 적정 사이즈를 선택하세요."
     },
     geoSource: {
-      agency: "대한건축사협회 및 시청각 디스플레이 적정 거리 기준",
-      region: "18평, 24평, 32평 전형적 아파트 평면 구조",
-      basis: "KS 표준 거실 시청 권장 거리 가이드",
-      trustIndex: "건축·디스플레이 공식 가이드"
+      agency: "디스플레이 시청 거리 기준",
+      region: "전국",
+      basis: "거실 시청 권장 거리 가이드",
+      trustIndex: "디스플레이 표준 가이드"
     },
     aeoFaq: [
       {
@@ -285,17 +285,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-03": {
     persona: {
-      name: "강준성 가전 리폼 전문가",
-      role: "19년 차 빌트인 가구 시공 및 리모델링 전문가",
+      name: "버진로드",
+      role: "빌트인 시공 팁",
       avatar: "https://images.unsplash.com/photo-1507398941214-572c25f4b1dc?auto=format&fit=crop&q=80&w=120",
-      badge: "빌트인전문",
-      message: "주방 빌트인은 시각적으로 매우 깔끔하지만 수리 및 교체 편의성을 함께 고려해야 합니다. 후회 없는 빌트인 가전 선택 노하우를 말씀드립니다."
+      badge: "시공팁",
+      message: "주방 빌트인은 시각적으로 깔끔하지만, 수리 및 교체 편의성과 열 방출 공간을 꼭 함께 고려해야 합니다."
     },
     geoSource: {
-      agency: "대한가구산업협동조합 주방가구 표준 지침",
-      region: "주방 리모델링 및 맞춤 싱크대 제작 현장",
-      basis: "2026 빌트인 가전 규격 및 열 방출 이격 기준",
-      trustIndex: "가구조합 공수 지침"
+      agency: "주방가구 표준 지침",
+      region: "전국",
+      basis: "빌트인 가전 규격 및 열 방출 기준",
+      trustIndex: "가구 표준 지침"
     },
     aeoFaq: [
       {
@@ -308,17 +308,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "app-11": {
     persona: {
-      name: "조하은 연구원",
-      role: "19년 차 침실 라이프스타일 및 수면 자문",
+      name: "버진로드",
+      role: "침실 수면 팁",
       avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=120",
-      badge: "수면환경",
-      message: "서로 생활 패턴이 다른 신혼부부의 수면 질을 보장하기 위해, 인테리어를 해치지 않으면서도 독립된 수면 공간을 만드는 트윈 베드 트렌드를 소개합니다."
+      badge: "수면팁",
+      message: "서로 생활 패턴이 다른 신혼부부라면, 독립된 수면 질을 보장하는 트윈 베드나 맞춤 매트리스를 고려해 보세요."
     },
     geoSource: {
-      agency: "대한수면학회 및 신혼 가구 주거 실태 보고서",
-      region: "신혼부부 안방 및 침실 가구배치 현장",
-      basis: "수면 독립성 및 안방 가구 레이아웃 분석",
-      trustIndex: "수면학회 공식 리포트"
+      agency: "수면환경 가이드",
+      region: "전국",
+      basis: "신혼 가구 수면 환경 분석",
+      trustIndex: "수면환경 가이드"
     },
     aeoFaq: [
       {
@@ -331,17 +331,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "wed-08": {
     persona: {
-      name: "남지수 수석디렉터",
-      role: "19년 차 웨딩 총괄 디렉터 및 예산 자문",
+      name: "버진로드",
+      role: "웨딩홀 계약 팁",
       avatar: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=120",
-      badge: "웨딩디렉팅",
-      message: "19년간 수천 팀의 예식을 진행하며 느낀 점은, 무리하게 골든타임만 고집하기보다 비성수기 및 평일 타임을 활용해 절약한 비용으로 내 집 마련 시드머니를 다지는 것이 훨씬 현명하다는 것입니다."
+      badge: "예식팁",
+      message: "골든타임만 고집하기보다 비성수기 및 일요일 오후 타임을 활용해 아낀 비용으로 내 집 마련 종잣돈을 다지는 것이 현명합니다."
     },
     geoSource: {
-      agency: "한국웨딩산업협회 및 주요 웨딩홀 대관료 공시 데이터",
-      region: "서울, 경기 및 지방 주요 대도시 웨딩홀",
-      basis: "2026년 예식장 시기별 대관료 및 식대 할인 기준",
-      trustIndex: "웨딩산업협회 공시 기준"
+      agency: "웨딩홀 대관료 기준",
+      region: "전국",
+      basis: "시기별 대관료 및 식대 기준",
+      trustIndex: "웨딩 통계 기준"
     },
     aeoFaq: [
       {
@@ -354,17 +354,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "wed-09": {
     persona: {
-      name: "강민아 대표작가",
-      role: "19년 차 예비부부 재무 자문 전문가",
+      name: "버진로드",
+      role: "결혼 예산 분담 팁",
       avatar: "https://images.unsplash.com/photo-1516534775068-ba3e84589d90?auto=format&fit=crop&q=80&w=120",
-      badge: "재무자문",
-      message: "과거의 관습적인 분담 방식에서 벗어나, 서로의 자산 상황을 솔직하게 공유하고 합리적으로 50:50 또는 소득 비례로 분담할 때 양가의 오해와 갈등을 사전에 막을 수 있습니다."
+      badge: "예산팁",
+      message: "서로의 자산과 부채 상황을 솔직하게 공유하고 합리적으로 분담할 때 양가의 오해와 갈등을 사전에 막을 수 있습니다."
     },
     geoSource: {
-      agency: "통계청 혼인 실태 조사 및 예비부부 지출 리포트",
-      region: "전국 예비 신혼부부 가계 재정 조사지",
-      basis: "2026 예비부부 재정 분담 실태 보고서",
-      trustIndex: "통계청 혼인 실태 통계"
+      agency: "통계청 혼인 실태 조사",
+      region: "전국",
+      basis: "예비부부 지출 보고서",
+      trustIndex: "통계청 공식 자료"
     },
     aeoFaq: [
       {
@@ -377,17 +377,17 @@ export const POST_EXTRA_MAP: Record<string, PostExtra> = {
   },
   "wed-10": {
     persona: {
-      name: "오도진 자산관리사",
-      role: "19년 차 회계사 및 결혼 예산 자문위원",
+      name: "버진로드",
+      role: "예산 장부 팁",
       avatar: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=120",
-      badge: "예산관리",
-      message: "결혼 준비 도중 발생하는 불필요한 추가 지출을 막는 유일한 방법은 정교한 엑셀 예산표를 짜서 예산 대비 실제 지출을 실시간으로 추적하는 것입니다."
+      badge: "지출관리",
+      message: "결혼 준비 도중 발생하는 불필요한 추가 지출을 막는 가장 좋은 방법은 엑셀 예산표를 작성해 실시간으로 관리하는 것입니다."
     },
     geoSource: {
-      agency: "한국소비자원 결혼 지출 가이드라인",
-      region: "결혼 준비 세부 항목별 예산 기준표",
-      basis: "2026 결혼 지출 항목별 지출 기준",
-      trustIndex: "소비자원 검증 가이드"
+      agency: "한국소비자원",
+      region: "전국",
+      basis: "결혼 지출 가이드",
+      trustIndex: "소비자원 공식 가이드"
     },
     aeoFaq: [
       {

@@ -473,7 +473,7 @@ export function DidimdolCalculator() {
               사실상 대출 하한선인 연 1.2% 고정금리를 쟁취할 수 있는 구조적 기틀이 완성됩니다.
             </p>
 
-            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-4">2. 신혼 금융 전문가가 전하는 자주 묻는 질문 (FAQ)</h3>
+            <h3 className="text-[17px] font-bold text-[#151320] mt-8 mb-4">2. 자주 묻는 질문 (FAQ)</h3>
             
             <div className="space-y-3 mt-4">
               {FAQ_DATA.map((faq, idx) => {
