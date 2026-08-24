@@ -22,7 +22,7 @@ export interface Post {
   content: string;
   category: PostCategory;
   author: string;
-  date: string;
+  date: string; // "YYYY-MM-DD HH:mm:ss" in KST
   image: string;
   readTime: string;
   hashtags: string[];
@@ -31,7 +31,7 @@ export interface Post {
 export interface DayScheduleItem {
   id: string;
   category: PostCategory;
-  targetTime: string; // "HH:MM" in KST
+  targetTime: string; // "HH:mm:ss" in KST (랜덤 시·분·초)
   published: boolean;
   publishedAt?: string;
   postId?: string;
@@ -43,17 +43,22 @@ export interface ScheduleStore {
   lastCheck?: string;
 }
 
-// Convert minutes from midnight (0~1439) to "HH:MM"
-function minutesToTimeStr(totalMinutes: number): string {
-  const h = Math.floor(totalMinutes / 60) % 24;
-  const m = Math.floor(totalMinutes % 60);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+// Convert seconds from midnight (0~86399) to "HH:mm:ss"
+function secondsToTimeStr(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600) % 24;
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-// Convert "HH:MM" to minutes from midnight
-function timeStrToMinutes(timeStr: string): number {
-  const [h, m] = timeStr.split(":").map(Number);
-  return (h || 0) * 60 + (m || 0);
+// Convert "HH:mm:ss" or "HH:mm" to seconds from midnight
+function timeStrToSeconds(timeStr: string): number {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(":").map(Number);
+  const h = parts[0] || 0;
+  const m = parts[1] || 0;
+  const s = parts[2] || 0;
+  return h * 3600 + m * 60 + s;
 }
 
 // Get current date/time in KST (UTC+9)
@@ -73,48 +78,51 @@ export function getKSTDateString(d: Date = getKSTNow()): string {
 export function getKSTTimeString(d: Date = getKSTNow()): string {
   const hh = String(d.getHours()).padStart(2, "0");
   const min = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${min}`;
+  const sec = String(d.getSeconds()).padStart(2, "0");
+  return `${hh}:${min}:${sec}`;
 }
 
 /**
- * Generate 3 random upload times for the day satisfying the strict constraint:
- * 1. 3 category posts per day (신혼금융, 신혼가전, 결혼준비)
- * 2. Upload times randomized daily across active daytime window (07:00 ~ 22:30 KST)
- * 3. MINIMUM 4 HOURS (240 MINUTES) INTERVAL between any consecutive posts!
+ * 매일 각 카테고리별 1회씩, 최소 4시간(14,400초) 텀을 보장하며 랜덤 시·분·초를 생성하는 스케줄러:
+ * 1. 3개 카테고리 (신혼금융, 신혼가전, 결혼준비)를 매일 무작위 순서로 배치
+ * 2. 슬롯 1 (아침 06:15 ~ 08:45 사이 랜덤 시·분·초)
+ * 3. 슬롯 2 (슬롯 1 대비 4시간(14,400초) 이상 + 랜덤 0~75분 + 0~59초 가변 텀 -> 낮 11:30 ~ 14:30 사이)
+ * 4. 슬롯 3 (슬롯 2 대비 4시간(14,400초) 이상 + 랜덤 0~75분 + 0~59초 가변 텀 -> 저녁 16:45 ~ 21:45 사이)
+ * 5. 모든 연속 발행 간격은 최소 4시간(240분/14,400초) 이상 완전 보장
  */
 export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem[] {
   // Shuffle categories so that posting order is randomized each day
   const shuffledCategories = [...CATEGORIES].sort(() => Math.random() - 0.5);
 
-  // Slot 1: Morning random (06:30 ~ 08:30 KST -> 390 ~ 510 mins)
-  const slot1Min = 390 + Math.floor(Math.random() * 120); // 06:30 ~ 08:30
+  // Slot 1: Morning random (06:15:00 ~ 08:45:00 KST -> 22,500s ~ 31,500s)
+  const slot1Sec = 22500 + Math.floor(Math.random() * 9000); // 06:15 ~ 08:45
 
-  // Slot 2: Afternoon random (Strictly >= 240 mins after Slot 1 -> 4 hours minimum gap)
-  const minSlot2 = slot1Min + 240;
-  const slot2Variation = Math.floor(Math.random() * 90); // 0 to 90 mins extra
-  const slot2Min = Math.min(minSlot2 + slot2Variation, 960); // max 16:00
+  // Slot 2: Afternoon random (최소 4시간 = 14,400초 이후 + 랜덤 0~75분(4,500초))
+  const minSlot2 = slot1Sec + 14400; // Strict 4-hour minimum gap
+  const slot2Variation = Math.floor(Math.random() * 4500); // 0 to 75 mins extra
+  const slot2Sec = Math.min(minSlot2 + slot2Variation, 54000); // max 15:00:00 KST
 
-  // Slot 3: Evening random (Strictly >= 240 mins after Slot 2 -> 4 hours minimum gap)
-  const minSlot3 = slot2Min + 240;
-  const maxSlot3 = 1350; // max 22:30 KST
+  // Slot 3: Evening random (최소 4시간 = 14,400초 이후 + 랜덤 0~75분(4,500초))
+  const minSlot3 = slot2Sec + 14400; // Strict 4-hour minimum gap
+  const maxSlot3 = 81000; // max 22:30:00 KST
   const slot3AvailableRange = Math.max(0, maxSlot3 - minSlot3);
-  const slot3Variation = Math.floor(Math.random() * Math.min(90, slot3AvailableRange + 1));
-  const slot3Min = Math.min(minSlot3 + slot3Variation, maxSlot3);
+  const slot3Variation = Math.floor(Math.random() * Math.min(4500, slot3AvailableRange + 1));
+  const slot3Sec = Math.min(minSlot3 + slot3Variation, maxSlot3);
 
-  const timesInMinutes = [slot1Min, slot2Min, slot3Min];
+  const timesInSeconds = [slot1Sec, slot2Sec, slot3Sec];
 
-  // Enforce absolute strict minimum 240-minute (4 hours) separation guarantee
-  if (timesInMinutes[1] - timesInMinutes[0] < 240) {
-    timesInMinutes[1] = timesInMinutes[0] + 240;
+  // Enforce absolute strict minimum 14,400-second (4 hours) separation guarantee
+  if (timesInSeconds[1] - timesInSeconds[0] < 14400) {
+    timesInSeconds[1] = timesInSeconds[0] + 14400;
   }
-  if (timesInMinutes[2] - timesInMinutes[1] < 240) {
-    timesInMinutes[2] = timesInMinutes[1] + 240;
+  if (timesInSeconds[2] - timesInSeconds[1] < 14400) {
+    timesInSeconds[2] = timesInSeconds[1] + 14400;
   }
 
   return shuffledCategories.map((category, idx) => ({
     id: `sched-${dateStr.replace(/-/g, "")}-${category}-${idx + 1}`,
     category,
-    targetTime: minutesToTimeStr(timesInMinutes[idx]),
+    targetTime: secondsToTimeStr(timesInSeconds[idx]),
     published: false
   }));
 }
@@ -123,7 +131,6 @@ export function loadLocalPosts(): Post[] {
   try {
     if (fs.existsSync(LOCAL_POSTS_FILE)) {
       const raw: Post[] = JSON.parse(fs.readFileSync(LOCAL_POSTS_FILE, "utf-8"));
-      // Deduplicate posts on read by normalized title and ID
       const seenTitles = new Set<string>();
       const seenIds = new Set<string>();
       const unique: Post[] = [];
@@ -183,7 +190,7 @@ export function saveScheduleStore(store: ScheduleStore) {
   }
 }
 
-// 45+ Rich Topic Pool classified by category for automated SEO generation
+// 60+ Rich Topic Pool classified by category for automated SEO generation
 export const TOPIC_POOL: Array<{
   category: PostCategory;
   title: string;
@@ -248,6 +255,20 @@ export const TOPIC_POOL: Array<{
     image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
     hashtags: ["생애최초취득세", "취득세감면", "신혼집매매", "부동산세금", "세무가이드"]
   },
+  {
+    category: "신혼금융",
+    title: "신혼부부 전세보증금 반환보증보험(HUG·SGI) 가입 절차 및 보증료 30만 원 전액 지원 환급",
+    excerpt: "국토교통부와 지자체가 시행하는 청년·신혼부부 전세보증금 반환보증료 지원 사업의 신청 조건과 관할 시·군·구청 원스톱 접수법.",
+    image: "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?auto=format&fit=crop&q=80&w=800",
+    hashtags: ["HUG보증보험", "전세보증료지원", "전세사기예방", "신혼전세", "보증금보호"]
+  },
+  {
+    category: "신혼금융",
+    title: "신혼부부 공동명의 vs 단독명의 세금 시뮬레이션 — 취득세·종부세·양도세 완벽 비교",
+    excerpt: "주택 구입 시 부부 공동명의 등록에 따른 취득세, 종합부동산세 1주택자 특례, 향후 양도소득세 누진세율 분산 절세 효과 총정리.",
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
+    hashtags: ["공동명의", "양도세절세", "종부세계산", "신혼부부세무", "부동산명의"]
+  },
 
   // --- 2. 신혼가전 (Appliances & Interior) ---
   {
@@ -299,6 +320,20 @@ export const TOPIC_POOL: Array<{
     image: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&q=80&w=800",
     hashtags: ["신혼가전견적", "가전오픈점", "백화점웨딩클럽", "가전졸업", "가전할인"]
   },
+  {
+    category: "신혼가전",
+    title: "신혼집 거실 공기청정기 & 제습기 용량 선택 공식 — 실평수 대비 1.5배 마력 계산법",
+    excerpt: "에어컨 공기청정 기능과의 효율 비교, 타워형 360도 흡입 모델 및 결로 곰팡이 방지 연속 배수형 제습기 추천.",
+    image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&q=80&w=800",
+    hashtags: ["공기청정기", "제습기추천", "신혼가전선택", "스마트가전", "실내공기질"]
+  },
+  {
+    category: "신혼가전",
+    title: "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
+    excerpt: "네스프레소 버츄오, 드롱기, 유라 전자동 커피머신의 1회 추출 단가, 세척 유지보수 난이도, 원두 신선도 관리 가이드.",
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=800",
+    hashtags: ["커피머신", "홈카페", "전자동커피머신", "신혼가전", "주방인테리어"]
+  },
 
   // --- 3. 결혼준비 (Wedding Prep & Lifestyle) ---
   {
@@ -349,6 +384,13 @@ export const TOPIC_POOL: Array<{
     excerpt: "신축 아파트 및 신축 빌라 입주 시 하자 점검 요령, 사전점검 대행업체 활용 팁과 잔금 치르기 전 확인해야 할 공정 순서.",
     image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800",
     hashtags: ["신혼집입주", "입주청소", "사전점검", "신혼집인테리어", "하자점검"]
+  },
+  {
+    category: "결혼준비",
+    title: "웨딩 밴드 반지 브랜드별(까르띠에·티파니·불가리·종로공방) 견적 및 디자인 비교",
+    excerpt: "백화점 명품 웨딩링의 상품권 결제 및 마일리지 적립 혜택과 종로 예물 전문점 18K/플래티넘 다이아몬드 맞춤 견적 가이드.",
+    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800",
+    hashtags: ["웨딩밴드", "결혼반지", "웨딩링", "종로예물", "결혼준비"]
   }
 ];
 
@@ -361,7 +403,8 @@ let geminiQuotaCooldownUntil = 0;
 export function generateRichProceduralArticle(
   topic: typeof TOPIC_POOL[0],
   dateStr: string,
-  category: PostCategory
+  category: PostCategory,
+  targetTimeStr?: string
 ): Post {
   const slugId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
   const mainTag = topic.hashtags[0] || "신혼가이드";
@@ -490,6 +533,10 @@ ${faqList.map((faq, idx) => `<blockquote>
 </blockquote>`).join("\n")}
 `.trim();
 
+  const exactDateTime = targetTimeStr
+    ? `${dateStr} ${targetTimeStr}`
+    : generateRealisticPostDateTime(dateStr, slugId);
+
   return {
     id: slugId,
     title: topic.title,
@@ -497,7 +544,7 @@ ${faqList.map((faq, idx) => `<blockquote>
     content: contentHtml,
     category,
     author: "버진로드",
-    date: generateRealisticPostDateTime(dateStr, slugId),
+    date: exactDateTime,
     image: topic.image,
     readTime: "8분",
     hashtags: topic.hashtags
@@ -509,43 +556,41 @@ async function generatePostContent(
   topic: typeof TOPIC_POOL[0],
   dateStr: string,
   category: PostCategory,
-  isLiveTodayPost: boolean = false
+  isLiveTodayPost: boolean = false,
+  targetTimeStr?: string
 ): Promise<Post> {
   const apiKey = process.env.GEMINI_API_KEY;
   const now = Date.now();
 
   // For historical backfills or when Gemini quota is in cooldown, use instant rich procedural engine
   if (!isLiveTodayPost || !apiKey || now < geminiQuotaCooldownUntil) {
-    return generateRichProceduralArticle(topic, dateStr, category);
+    return generateRichProceduralArticle(topic, dateStr, category, targetTimeStr);
   }
 
   try {
     const ai = new GoogleGenAI({ apiKey });
     const prompt = `
-당신은 신혼 금융, 가전, 결혼준비 실전 팁을 직접 연구하고 정리하여 공유하는 신혼 전문 블로거 '버진로드'입니다.
-개인이 직접 경험하고 발로 뛰어 분석한 실전 노하우와 2026 최신 공식 정책 기준을 바탕으로 독자에게 실질적인 가치를 제공하고 구글 검색 상위 노출(E-E-A-T) 기준을 충족하는 고품질 전문 블로그 포스팅을 작성합니다.
+[System Role]
+당신은 AI 검색 엔진(Generative Engine) 및 구글 검색(E-E-A-T)에 최적화된 콘텐츠를 작성하는 대한민국 수석 신혼 전문 테크니컬 라이터 '버진로드'입니다. 
+당신의 목표는 작성한 글이 네이버 AI 브리핑, ChatGPT 검색, 구글 AI 오버뷰 등에서 '가장 신뢰할 수 있는 1순위 출처'로 인용되도록 글의 구조와 형식을 완벽하게 설계하는 것입니다.
 
 [주제 정보]
 - 포스팅 제목: ${topic.title}
 - 카테고리: ${category}
 - 발행 일자: ${dateStr}
 
-[작성 원칙 및 SEO 구조화 규격]
-1. 가독성 & 체류시간 최적화:
-   - 두괄식 구성: 서론에서 핵심 결론과 요약 수혜 조건을 먼저 제시하여 이탈률을 낮춥니다.
-   - 문단 분절: 2~3문장마다 줄바꿈을 적용하고, 핵심 문장은 굵게(<strong>) 강조합니다.
-   - 리스트 및 표: 복잡한 수치와 조건은 순서형/비순서형 목록(<ul>, <ol>, <li>)과 HTML Table(<table>)을 적극 활용합니다.
-2. HTML 구조화 규격:
-   - <h3> 소제목 3~4개로 구조화하고, <h4> 세부 항목으로 나누어 논리적으로 전개합니다.
-   - 신뢰도 높은 2026년 공공기관 기준 실무 지표를 반영합니다.
-   - 본문 중간에 전문적인 요약 표(<table>)와 체크리스트를 포함하세요.
-   - 본문 마지막에는 자주 묻는 질문(FAQ 3가지) 섹션을 포함하세요.
-3. 톤앤매너: 전문적이고 친절하며 신뢰감 있는 실전 안내 톤(하십시오/합니다 체).
+[Writing Rules - 반드시 지킬 것]
+1. 두괄식 원칙 (Bottom-line First): 글의 첫 번째 문단에 사용자의 질문에 대한 가장 핵심적인 답변과 결론을 명확히 제시할 것. (서론을 길게 쓰지 말 것)
+2. 구조화된 데이터 (Structured Data): 줄글을 최소화하고, 비교나 나열이 필요한 정보는 반드시 HTML Table(<table>)과 불렛포인트(<ul>, <li>)로 정리할 것.
+3. 명확한 수치와 사실 기반 (Fact & Numbers): 모호한 표현(많은, 좋은 등)을 배제하고, 정확한 2026년 기준 수치, 연도, 통계, 우대금리 퍼센트, 소득 한도, 공식 출처를 기재하여 AI가 팩트로 인식하게 할 것.
+4. 신뢰도 구축 (Citation Format): 주택도시기금, 국토교통부, 한국부동산원, 공정거래위원회 등 공신력 있는 공식 기준을 바탕으로 기술할 것.
+5. 가독성 & 모바일 최적화: 2~3문장 단위로 단락을 나누고, 핵심 키워드는 <strong>으로 강조할 것.
+6. FAQ & 체크리스트: 본문 후반부에 독자들이 자주 묻는 질문 3가지(FAQ)와 실천 체크리스트를 포함할 것.
 
 응답은 반드시 아래 JSON 형식으로만 반환하세요:
 {
   "title": "${topic.title}",
-  "excerpt": "핵심 결론을 담은 명확한 2~3문장의 요약문",
+  "excerpt": "핵심 결론과 수치를 담은 명확한 2~3문장의 요약문",
   "content": "HTML 본문 (<h3>, <p>, <ul>, <li>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <strong>, <blockquote> 태그만 사용)"
 }
 `;
@@ -575,6 +620,10 @@ async function generatePostContent(
 
     if (parsed.title && parsed.content) {
       const generatedId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const exactDateTime = targetTimeStr
+        ? `${dateStr} ${targetTimeStr}`
+        : generateRealisticPostDateTime(dateStr, generatedId);
+
       return {
         id: generatedId,
         title: parsed.title,
@@ -582,23 +631,22 @@ async function generatePostContent(
         content: parsed.content,
         category,
         author: "버진로드",
-        date: generateRealisticPostDateTime(dateStr, generatedId),
+        date: exactDateTime,
         image: topic.image,
         readTime: `${Math.max(6, Math.ceil(parsed.content.length / 280))}분`,
         hashtags: topic.hashtags
       };
     }
   } catch (err: any) {
-    // If rate limit (429) is hit, activate 10-minute cooldown
     const errMsg = err?.message || String(err);
     if (errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED")) {
       geminiQuotaCooldownUntil = Date.now() + 10 * 60 * 1000; // 10 min cooldown
-      console.log(`[AutoPublisher] Gemini quota limit reached. Activated 10m procedural engine fallback for seamless operation.`);
+      console.log(`[AutoPublisher] Gemini quota limit reached. Activated procedural fallback engine.`);
     }
   }
 
   // Graceful fallback to rich procedural article
-  return generateRichProceduralArticle(topic, dateStr, category);
+  return generateRichProceduralArticle(topic, dateStr, category, targetTimeStr);
 }
 
 // Sync newly published post to Firestore database asynchronously
@@ -641,7 +689,7 @@ function syncToFirestore(post: Post) {
 /**
  * Main Auto Publisher Routine:
  * 1. Checks 7 days back up to today to ensure EVERY single day has exactly 1 post per category (신혼금융, 신혼가전, 결혼준비).
- * 2. Generates daily randomized schedules for today and the next 2 days with at least 4 hours (240 minutes) spacing between category posts.
+ * 2. Generates daily randomized schedules (with random HH:mm:ss and strict >=4h / 14,400s intervals) for today and upcoming days.
  * 3. Triggers posting when the current KST time reaches or passes the designated schedule item target time.
  */
 export async function runAutoPublisherService(): Promise<{
@@ -656,6 +704,7 @@ export async function runAutoPublisherService(): Promise<{
   const kstNow = getKSTNow();
   const todayStr = getKSTDateString(kstNow);
   const currentTimeStr = getKSTTimeString(kstNow);
+  const currentSeconds = timeStrToSeconds(currentTimeStr);
 
   const localPosts = loadLocalPosts();
   const store = loadScheduleStore();
@@ -670,7 +719,7 @@ export async function runAutoPublisherService(): Promise<{
   }
 
   for (const dateStr of pastDates) {
-    const postsOnDate = localPosts.filter(p => p.date === dateStr);
+    const postsOnDate = localPosts.filter(p => p.date && p.date.startsWith(dateStr));
 
     for (const category of CATEGORIES) {
       const hasCategoryPost = postsOnDate.some(p => p.category === category);
@@ -686,19 +735,19 @@ export async function runAutoPublisherService(): Promise<{
           ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
           : categoryPool[Math.floor(Math.random() * categoryPool.length)];
 
-        // Generate backfill post using instant rich procedural engine without consuming Gemini API quota
-        const newPost = await generatePostContent(selectedTopic, dateStr, category, false);
-        // Avoid duplicate ID or title
+        if (!store.schedules[dateStr]) {
+          store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
+        }
+        const schedItem = store.schedules[dateStr].find(s => s.category === category);
+        const targetTimeStr = schedItem ? schedItem.targetTime : "09:15:32";
+
+        const newPost = await generatePostContent(selectedTopic, dateStr, category, false, targetTimeStr);
         if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
           localPosts.unshift(newPost);
           saveLocalPosts(localPosts);
           syncToFirestore(newPost);
         }
 
-        if (!store.schedules[dateStr]) {
-          store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
-        }
-        const schedItem = store.schedules[dateStr].find(s => s.category === category);
         if (schedItem) {
           schedItem.published = true;
           schedItem.postId = newPost.id;
@@ -713,7 +762,7 @@ export async function runAutoPublisherService(): Promise<{
     }
   }
 
-  // 2. Ensure Schedule Exists for Today, Tomorrow, and Day After Tomorrow
+  // 2. Ensure Schedule Exists for Today, Tomorrow, and Day After Tomorrow with strict 4h interval & random HH:mm:ss
   const targetDates = [
     todayStr,
     getKSTDateString(new Date(kstNow.getTime() + 1 * 24 * 60 * 60 * 1000)),
@@ -732,19 +781,21 @@ export async function runAutoPublisherService(): Promise<{
   const todaySchedules = store.schedules[todayStr] || [];
   for (const item of todaySchedules) {
     // Check if category already has a post published today
-    const alreadyPublishedToday = localPosts.some(p => p.date === todayStr && p.category === item.category);
+    const alreadyPublishedToday = localPosts.some(p => p.date && p.date.startsWith(todayStr) && p.category === item.category);
 
     if (alreadyPublishedToday && !item.published) {
-      const existing = localPosts.find(p => p.date === todayStr && p.category === item.category);
+      const existing = localPosts.find(p => p.date && p.date.startsWith(todayStr) && p.category === item.category);
       item.published = true;
       item.postId = existing?.id;
       item.postTitle = existing?.title;
-      item.publishedAt = `${todayStr} ${item.targetTime}`;
+      item.publishedAt = existing?.date || `${todayStr} ${item.targetTime}`;
       continue;
     }
 
+    const itemTargetSeconds = timeStrToSeconds(item.targetTime);
+
     // If targetTime has arrived/passed and not yet published
-    if (!item.published && currentTimeStr >= item.targetTime) {
+    if (!item.published && currentSeconds >= itemTargetSeconds) {
       console.log(`[AutoPublisher Today] Target time ${item.targetTime} reached for ${item.category} on ${todayStr}. Publishing post...`);
 
       const usedTitles = new Set([
@@ -757,8 +808,7 @@ export async function runAutoPublisherService(): Promise<{
         ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
         : categoryPool[Math.floor(Math.random() * categoryPool.length)];
 
-      const newPost = await generatePostContent(selectedTopic, todayStr, item.category, true);
-      // Avoid duplicate ID or title
+      const newPost = await generatePostContent(selectedTopic, todayStr, item.category, true, item.targetTime);
       if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
         localPosts.unshift(newPost);
         saveLocalPosts(localPosts);
@@ -768,7 +818,7 @@ export async function runAutoPublisherService(): Promise<{
       item.published = true;
       item.postId = newPost.id;
       item.postTitle = newPost.title;
-      item.publishedAt = `${todayStr} ${currentTimeStr}`;
+      item.publishedAt = newPost.date;
 
       publishedCount++;
       const msg = `[AutoPublisher Live] Published ${item.category} at ${item.targetTime} KST: "${newPost.title}"`;
