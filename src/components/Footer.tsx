@@ -1,8 +1,9 @@
 interface FooterProps {
   onNavigate: (page: string) => void;
+  onOpenSearchConsole?: () => void;
 }
 
-export function Footer({ onNavigate }: FooterProps) {
+export function Footer({ onNavigate, onOpenSearchConsole }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -120,6 +121,17 @@ export function Footer({ onNavigate }: FooterProps) {
                   제휴 및 비즈니스 문의
                 </button>
               </li>
+              {onOpenSearchConsole && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={onOpenSearchConsole}
+                    className="hover:text-[#E8745F] text-[#64748B] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    <span>🔍 구글 서치 콘솔 색인 현황</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         </div>

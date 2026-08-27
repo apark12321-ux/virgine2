@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { MOCK_POSTS } from "../constants";
-import { generateRealisticPostDateTime } from "./utils";
+import { generateRealisticPostDateTime, slugify } from "./utils";
 import { expandContentIfNeeded } from "./contentExpander";
+import { submitUrlsToSearchConsole } from "./googleIndexing";
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 const SCHEDULE_FILE = path.join(process.cwd(), "auto-schedule.json");
@@ -790,6 +791,13 @@ export async function runAutoPublisherService(): Promise<{
         localPosts.unshift(newPost);
         saveLocalPosts(localPosts);
         syncToFirestore(newPost);
+
+        // Auto-submit newly published post to Google Search Console & IndexNow
+        const postSlug = slugify(newPost.title) || newPost.id;
+        const postPath = `/post/${postSlug}`;
+        submitUrlsToSearchConsole([postPath])
+          .then(res => console.log(`[Google Indexing Auto-Submit] Successfully notified Search Console for post: ${postPath} (${res.message})`))
+          .catch(err => console.warn(`[Google Indexing Warning] Error submitting ${postPath}:`, err.message));
       }
 
       item.published = true;

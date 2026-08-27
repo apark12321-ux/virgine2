@@ -7,6 +7,14 @@ import { expandContentIfNeeded } from "./src/lib/contentExpander";
 import { runAutoPublisherService } from "./src/lib/autoPublisher";
 import { extractSeoKeywords } from "./src/lib/seoKeywords";
 import { generateRealisticPostDateTime, formatPostDateTime } from "./src/lib/utils";
+import {
+  submitUrlsToSearchConsole,
+  getIndexingLogs,
+  getIndexingConfig,
+  saveIndexingConfig,
+  pingGoogleSearchConsoleSitemap,
+  submitToIndexNow
+} from "./src/lib/googleIndexing";
 
 const VIEWS_FILE = path.join(process.cwd(), "views.json");
 const EXPOSURES_FILE = path.join(process.cwd(), "exposures.json");
@@ -653,6 +661,146 @@ async function startServer() {
     }
   });
 
+  // ==========================================
+  // GOOGLE SEARCH CONSOLE & INDEXING API ROUTES
+  // ==========================================
+
+  // GET /api/indexing/status: Get overall Search Console submission status and config
+  app.get("/api/indexing/status", async (req, res) => {
+    try {
+      const config = getIndexingConfig();
+      const logs = getIndexingLogs();
+      const hostUrl = getRequestBaseUrl(req);
+      const posts = await fetchMergedPosts();
+
+      res.json({
+        success: true,
+        config: {
+          keyConfigured: config.keyConfigured,
+          autoIndexOnPublish: config.autoIndexOnPublish,
+          clientEmail: config.serviceAccountKey?.client_email || null,
+          totalSubmissions: config.totalSubmissions,
+          lastPingTime: config.lastPingTime
+        },
+        stats: {
+          totalPosts: posts.length,
+          sitemapUrl: `${hostUrl}/sitemap.xml`,
+          robotsUrl: `${hostUrl}/robots.txt`,
+          rssUrl: `${hostUrl}/rss.xml`
+        },
+        recentLogs: logs.slice(0, 30)
+      });
+    } catch (err: any) {
+      console.error("Failed to get indexing status:", err);
+      res.status(500).json({ error: "Failed to get indexing status", details: err.message });
+    }
+  });
+
+  // POST /api/indexing/submit: Submit specific post URL or all posts to Google Search Console
+  app.post("/api/indexing/submit", async (req, res) => {
+    try {
+      const hostUrl = getRequestBaseUrl(req);
+      const { url, urls, all } = req.body || {};
+
+      let targetUrls: string[] = [];
+
+      if (all === true) {
+        // Collect all posts URLs and static pages
+        const posts = await fetchMergedPosts();
+        targetUrls = [
+          "",
+          "/about",
+          "/policy",
+          "/tools/didimdol",
+          "/tools/cheongyak",
+          "/category/신혼금융",
+          "/category/신혼가전",
+          "/category/결혼준비",
+          ...posts.map(p => `/post/${slugify(p.title) || p.id}`)
+        ];
+      } else if (Array.isArray(urls) && urls.length > 0) {
+        targetUrls = urls;
+      } else if (typeof url === "string" && url.trim().length > 0) {
+        targetUrls = [url.trim()];
+      } else {
+        return res.status(400).json({ error: "No url or urls provided for indexing submission" });
+      }
+
+      const result = await submitUrlsToSearchConsole(targetUrls, hostUrl);
+      res.json({
+        success: true,
+        message: result.message,
+        submittedCount: result.submittedCount,
+        googleApiResults: result.googleApiResults,
+        sitemapPingResults: result.sitemapPingResults,
+        indexNowResult: result.indexNowResult
+      });
+    } catch (err: any) {
+      console.error("Indexing submission error:", err);
+      res.status(500).json({ error: "Failed to submit URLs to Search Console", details: err.message });
+    }
+  });
+
+  // POST /api/indexing/ping: Immediately ping Google Search Console & Bing Sitemap
+  app.post("/api/indexing/ping", async (req, res) => {
+    try {
+      const hostUrl = getRequestBaseUrl(req);
+      const results = await pingGoogleSearchConsoleSitemap(hostUrl);
+      res.json({
+        success: true,
+        message: "Google & Bing Sitemap Ping이 성공적으로 전송되었습니다.",
+        sitemapUrl: `${hostUrl}/sitemap.xml`,
+        results
+      });
+    } catch (err: any) {
+      console.error("Sitemap ping error:", err);
+      res.status(500).json({ error: "Failed to ping sitemap", details: err.message });
+    }
+  });
+
+  // POST /api/indexing/config: Update Google Service Account key or settings
+  app.post("/api/indexing/config", (req, res) => {
+    try {
+      const { serviceAccountKey, autoIndexOnPublish } = req.body || {};
+      let saKey = serviceAccountKey;
+      if (typeof saKey === "string") {
+        try {
+          saKey = JSON.parse(saKey);
+        } catch {
+          return res.status(400).json({ error: "Invalid JSON format for Service Account Key" });
+        }
+      }
+
+      const updated = saveIndexingConfig({
+        ...(saKey ? { serviceAccountKey: saKey } : {}),
+        ...(typeof autoIndexOnPublish === "boolean" ? { autoIndexOnPublish } : {})
+      });
+
+      res.json({
+        success: true,
+        message: "구글 색인 설정이 저장되었습니다.",
+        config: {
+          keyConfigured: updated.keyConfigured,
+          autoIndexOnPublish: updated.autoIndexOnPublish,
+          clientEmail: updated.serviceAccountKey?.client_email || null,
+          totalSubmissions: updated.totalSubmissions
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to save indexing config", details: err.message });
+    }
+  });
+
+  // GET /api/indexing/logs: Retrieve recent indexing audit logs
+  app.get("/api/indexing/logs", (req, res) => {
+    try {
+      const logs = getIndexingLogs();
+      res.json({ success: true, logs });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to get indexing logs", details: err.message });
+    }
+  });
+
   // GET /api/posts: Serving merged dynamic posts (Local file + Firestore database posts with channelId tracking)
   app.get("/api/posts", async (req, res) => {
     try {
@@ -984,6 +1132,12 @@ ${xmlItems}
       .catch(err => {
         console.warn(`Firestore dual-write background warning for ${postId}:`, err.message);
       });
+
+      // Auto-submit webhook published post to Google Search Console
+      const postSlug = slugify(newPost.title) || postId;
+      submitUrlsToSearchConsole([`/post/${postSlug}`], hostUrl)
+        .then(res => console.log(`[Google Indexing Webhook Trigger] Search Console notified for /post/${postSlug}:`, res.message))
+        .catch(err => console.warn(`[Google Indexing Webhook Warning]`, err.message));
  
       // 9. Return structured success matching Blog Studio's required output
       const successResponse = {

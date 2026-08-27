@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { Search, X, Menu, BookOpen, Calculator, User } from "lucide-react";
+import { Search, X, Menu, BookOpen, Calculator, User, Globe } from "lucide-react";
 
 interface NavbarProps {
   onSearch: (query: string) => void;
   onNavigate: (page: string) => void;
+  onOpenSearchConsole?: () => void;
   searchQuery?: string;
   currentPage?: string;
 }
 
-export function Navbar({ onSearch, onNavigate, searchQuery = "", currentPage = "home" }: NavbarProps) {
+export function Navbar({ onSearch, onNavigate, onOpenSearchConsole, searchQuery = "", currentPage = "home" }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -135,6 +136,18 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "", currentPage = "
                 <span>금리 계산기</span>
               </button>
 
+              {/* Google Search Console Auto Indexing Shortcut */}
+              {onOpenSearchConsole && (
+                <button
+                  onClick={onOpenSearchConsole}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-bold text-[#1E1B2E] bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#CBD5E1] rounded-lg transition-colors cursor-pointer"
+                  title="구글 서치 콘솔 자동 등록 및 색인 관리"
+                >
+                  <Globe className="w-3.5 h-3.5 text-[#E8745F]" />
+                  <span>서치콘솔 색인</span>
+                </button>
+              )}
+
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -188,25 +201,39 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "", currentPage = "
                 {item.label}
               </button>
             ))}
-            <div className="pt-3 mt-3 border-t border-[#F1F5F9] flex gap-2">
-              <button
-                onClick={() => {
-                  onNavigate("tools-didimdol");
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex-1 py-2 text-center text-[13px] font-bold text-[#5B21B6] bg-[#F5F3FF] rounded-lg"
-              >
-                디딤돌 금리 계산기
-              </button>
-              <button
-                onClick={() => {
-                  onNavigate("tools-cheongyak");
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex-1 py-2 text-center text-[13px] font-bold text-[#5B21B6] bg-[#F5F3FF] rounded-lg"
-              >
-                청약 가점 계산기
-              </button>
+            <div className="pt-3 mt-3 border-t border-[#F1F5F9] flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    onNavigate("tools-didimdol");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 py-2 text-center text-[13px] font-bold text-[#5B21B6] bg-[#F5F3FF] rounded-lg"
+                >
+                  디딤돌 금리 계산기
+                </button>
+                <button
+                  onClick={() => {
+                    onNavigate("tools-cheongyak");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 py-2 text-center text-[13px] font-bold text-[#5B21B6] bg-[#F5F3FF] rounded-lg"
+                >
+                  청약 가점 계산기
+                </button>
+              </div>
+              {onOpenSearchConsole && (
+                <button
+                  onClick={() => {
+                    onOpenSearchConsole();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2 text-center text-[13px] font-bold text-[#1E1B2E] bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#CBD5E1] rounded-lg flex items-center justify-center gap-1.5"
+                >
+                  <Globe className="w-4 h-4 text-[#E8745F]" />
+                  <span>구글 서치 콘솔 자동 색인 관리</span>
+                </button>
+              )}
             </div>
           </div>
         )}

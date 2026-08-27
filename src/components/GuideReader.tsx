@@ -16,7 +16,8 @@ import {
   Hash,
   Sparkles,
   Layers,
-  Calendar
+  Calendar,
+  Globe
 } from "lucide-react";
 
 export interface TocItem {
@@ -34,6 +35,7 @@ interface GuideReaderProps {
   relatedPosts: Post[];
   onNavigate: (page: string) => void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
+  onOpenSearchConsole?: (slug?: string, title?: string) => void;
 }
 
 /**
@@ -92,7 +94,8 @@ export function GuideReader({
   nextPost,
   relatedPosts,
   onNavigate,
-  showToast
+  showToast,
+  onOpenSearchConsole
 }: GuideReaderProps) {
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
@@ -331,8 +334,6 @@ export function GuideReader({
               </div>
               <div className="flex items-center gap-2 text-[12px] text-[#94A3B8] mt-0.5 tabular-nums">
                 <span>{formatPostDateTime(post.date, post.id)}</span>
-                <span>•</span>
-                <span>{post.readTime || "5분"} 읽기</span>
               </div>
             </div>
           </div>
@@ -633,6 +634,21 @@ export function GuideReader({
                 <ArrowUp className="w-3.5 h-3.5" />
                 <span>맨 위로</span>
               </button>
+
+              {onOpenSearchConsole && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const slug = post.id;
+                    onOpenSearchConsole(slug, post.title);
+                  }}
+                  className="inline-flex items-center gap-1 text-[#E8745F] hover:text-[#D6634F] font-semibold cursor-pointer py-1 px-2 rounded-lg hover:bg-[#FFF5F3] transition-colors"
+                  title="이 글을 구글 서치 콘솔에 즉시 색인 요청"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>색인 요청</span>
+                </button>
+              )}
 
               <button
                 type="button"

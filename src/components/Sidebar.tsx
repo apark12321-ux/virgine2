@@ -8,7 +8,6 @@ interface SidebarProps {
   categories: readonly string[];
   activeCategory?: string;
   onNavigate: (page: string) => void;
-  views?: Record<string, number>;
   currentPostId?: string;
 }
 

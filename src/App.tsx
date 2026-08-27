@@ -8,14 +8,15 @@ import { AdSenseUnit } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
+import { SearchConsoleModal } from "./components/SearchConsoleModal";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
 import { expandContentIfNeeded } from "./lib/contentExpander";
-import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Copy, ExternalLink, Clock, User, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Copy, ExternalLink, User, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
-import { fetchAllViews, fetchAllExposures, handleFirestoreError, OperationType, recordExposuresBulk } from "./lib/views";
+import { handleFirestoreError, OperationType } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { slugify, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
@@ -168,9 +169,16 @@ export default function App() {
   });
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [, setUser] = useState<FirebaseUser | null>(null);
-  const [, setViews] = useState<Record<string, number>>({});
-  const [, setExposures] = useState<Record<string, number>>({});
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
+  
+  // Google Search Console Auto-Indexing Modal State
+  const [isSearchConsoleModalOpen, setIsSearchConsoleModalOpen] = useState(false);
+  const [selectedPostForIndexing, setSelectedPostForIndexing] = useState<{ slug?: string; title?: string }>({});
+
+  const handleOpenSearchConsole = (slug?: string, title?: string) => {
+    setSelectedPostForIndexing({ slug, title });
+    setIsSearchConsoleModalOpen(true);
+  };
   
   // Custom Toast Notification State
   const [toast, setToast] = useState<{
@@ -340,13 +348,6 @@ export default function App() {
     return sanitized.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
   }, [realPosts]);
 
-  useEffect(() => {
-    if (allPosts.length === 0) return;
-    const postIds = allPosts.map((p) => p.id);
-    fetchAllViews(postIds).then(setViews);
-    fetchAllExposures(postIds).then(setExposures);
-  }, [allPosts]);
-
   const filteredPosts = useMemo(() => {
     let posts = allPosts;
     if (currentPage.startsWith("category-")) {
@@ -361,12 +362,6 @@ export default function App() {
     }
     return posts;
   }, [currentPage, searchQuery, allPosts]);
-
-  useEffect(() => {
-    if (filteredPosts.length === 0) return;
-    const ids = filteredPosts.map(p => p.id);
-    recordExposuresBulk(ids);
-  }, [filteredPosts]);
 
   const currentPost = useMemo(() => {
     if (!currentPage.startsWith("post-")) return null;
@@ -451,6 +446,7 @@ export default function App() {
       <Navbar
         onSearch={setSearchQuery}
         onNavigate={handleNavigate}
+        onOpenSearchConsole={() => handleOpenSearchConsole()}
         searchQuery={searchQuery}
         currentPage={currentPage}
       />
@@ -719,6 +715,7 @@ export default function App() {
                 relatedPosts={relatedPosts}
                 onNavigate={handleNavigate}
                 showToast={showToast}
+                onOpenSearchConsole={(slug, title) => handleOpenSearchConsole(slug, title)}
               />
             </motion.article>
           )}
@@ -902,7 +899,18 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <Footer onNavigate={handleNavigate} />
+      <Footer
+        onNavigate={handleNavigate}
+        onOpenSearchConsole={() => handleOpenSearchConsole()}
+      />
+
+      {/* Google Search Console Auto-Indexing Modal */}
+      <SearchConsoleModal
+        isOpen={isSearchConsoleModalOpen}
+        onClose={() => setIsSearchConsoleModalOpen(false)}
+        currentPostSlug={selectedPostForIndexing.slug}
+        currentPostTitle={selectedPostForIndexing.title}
+      />
 
       {/* Floating Toast Notification */}
       <AnimatePresence>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Post } from "../types";
 import { formatPostDateTime } from "../lib/utils";
-import { Clock, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 interface PostCardProps {
   post: Post;
@@ -72,12 +72,8 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
               </span>
               <span>버진로드</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span className="tabular-nums font-medium text-[#475569]">{formattedDate}</span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{post.readTime || "5분"}</span>
-              </span>
             </div>
           </div>
         </div>
@@ -143,8 +139,6 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
           </div>
           <div className="flex items-center gap-2 tabular-nums text-[#64748B]">
             <span className="font-medium text-[#334155]">{formattedDate}</span>
-            <span>•</span>
-            <span>{post.readTime || "5분"}</span>
           </div>
         </div>
       </div>
