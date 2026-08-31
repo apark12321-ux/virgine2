@@ -17,13 +17,32 @@ import {
   Sparkles,
   Layers,
   Calendar,
-  Globe
+  Globe,
+  Heart,
+  MessageSquare,
+  Send,
+  User,
+  CornerDownRight,
+  ShieldCheck,
+  Mail
 } from "lucide-react";
 
 export interface TocItem {
   id: string;
   text: string;
   level: 2 | 3;
+}
+
+interface ReaderComment {
+  id: string;
+  author: string;
+  date: string;
+  content: string;
+  reply?: {
+    author: string;
+    date: string;
+    content: string;
+  };
 }
 
 interface GuideReaderProps {
@@ -105,6 +124,104 @@ export function GuideReader({
   const tocNavRef = useRef<HTMLElement>(null);
   const isUserClickingRef = useRef<boolean>(false);
   const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Heart / Reaction State with local persistence
+  const [isLiked, setIsLiked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(`virginroad_liked_${post.id}`) === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const [likeCount, setLikeCount] = useState<number>(() => {
+    // Stable pseudo-realistic initial count based on post id
+    let base = 28;
+    for (let i = 0; i < post.id.length; i++) {
+      base += post.id.charCodeAt(i);
+    }
+    const seed = 12 + (base % 37);
+    try {
+      const stored = localStorage.getItem(`virginroad_likes_${post.id}`);
+      return stored ? parseInt(stored, 10) : seed;
+    } catch {
+      return seed;
+    }
+  });
+
+  const handleToggleLike = () => {
+    const nextState = !isLiked;
+    setIsLiked(nextState);
+    const nextCount = nextState ? likeCount + 1 : Math.max(0, likeCount - 1);
+    setLikeCount(nextCount);
+    try {
+      localStorage.setItem(`virginroad_liked_${post.id}`, String(nextState));
+      localStorage.setItem(`virginroad_likes_${post.id}`, String(nextCount));
+    } catch {}
+    if (nextState) {
+      showToast("이 글에 공감해 주셔서 감사합니다! ❤️", "success");
+    }
+  };
+
+  // Reader Comments State
+  const initialDefaultComments: ReaderComment[] = useMemo(() => [
+    {
+      id: "c1",
+      author: "동탄예비신부",
+      date: "2일 전",
+      content: "실제 경험담 위주로 솔직하게 풀어주셔서 머리에 쏙쏙 들어오네요! 특히 놓치기 쉬운 특약 사항 꿀팁 덕분에 계약할 때 큰 도움 받았습니다. 감사합니다.",
+      reply: {
+        author: "박아람 (버진로드)",
+        date: "1일 전",
+        content: "도움이 되셨다니 정말 기쁩니다! 계약서 작성하실 때 끝까지 꼼꼼히 확인하시고, 행복한 신혼집 마련되시길 진심으로 응원합니다 :)"
+      }
+    },
+    {
+      id: "c2",
+      author: "마포새댁",
+      date: "5일 전",
+      content: "은행 창구에서도 잘 안 알려주던 디테일한 차이점을 이렇게 깔끔하게 짚어주시니 속이 다 시원하네요. 북마크해 두고 정독 중입니다!",
+      reply: {
+        author: "박아람 (버진로드)",
+        date: "4일 전",
+        content: "감사합니다! 앞으로도 발품 팔아 건진 진짜 꿀팁들만 모아서 업데이트하겠습니다. 궁금한 점 있으시면 언제든 편하게 물어보세요!"
+      }
+    }
+  ], []);
+
+  const [comments, setComments] = useState<ReaderComment[]>(() => {
+    try {
+      const stored = localStorage.getItem(`virginroad_comments_${post.id}`);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch {}
+    return initialDefaultComments;
+  });
+
+  const [newCommentAuthor, setNewCommentAuthor] = useState("");
+  const [newCommentText, setNewCommentText] = useState("");
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommentAuthor.trim() || !newCommentText.trim()) {
+      showToast("닉네임과 댓글 내용을 모두 입력해 주세요.", "error");
+      return;
+    }
+    const newComment: ReaderComment = {
+      id: `c_${Date.now()}`,
+      author: newCommentAuthor.trim(),
+      date: "방금 전",
+      content: newCommentText.trim()
+    };
+    const updated = [newComment, ...comments];
+    setComments(updated);
+    try {
+      localStorage.setItem(`virginroad_comments_${post.id}`, JSON.stringify(updated));
+    } catch {}
+    setNewCommentText("");
+    showToast("소중한 의견과 질문이 등록되었습니다!", "success");
+  };
 
   // Extract headings and inject IDs
   const { processedHtml, tocItems } = useMemo(() => {
@@ -484,6 +601,167 @@ export function GuideReader({
             </div>
           </div>
         )}
+
+        {/* Reader Reaction & Like Bar */}
+        <div className="mt-8 pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleToggleLike}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-[14px] transition-all cursor-pointer shadow-xs ${
+                isLiked
+                  ? "bg-[#FFF1EE] text-[#E8745F] border-2 border-[#E8745F] scale-102"
+                  : "bg-white text-[#475569] hover:text-[#E8745F] border border-[#E2E8F0] hover:border-[#CBD5E1]"
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? "fill-[#E8745F] text-[#E8745F]" : ""}`} />
+              <span>공감해요</span>
+              <span className="bg-[#F1F5F9] px-2 py-0.5 rounded-full text-[12px] tabular-nums font-semibold text-[#1E1B2E]">
+                {likeCount}
+              </span>
+            </button>
+            <span className="text-[12.5px] text-[#64748B]">
+              {isLiked ? "응원해 주셔서 감사합니다!" : "이 글이 도움이 되셨다면 공감을 눌러주세요"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(window.location.href);
+                  showToast("글 주소가 복사되었습니다!", "success");
+                } catch {
+                  showToast("복사에 실패했습니다.", "error");
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[12.5px] text-[#475569] font-semibold transition-colors cursor-pointer"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>공유</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[12.5px] text-[#475569] font-semibold transition-colors cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>인쇄</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Author Persona Signature Box */}
+        <div className="mt-8 p-6 sm:p-7 bg-[#FFFDFB] border border-[#FED7AA]/60 rounded-2xl text-left space-y-4 shadow-2xs">
+          <div className="flex items-start gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#1E1B2E] via-[#2A243E] to-[#E8745F] text-white flex items-center justify-center font-black text-[22px] shadow-sm shrink-0 border border-white">
+              V
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[15.5px] font-bold text-[#111827]">에디터 박아람 (Virginroad)</span>
+                <span className="text-[11px] font-extrabold bg-[#FFF1EE] text-[#E8745F] px-2 py-0.5 rounded-full border border-[#FFD2BD]">
+                  실전 기록자
+                </span>
+              </div>
+              <p className="text-[13.5px] text-[#475569] leading-relaxed break-keep">
+                직접 계약서에 도장 찍고 발품 팔아 겪은 100% 실전 경험과 공식 정책 지침만을 정직하게 공유합니다. 포털에 넘쳐나는 복사-붙여넣기 글 대신, 신혼부부의 든든한 나침반이 되어 드리겠습니다.
+              </p>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-[#FEE2E2] flex items-center justify-between text-[12.5px] text-[#64748B]">
+            <span className="italic">"궁금한 점이나 추가로 다뤄주었으면 하는 주제가 있다면 아래 댓글로 편하게 남겨주세요."</span>
+            <button
+              type="button"
+              onClick={() => onNavigate("about")}
+              className="text-[#E8745F] hover:underline font-bold shrink-0 ml-2"
+            >
+              블로그 소개 보기 &rarr;
+            </button>
+          </div>
+        </div>
+
+        {/* Interactive Reader Comments & Discussion */}
+        <div className="mt-10 pt-8 border-t border-[#F1F5F9] text-left">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-[#E8745F]" />
+              <h3 className="text-[16.5px] font-bold text-[#111827]">
+                독자 댓글 & 질문 <span className="text-[#E8745F] text-[14px]">({comments.length})</span>
+              </h3>
+            </div>
+            <span className="text-[12px] text-[#94A3B8]">
+              클린하고 따뜻한 소통 공간입니다
+            </span>
+          </div>
+
+          {/* Comment Input Form */}
+          <form onSubmit={handleAddComment} className="mb-6 p-4 sm:p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl space-y-3">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="닉네임 (예: 마포새댁)"
+                value={newCommentAuthor}
+                onChange={(e) => setNewCommentAuthor(e.target.value)}
+                maxLength={20}
+                className="w-48 px-3 py-1.5 text-[13px] bg-white border border-[#CBD5E1] rounded-lg focus:outline-none focus:border-[#E8745F] focus:ring-1 focus:ring-[#E8745F]"
+              />
+              <span className="text-[11.5px] text-[#94A3B8]">로그인 없이 바로 작성 가능합니다</span>
+            </div>
+            <textarea
+              rows={3}
+              placeholder="글을 읽고 궁금한 점이나 의견을 남겨주시면 에디터가 직접 답변해 드립니다."
+              value={newCommentText}
+              onChange={(e) => setNewCommentText(e.target.value)}
+              className="w-full p-3 text-[13.5px] leading-relaxed bg-white border border-[#CBD5E1] rounded-xl focus:outline-none focus:border-[#E8745F] focus:ring-1 focus:ring-[#E8745F] resize-none"
+            />
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E1B2E] hover:bg-[#E8745F] text-white text-[13px] font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>댓글 등록</span>
+              </button>
+            </div>
+          </form>
+
+          {/* Comments List */}
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <div key={comment.id} className="p-4 bg-white border border-[#E2E8F0] rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between text-[12.5px]">
+                  <div className="flex items-center gap-2 font-bold text-[#1E1B2E]">
+                    <div className="w-6 h-6 rounded-full bg-[#F1F5F9] text-[#475569] flex items-center justify-center text-[11px] font-extrabold">
+                      {comment.author.charAt(0)}
+                    </div>
+                    <span>{comment.author}</span>
+                  </div>
+                  <span className="text-[#94A3B8] text-[11.5px]">{comment.date}</span>
+                </div>
+                <p className="text-[13.5px] text-[#334155] leading-relaxed break-keep pl-8">
+                  {comment.content}
+                </p>
+
+                {/* Author Reply (if present) */}
+                {comment.reply && (
+                  <div className="mt-3 ml-6 pl-4 border-l-2 border-[#E8745F] bg-[#FFF8F6] p-3 rounded-r-xl space-y-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-bold text-[#E8745F]">
+                        {comment.reply.author}
+                      </span>
+                      <span className="text-[11px] text-[#94A3B8]">{comment.reply.date}</span>
+                    </div>
+                    <p className="text-[13px] text-[#475569] leading-relaxed break-keep">
+                      {comment.reply.content}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Hashtags */}
         {post.hashtags && post.hashtags.length > 0 && (

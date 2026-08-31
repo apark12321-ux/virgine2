@@ -65,15 +65,15 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
         </div>
       </div>
 
-      {/* 2. E-E-A-T Editorial Philosophy */}
+      {/* 2. Editorial Philosophy */}
       <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
         <div className="border-b border-[#F1F5F9] pb-4">
           <div className="flex items-center gap-2 text-[#E8745F] text-[13px] font-bold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4" />
-            <span>Google E-E-A-T 기반 작성 원칙</span>
+            <span>버진로드 블로그 운영 철학</span>
           </div>
           <h2 className="text-[22px] sm:text-[26px] font-extrabold text-[#111827] mt-1">
-            버진로드가 독자 여러분과 약속하는 4가지 원칙
+            독자 여러분과 약속하는 4가지 원칙
           </h2>
         </div>
 
@@ -84,11 +84,11 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
                 01
               </div>
               <h3 className="text-[16px] font-bold text-[#111827]">
-                Experience (직접 겪은 실전 경험)
+                직접 겪은 100% 실전 경험담
               </h3>
             </div>
             <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              단순히 기사나 공고문을 요약하지 않습니다. 직접 은행 3곳을 돌며 상담받고, 가전 오픈점 견적을 깎아보며 겪은 1인칭 실전 경험담을 바탕으로 작성합니다.
+              단순히 기사나 공고문을 요약하지 않습니다. 직접 은행 3곳을 돌며 상담받고, 가전 오픈점 견적을 깎아보며 겪은 1인칭 실전 경험담을 바탕으로 솔직하게 씁니다.
             </p>
           </div>
 
@@ -98,11 +98,11 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
                 02
               </div>
               <h3 className="text-[16px] font-bold text-[#111827]">
-                Expertise (정부 공식 팩트체크)
+                공식 정책 및 기준 금리 교차 검증
               </h3>
             </div>
             <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              국토교통부, 주택도시기금(기금e든든), 한국주택금융공사(HF), LH 청약플러스의 최신 고시 지침과 금리 개정안을 철저히 대조하여 정확한 수치만 전달합니다.
+              국토교통부, 주택도시기금(기금e든든), 한국주택금융공사(HF), LH 청약플러스의 최신 고시 지침과 금리 개정안을 꼼꼼하게 대조하여 정확한 수치만 전달합니다.
             </p>
           </div>
 
@@ -112,11 +112,11 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
                 03
               </div>
               <h3 className="text-[16px] font-bold text-[#111827]">
-                Authoritativeness (실패담 & 단점 공개)
+                숨김없는 실패담과 단점 공개
               </h3>
             </div>
             <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              "무조건 좋다"는 무책임한 추천을 지양합니다. "이 옵션은 돈 낭비였다", "이 특약은 반드시 넣어야 한다" 등 실제 겪은 실패와 단점까지 투명하게 공개합니다.
+              "무조건 좋다"는 식의 무책임한 추천을 하지 않습니다. "이 옵션은 돈 낭비였다", "이 특약은 반드시 넣어야 한다" 등 실제 겪은 실패와 단점까지 투명하게 공개합니다.
             </p>
           </div>
 
@@ -126,7 +126,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
                 04
               </div>
               <h3 className="text-[16px] font-bold text-[#111827]">
-                Trustworthiness (투명한 소통)
+                투명한 정보 공유와 빠른 소통
               </h3>
             </div>
             <p className="text-[13.5px] text-[#64748B] leading-relaxed">

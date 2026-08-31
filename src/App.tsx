@@ -478,15 +478,24 @@ export default function App() {
                   {/* Blog Channel Greeting Banner (When on Home without search) */}
                   {currentPage === "home" && !searchQuery && (
                     <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-7 shadow-xs">
-                      <div className="flex items-center gap-2 mb-2 text-[12px] font-bold text-[#E8745F]">
-                        <span className="w-2 h-2 rounded-full bg-[#E8745F]" />
-                        <span>버진로드</span>
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2 text-[12px] font-bold text-[#E8745F]">
+                          <span className="w-2 h-2 rounded-full bg-[#E8745F]" />
+                          <span>버진로드 &middot; 에디터 박아람의 실전 노트</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleNavigate("about")}
+                          className="text-[12px] font-semibold text-[#64748B] hover:text-[#E8745F] transition-colors"
+                        >
+                          에디터 소개 &rarr;
+                        </button>
                       </div>
-                      <h1 className="text-[22px] sm:text-[26px] font-extrabold text-[#111827] leading-[1.35] tracking-tight mb-3 break-keep">
-                        &ldquo;디딤돌 대출부터 청약, 혼수가전 견적까지 알짜 정보만 정리합니다.&rdquo;
+                      <h1 className="text-[20px] sm:text-[24px] font-extrabold text-[#111827] leading-[1.38] tracking-tight mb-2.5 break-keep">
+                        &ldquo;발품 팔고 부딪혀가며 배운 신혼금융 &middot; 청약 &middot; 가전 알짜 팁만 기록합니다.&rdquo;
                       </h1>
-                      <p className="text-[14.5px] leading-relaxed text-[#475569] break-keep">
-                        결혼 준비와 신혼 생활에 꼭 필요한 대출 우대금리, 청약 가점 팁, 가전 비교 노하우를 보기 쉽게 모아둔 블로그입니다.
+                      <p className="text-[14px] leading-relaxed text-[#475569] break-keep">
+                        은행 창구 상담부터 가전 오픈점 견적까지, 직접 도장 찍고 겪은 100% 실전 경험과 공식 정책 지침을 바탕으로 정직하게 쓴 글들입니다.
                       </p>
                     </div>
                   )}
