@@ -28,6 +28,7 @@ export function Navbar({ onSearch, onNavigate, onOpenSearchConsole, searchQuery 
 
   const navItems = [
     { label: "전체글", page: "home" },
+    { label: "소개", page: "about" },
     { label: "신혼금융", page: "category-신혼금융" },
     { label: "신혼가전", page: "category-신혼가전" },
     { label: "결혼준비", page: "category-결혼준비" },

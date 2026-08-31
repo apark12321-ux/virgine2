@@ -8,6 +8,7 @@ import { AdSenseUnit } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
 import { DidimdolCalculator } from "./components/DidimdolCalculator";
 import { CheongyakCalculator } from "./components/CheongyakCalculator";
+import { AboutPage } from "./components/AboutPage";
 import { SearchConsoleModal } from "./components/SearchConsoleModal";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
@@ -768,47 +769,8 @@ export default function App() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#F1F5F9]">
-                <div className="w-16 h-16 rounded-2xl bg-[#1E1B2E] text-white flex items-center justify-center font-black text-[24px] shadow-sm shrink-0">
-                  V
-                </div>
-                <div>
-                  <h1 className="text-[26px] sm:text-[32px] font-extrabold text-[#111827] mb-1">
-                    버진로드(Virginroad) 소개
-                  </h1>
-                  <p className="text-[14px] text-[#64748B]">
-                    예비·신혼부부를 위한 금융·청약·결혼준비 팁 공유 블로그
-                  </p>
-                </div>
-              </div>
-
-              <h2>1. 블로그 소개</h2>
-              <p>
-                버진로드(Virginroad)는 결혼 준비와 신혼 초기에 마주하는 주택 대출, 청약, 혼수가전 등 복잡한 정보들을 알기 쉽게 풀어내는 블로그입니다.
-              </p>
-              <p>
-                디딤돌·버팀목 대출의 우대금리 챙기는 법부터 신혼특공 가점 계산 팁, 가전 매장 견적 비교 노하우까지 유용한 정보들을 깔끔하게 정리해 두고 있습니다.
-              </p>
-
-              <h2>2. 주요 카테고리</h2>
-              <ul>
-                <li><strong>신혼금융:</strong> 디딤돌 대출, 신생아 특례, 버팀목 전세대출 팁 및 금리 계산기</li>
-                <li><strong>청약·주거:</strong> 신혼부부 특별공급 가점 계산 및 청약 팁</li>
-                <li><strong>혼수·가전:</strong> 삼성·LG 다품목 할인 견적 노하우 및 오픈점 비교 팁</li>
-                <li><strong>결혼준비:</strong> 스드메·웨딩홀 예산 관리 및 절세 팁</li>
-              </ul>
-
-              <h2>3. 운영 안내 및 문의</h2>
-              <ul>
-                <li><strong>블로그명:</strong> 버진로드 (Virginroad)</li>
-                <li><strong>운영:</strong> 상상아트 (대표: 박아람)</li>
-                <li><strong>사업자등록번호:</strong> 272-14-01256</li>
-                <li><strong>통신판매업 신고번호:</strong> 제2023-화성동탄-1098호</li>
-                <li><strong>소재지:</strong> 경기도 화성시 동탄대로</li>
-                <li><strong>문의 이메일:</strong> <a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a></li>
-              </ul>
+              <AboutPage onNavigate={handleNavigate} />
             </motion.div>
           )}
 
