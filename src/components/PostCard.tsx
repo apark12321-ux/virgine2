@@ -1,7 +1,7 @@
 import React from "react";
 import { Post } from "../types";
 import { formatPostDateTime } from "../lib/utils";
-import { Calendar } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 
 interface PostCardProps {
   post: Post;
@@ -18,7 +18,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 
 export function PostCard({ post, onClick, featured = false }: PostCardProps) {
   const colors = CATEGORY_COLORS[post.category] || CATEGORY_COLORS["신혼금융"];
-  const formattedDate = formatPostDateTime(post.date, post.id).split(" ")[0];
+  const formattedDateTime = formatPostDateTime(post.date, post.id);
 
   if (featured) {
     return (
@@ -48,10 +48,10 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
             </span>
           </div>
 
-          {/* Thumbnail Date Overlay Badge */}
-          <div className="absolute bottom-3.5 right-3.5 flex items-center gap-1.5 bg-black/70 backdrop-blur-xs text-white text-[11.5px] font-semibold px-2.5 py-1 rounded-lg shadow-sm">
+          {/* Thumbnail Date & Time Overlay Badge */}
+          <div className="absolute bottom-3.5 right-3.5 flex items-center gap-1.5 bg-black/75 backdrop-blur-xs text-white text-[11.5px] font-semibold px-2.5 py-1 rounded-lg shadow-sm border border-white/10">
             <Calendar className="w-3.5 h-3.5 text-[#FFB199]" />
-            <span className="tabular-nums">{formattedDate}</span>
+            <span className="tabular-nums">{formattedDateTime}</span>
           </div>
         </div>
 
@@ -72,8 +72,9 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
               </span>
               <span>버진로드</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="tabular-nums font-medium text-[#475569]">{formattedDate}</span>
+            <div className="flex items-center gap-1.5 text-[#475569]">
+              <Clock className="w-3.5 h-3.5 text-[#94A3B8]" />
+              <span className="tabular-nums font-medium">{formattedDateTime}</span>
             </div>
           </div>
         </div>
@@ -110,10 +111,10 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
           </span>
         </div>
 
-        {/* Thumbnail Date Overlay Badge */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-sm">
+        {/* Thumbnail Date & Time Overlay Badge */}
+        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/75 backdrop-blur-xs text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-sm border border-white/10">
           <Calendar className="w-3 h-3 text-[#FFB199]" />
-          <span className="tabular-nums">{formattedDate}</span>
+          <span className="tabular-nums">{formattedDateTime}</span>
         </div>
       </div>
 
@@ -137,8 +138,9 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
             </span>
             <span>버진로드</span>
           </div>
-          <div className="flex items-center gap-2 tabular-nums text-[#64748B]">
-            <span className="font-medium text-[#334155]">{formattedDate}</span>
+          <div className="flex items-center gap-1.5 tabular-nums text-[#64748B]">
+            <Clock className="w-3 h-3 text-[#94A3B8]" />
+            <span className="font-medium text-[#334155]">{formattedDateTime}</span>
           </div>
         </div>
       </div>

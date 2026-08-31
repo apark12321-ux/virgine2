@@ -490,9 +490,9 @@ export function GuideReader({
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover"
           />
-          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/70 backdrop-blur-xs text-white text-[12px] font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/75 backdrop-blur-xs text-white text-[12px] font-semibold px-3 py-1.5 rounded-lg shadow-sm border border-white/10">
             <Calendar className="w-3.5 h-3.5 text-[#FFB199]" />
-            <span className="tabular-nums">{formatPostDateTime(post.date, post.id).split(" ")[0]}</span>
+            <span className="tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
           </div>
         </div>
 
@@ -833,7 +833,7 @@ export function GuideReader({
                     {rPost.title}
                   </h4>
                   <span className="text-[11px] text-[#94A3B8] tabular-nums">
-                    {formatPostDateTime(rPost.date, rPost.id).split(" ")[0]}
+                    {formatPostDateTime(rPost.date, rPost.id)}
                   </span>
                 </button>
               ))}

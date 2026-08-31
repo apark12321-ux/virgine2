@@ -97,10 +97,10 @@ export function Sidebar({
                 <p className="text-[13px] font-medium text-[#1E1B2E] group-hover:text-[#E8745F] line-clamp-2 leading-snug break-keep transition-colors">
                   {post.title}
                 </p>
-                <div className="flex items-center gap-2 mt-1 text-[11px] text-[#94A3B8]">
+                <div className="flex items-center gap-2 mt-1 text-[11px] text-[#94A3B8] tabular-nums">
                   <span>{post.category}</span>
                   <span>•</span>
-                  <span>{formatPostDateTime(post.date, post.id).split(" ")[0]}</span>
+                  <span>{formatPostDateTime(post.date, post.id)}</span>
                 </div>
               </div>
             </button>
