@@ -792,22 +792,39 @@ export default function App() {
               className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
               <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
-                개인정보 처리방침
+                개인정보 처리방침 (Privacy Policy)
               </h1>
               <p className="text-[14.5px] leading-relaxed text-[#475569] mb-8">
-                버진로드는 방문자의 개인정보를 소중하게 다루며 안전하게 보호합니다.
+                버진로드(Virginroad, 이하 &lsquo;본 블로그&rsquo;)는 이용자의 개인정보를 소중하게 보호하며, 관련 법령 및 구글 애드센스(Google AdSense) 정책을 철저히 준수합니다.
               </p>
 
-              <h2>1. 개인정보 수집 안내</h2>
-              <p>본 블로그는 별도의 회원가입 없이 모든 포스팅과 계산기를 무료로 이용하실 수 있습니다. 접속 과정에서 일반적인 웹 통계용 쿠키나 접속 로그가 생성될 수 있습니다.</p>
+              <h2>1. 개인정보 수집 및 이용 목적</h2>
+              <p>본 블로그는 회원가입 없이 모든 정보와 계산기 기능을 100% 무료로 이용하실 수 있습니다. 이용자가 이메일 문의 또는 댓글 등록 시 입력하는 닉네임과 연락처는 답변 및 원활한 소통 목적으로만 사용되며 외부에 무단 제공되지 않습니다.</p>
 
-              <h2>2. 쿠키(Cookie) 안내</h2>
+              <h2>2. 구글 애드센스 및 제3자 광고 쿠키(Cookie) 고지</h2>
               <p>
-                웹사이트 품질 향상 및 맞춤형 콘텐츠 제공을 위해 브라우저 쿠키가 활용될 수 있으며, 브라우저 설정을 통해 언제든지 쿠키 저장을 차단할 수 있습니다.
+                본 블로그는 구글(Google)을 비롯한 제3자 광고 공급업체를 통해 광고를 게재할 수 있습니다.
+              </p>
+              <ul>
+                <li>Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자가 본 웹사이트 또는 다른 웹사이트를 이전에 방문한 기록을 바탕으로 광고를 게재합니다.</li>
+                <li>Google의 광고 쿠키 사용으로 Google 및 파트너는 사용자의 본 사이트 및 인터넷의 다른 사이트 방문 기록을 바탕으로 적절한 광고를 사용자에게 표시할 수 있습니다.</li>
+                <li>사용자는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#E8745F] font-semibold underline">Google 광고 설정</a>을 방문하여 맞춤설정 광고를 사용 중지할 수 있습니다. (또는 <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#E8745F] font-semibold underline">aboutads.info</a>를 방문하여 맞춤설정 광고에 사용되는 제3자 공급업체의 쿠키 사용을 선택 해제할 수 있습니다.)</li>
+              </ul>
+
+              <h2>3. 로그 데이터 및 웹 분석 도구</h2>
+              <p>
+                웹사이트의 품질 향상 및 서비스 최적화를 위해 방문자의 브라우저 종류, 방문 일시, 참조 페이지 등 비식별 통계 정보가 자동 수집될 수 있으며, 이는 개인을 특정할 수 없습니다.
               </p>
 
-              <h2>3. 문의처</h2>
-              <p>궁금한 점이 있으시다면 이메일(<a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a>)로 문의해 주시기 바랍니다.</p>
+              <h2>4. 개인정보 보호책임자 및 문의처</h2>
+              <p>
+                개인정보 처리 및 블로그 운영에 관한 모든 문의는 아래로 연락 주시면 신속하고 성실하게 답변드리겠습니다.
+              </p>
+              <div className="p-4 bg-[#F8FAFC] rounded-xl text-[13.5px] text-[#334155] mt-3">
+                <p><strong>운영자/책임자:</strong> 박아람 (버진로드 / 상상아트)</p>
+                <p><strong>이메일 문의:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#E8745F] font-semibold">apark12321@gmail.com</a></p>
+                <p><strong>시행일자:</strong> 2026년 1월 1일</p>
+              </div>
             </motion.div>
           )}
 
@@ -820,18 +837,26 @@ export default function App() {
               className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
             >
               <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
-                이용약관 및 면책고지
+                이용약관 및 면책고지 (Terms of Service & Disclaimer)
               </h1>
               <p className="text-[14.5px] leading-relaxed text-[#475569] mb-8">
-                본 약관은 버진로드 블로그의 콘텐츠 이용에 관한 권리와 의무를 규정합니다.
+                본 약관은 버진로드(Virginroad) 블로그가 제공하는 모든 콘텐츠, 계산 도구 및 정보 서비스의 이용에 관한 조건과 책임을 규정합니다.
               </p>
 
-              <h2>1. 저작권 보호</h2>
-              <p>본 블로그에 게재된 모든 텍스트, 이미지, 계산 도구 및 편집물의 저작권은 상상아트 및 버진로드에 있습니다. 사전 서면 동의 없는 무단 전재 및 상업적 재배포를 금합니다.</p>
+              <h2>1. 저작권 및 지적재산권 보호</h2>
+              <p>본 블로그에 게시된 모든 텍스트, 직접 가공한 표/데이터, 자체 개발 계산기 로직 및 디자인 저작권은 버진로드(상상아트)에 있습니다. 저작권자의 서면 동의 없는 무단 복제, AI 크롤링 스크래핑, 2차 저작물 상업 배포를 엄격히 금합니다.</p>
 
-              <h2>2. 면책 조항 (Disclaimer)</h2>
+              <h2>2. 금융 및 정책 정보에 대한 면책 고지</h2>
               <p>
-                본 블로그에서 제공하는 대출 금리 계산, 청약 가점 시뮬레이션 및 정책 가이드는 공식 자료를 기반으로 정성껏 작성되었으나, 실제 대출 한도와 청약 당첨 여부는 금융기관 및 청약 주관처의 심사 결과에 따라 달라질 수 있습니다. 최종 금융·청약 의사결정의 책임은 이용자 본인에게 있습니다.
+                본 블로그에서 다루는 디딤돌대출, 신생아특례, 버팀목전세자금, 신혼부부 특별공급 청약 등의 모든 정보는 국토교통부, 한국주택금융공사(HF), 주택도시기금(HUG), 한국부동산원 청약홈의 최신 공시자료를 근거로 성실히 작성되었습니다.
+              </p>
+              <p>
+                그러나 정부 정책 및 수탁 시중은행의 심사 기준, 금리 우대 항목은 수시로 개정될 수 있습니다. 본 블로그의 계산 결과 및 가이드는 참고용이며 법적 효력을 갖지 않으므로, 최종 계약 및 대출 실행 전 반드시 관계 기관 및 취급 은행 창구를 통해 확인하시기 바랍니다. 본 블로그는 이용자의 개별 금융 결정에 따른 결과에 대해 법적 책임을 지지 않습니다.
+              </p>
+
+              <h2>3. 서비스의 변경 및 중단</h2>
+              <p>
+                본 블로그는 정보의 정확성을 위해 지속적으로 콘텐츠를 업데이트하며, 사전 고지 없이 게시물의 수정이나 보완이 이루어질 수 있습니다.
               </p>
             </motion.div>
           )}
