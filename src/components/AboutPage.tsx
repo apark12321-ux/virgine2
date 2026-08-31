@@ -30,7 +30,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFF1EE] border border-[#FFDCD4] text-[#E8745F] text-[12.5px] font-extrabold rounded-full">
             <Heart className="w-3.5 h-3.5 fill-[#E8745F]" />
-            <span>신혼 5년 차 실전 기록자의 진심 담긴 블로그</span>
+            <span>신혼부부를 위한 신뢰도 높은 전문 정보 블로그</span>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pt-2">
@@ -39,7 +39,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             </div>
             <div>
               <h1 className="text-[26px] sm:text-[34px] font-black text-[#111827] tracking-tight leading-tight">
-                "피 같은 돈과 시간을 아껴드리는<br className="hidden sm:inline" /> 100% 실전 신혼 나침반"
+                "예비·신혼부부의 예산과 시간을 지켜주는<br className="hidden sm:inline" /> 실전 신혼 나침반"
               </h1>
               <p className="text-[15px] sm:text-[16px] text-[#475569] font-medium mt-2">
                 버진로드(Virginroad) 대표 에디터 &middot; 박아람 올림
@@ -59,7 +59,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
               실제로 자산 심사 서류 하나를 잘못 챙겨 디딤돌 대출이 반려될 뻔했고, 하마터면 피 같은 전세계약금 수천만 원을 날릴 뻔했던 아찔한 순간도 겪었습니다.
             </p>
             <p>
-              버진로드는 바로 그 <strong>'지독했던 시행착오와 수많은 발품'</strong> 속에서 탄생했습니다. 기계적인 복사-붙여넣기 글이나 영혼 없는 정보 나열 대신, <strong>직접 계약서에 도장 찍고 영수증을 결제하며 체득한 살아있는 팩트</strong>만을 기록합니다.
+              버진로드는 바로 그 <strong>'시행착오와 실제 현장 경험'</strong> 속에서 탄생했습니다. 기계적인 복사-붙여넣기 글이나 영혼 없는 정보 나열 대신, <strong>공식 고시 기준과 실제 계약·시공·금융 실무 노하우</strong>를 체계적으로 정리하여 전달합니다.
             </p>
           </div>
         </div>
@@ -84,11 +84,11 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
                 01
               </div>
               <h3 className="text-[16px] font-bold text-[#111827]">
-                직접 겪은 100% 실전 경험담
+                검증된 실무 노하우
               </h3>
             </div>
             <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              단순히 기사나 공고문을 요약하지 않습니다. 직접 은행 3곳을 돌며 상담받고, 가전 오픈점 견적을 깎아보며 겪은 1인칭 실전 경험담을 바탕으로 솔직하게 씁니다.
+              단순히 기사나 공고문을 요약하지 않습니다. 실제 은행 창구 상담 사례, 가전 오픈점 견적 비교 분석 등 현장에서 체득한 실전 가이드를 솔직하게 전달합니다.
             </p>
           </div>
 
@@ -153,7 +153,9 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             onClick={() => onNavigate("category-신혼금융")}
             className="p-5 rounded-2xl bg-gradient-to-b from-[#F8FAFC] to-white border border-[#E2E8F0] hover:border-[#1E1B2E] transition-all cursor-pointer group"
           >
-            <div className="text-[20px] mb-2">💰</div>
+            <div className="w-9 h-9 rounded-xl bg-[#FFF1EE] text-[#E8745F] flex items-center justify-center font-bold text-[14px] mb-3">
+              [금융]
+            </div>
             <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#E8745F] transition-colors">
               신혼금융 & 정책대출
             </h4>
@@ -166,7 +168,9 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             onClick={() => onNavigate("category-신혼가전")}
             className="p-5 rounded-2xl bg-gradient-to-b from-[#F8FAFC] to-white border border-[#E2E8F0] hover:border-[#1E1B2E] transition-all cursor-pointer group"
           >
-            <div className="text-[20px] mb-2">📺</div>
+            <div className="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold text-[14px] mb-3">
+              [가전]
+            </div>
             <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#E8745F] transition-colors">
               혼수 & 가전 견적
             </h4>
@@ -179,7 +183,9 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             onClick={() => onNavigate("category-결혼준비")}
             className="p-5 rounded-2xl bg-gradient-to-b from-[#F8FAFC] to-white border border-[#E2E8F0] hover:border-[#1E1B2E] transition-all cursor-pointer group"
           >
-            <div className="text-[20px] mb-2">💍</div>
+            <div className="w-9 h-9 rounded-xl bg-[#FAF5FF] text-[#7C3AED] flex items-center justify-center font-bold text-[14px] mb-3">
+              [웨딩]
+            </div>
             <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#E8745F] transition-colors">
               웨딩 & 청약 로드맵
             </h4>

@@ -33,7 +33,7 @@ export function PolicyHub({ compact = false, onNavigate }: PolicyHubProps) {
               </p>
             </div>
             <h2 className="text-[24px] sm:text-[30px] font-bold text-[#1E1B2E] tracking-[-0.025em]">
-              📊 최신 정책·금리 한눈에
+              최신 정책·금리 핵심 브리핑
             </h2>
             <p className="text-[13px] text-[#5B5870] mt-1">
               가정에 바로 영향 주는 핵심 정책을 항상 최신으로 정리해 드립니다.

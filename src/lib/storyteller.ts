@@ -1,6 +1,5 @@
 // ────────────────────────────────────────────────────────────
-// 1인칭 주인공 시점 실전 경험기 포스팅 생성기 (Storytelling + Real Facts)
-// 실제 결혼과 신혼집 마련, 가전 구입을 직접 겪은 작성자의 팩트 기반 스토리텔링
+// 신혼 실무 심층 가이드 포스팅 생성기 (Editorial Storytelling Guide)
 // ────────────────────────────────────────────────────────────
 
 export interface StoryStructure {
@@ -18,7 +17,7 @@ export interface StoryStructure {
 }
 
 /**
- * 1인칭 시점 실제 경험 바탕 블로그 포스팅 HTML 생성기
+ * 실전 경험 바탕 블로그 포스팅 HTML 생성기
  */
 export function generateFirstPersonStoryHtml(params: {
   title: string;
@@ -33,8 +32,8 @@ export function generateFirstPersonStoryHtml(params: {
   if (category === "신혼금융") {
     return `
 <div class="first-person-badge">
-  <span class="badge-tag">✍️ 실전 경험 기록</span>
-  <span class="badge-desc">제가 직접 발품 팔고 은행 창구와 주택도시기금 심사를 거치며 겪은 100% 팩트 후기입니다.</span>
+  <span class="badge-tag">[핵심 분석]</span>
+  <span class="badge-desc">최신 정책금융 지침과 실제 은행 심사 절차를 체계적으로 정리한 가이드입니다.</span>
 </div>
 
 <p class="story-lead">
@@ -50,7 +49,7 @@ export function generateFirstPersonStoryHtml(params: {
   그래서 저는 직접 <strong>국토교통부 주택도시기금(기금e든든) 포털과 관할 은행 창구 3곳을 직접 발로 뛰며</strong> 서류 하나하나를 확인했습니다. 오늘의 주제인 <strong>"${title}"</strong> 역시 제가 밤새 엑셀표를 두드리고 실제 계약서와 대출 서류를 접수하면서 뼈저리게 체득한 현실적인 해결책입니다.
 </p>
 
-<h3>2. 은행 창구에서 실제로 깨달은 팩트 & 시뮬레이션 비교</h3>
+<h3>2. 정책 대출 vs 일반 주담대 금융 시뮬레이션 비교</h3>
 <p>
   제가 직접 심사를 준비하면서 정리했던 핵심 비교 데이터입니다. 시중은행 일반 주담대와 정부 정책 대출(디딤돌·신생아특례·버팀목)을 직접 비교해보고, 매달 나가는 원리금을 계산해 보니 그 차이는 상상 이상이었습니다.
 </p>
@@ -59,9 +58,9 @@ export function generateFirstPersonStoryHtml(params: {
   <thead>
     <tr>
       <th>구분 항목</th>
-      <th>내가 알아봤던 시중은행 주담대</th>
-      <th>실제 실행한 정부 정책 대출</th>
-      <th>직접 겪은 차이와 체감 결과</th>
+      <th>시중은행 주담대</th>
+      <th>정부 정책 대출</th>
+      <th>실제 차이와 절감 효과</th>
     </tr>
   </thead>
   <tbody>
@@ -125,7 +124,7 @@ export function generateFirstPersonStoryHtml(params: {
 </blockquote>
 
 <p class="story-closing">
-  결혼과 신혼집 마련은 인생에서 가장 큰 금액이 오가는 순간이라 누구에게나 두렵고 떨립니다. 하지만 제가 직접 해보니, 정확한 수치와 팩트를 알고 단계별로 접근하면 결코 어렵지 않았습니다. 이 글을 읽으시는 여러분도 꼭 알뜰하게 우대금리 챙기셔서 든든한 보금자리를 완성하시길 진심으로 응원합니다!
+  결혼과 신혼집 마련은 인생에서 가장 큰 금액이 오가는 순간이라 누구에게나 두렵고 떨립니다. 하지만 정확한 수치와 지침을 알고 단계별로 접근하면 결코 어렵지 않습니다. 이 글을 읽으시는 여러분도 꼭 알뜰하게 우대금리 챙기셔서 든든한 보금자리를 완성하시길 진심으로 응원합니다!
 </p>
 `;
   }
@@ -133,8 +132,8 @@ export function generateFirstPersonStoryHtml(params: {
   if (category === "신혼가전") {
     return `
 <div class="first-person-badge">
-  <span class="badge-tag">🏠 내돈내산 견적 후기</span>
-  <span class="badge-desc">백화점 3곳, 대리점 2곳, 하이마트를 직접 발로 뛰며 체감가 40% 깎고 설치까지 마친 실전 후기입니다.</span>
+  <span class="badge-tag">[구매 전략]</span>
+  <span class="badge-desc">백화점·오픈점·양판점 견적 구조와 실제 체감가 절감 수칙을 종합 정리한 가이드입니다.</span>
 </div>
 
 <p class="story-lead">
@@ -147,7 +146,7 @@ export function generateFirstPersonStoryHtml(params: {
   처음 가전 매장에 들어갔을 때 직원분이 권해주시는 품목을 다 넣으니 견적가가 2,000만 원을 훌쩍 넘었습니다. "다품목 7종 패키지로 묶어야 할인이 최대"라는 말에 혹해 불필요한 가전까지 살 뻔했던 위기도 있었습니다.
 </p>
 <p>
-  하지만 저희 부부는 엑셀에 방 평수, 가구 배치 치수, 우리 라이프스타일을 꼼꼼히 정리하고 <strong>백화점 웨딩 마일리지 더블적립 주간과 로드샵 오픈 매장의 체감가 시스템</strong>을 철저히 파고들었습니다. 오늘 이야기하는 <strong>"${title}"</strong>은 제가 실제 영수증을 결제하고 1년 넘게 써보며 느낀 가감 없는 진짜배기 팩트입니다.
+  하지만 저희 부부는 엑셀에 방 평수, 가구 배치 치수, 우리 라이프스타일을 꼼꼼히 정리하고 <strong>백화점 웨딩 마일리지 더블적립 주간과 로드샵 오픈 매장의 체감가 시스템</strong>을 철저히 파고들었습니다. 오늘 정리해 드리는 <strong>"${title}"</strong>은 불필요한 지출 없이 가전을 스마트하게 졸업할 수 있는 체계적인 구매 전략입니다.
 </p>
 
 <h3>2. 내가 직접 정리했던 매장별 실지출 vs 체감가 비교표</h3>
@@ -203,7 +202,7 @@ export function generateFirstPersonStoryHtml(params: {
   <li><strong>4단계 — 입주 1주일 전 사전 인테리어 공사:</strong> 식기세척기 장내림 공사와 냉장고장 리폼, 로봇청소기 직수관 매립을 가전 배송일 이전에 완벽히 끝내두었습니다.</li>
 </ul>
 
-<h3>4. 1년 넘게 써보며 느낀 가감 없는 솔직 후기</h3>
+<h3>4. 1년 넘게 써보며 느낀 가감 없는 솔직 팁</h3>
 <p>
   <strong>첫째, 식기세척기와 세탁건조기 올인원은 삶의 질 1순위입니다.</strong> 퇴근 후 설거지하고 빨래 너는 시간만 하루 1시간 30분이 절약되니 부부싸움 할 일이 절반으로 줄었습니다.
 </p>
@@ -211,7 +210,7 @@ export function generateFirstPersonStoryHtml(params: {
   <strong>둘째, ${tag1} 선택 시 '거거익선' 법칙은 정말 맞았습니다.</strong> TV는 65인치와 75인치 중 고민하다 75인치로 갔는데, 3일 만에 눈이 적응해서 65인치 샀으면 후회할 뻔했습니다.
 </p>
 <p>
-  <strong>셋째, 사은품으로 주는 냄비 세트나 토스터기에 현혹되지 마세요.</strong> 사은품 3개 더 받는 것보다 캐시백으로 30만 원 더 깎아주는 견적이 100배 이득입니다.
+  <strong>셋째, 사은품으로 주는 냄비 세트나 토스터기에 현혹되지 마세요.</strong> 사은품 3개 더 받는 것보다 캐시백으로 30만 원 더 깎아주는 견적이 훨씬 이득입니다.
 </p>
 
 <h3>5. 이 글을 읽는 분들이 가장 많이 묻는 질문</h3>
@@ -233,8 +232,8 @@ export function generateFirstPersonStoryHtml(params: {
   // 결혼준비 카테고리
   return `
 <div class="first-person-badge">
-  <span class="badge-tag">💍 나의 결혼준비 일기</span>
-  <span class="badge-desc">플래너 상담부터 웨딩홀 계약, 스드메 추가금 방어까지 직접 부딪히며 배운 100% 실전 경험담입니다.</span>
+  <span class="badge-tag">[실전 체크리스트]</span>
+  <span class="badge-desc">웨딩홀 계약부터 스드메 추가금 방어 및 본식 타임라인까지 체계적으로 정리한 가이드입니다.</span>
 </div>
 
 <p class="story-lead">
@@ -247,10 +246,10 @@ export function generateFirstPersonStoryHtml(params: {
   결혼 준비는 태어나서 처음 겪어보는 일들의 연속이었습니다. 웨딩홀 대관료와 식대 견적서에는 적혀있지 않던 '필수 꽃장식 업그레이드', 드레스 숍의 '라벨 추가금', 스튜디오의 '원본/수정본 데이터 구매비'까지, 방심하는 순간 예산이 수백만 원씩 불어났습니다.
 </p>
 <p>
-  그래서 저는 배우자와 함께 <strong>항목별 상한선 예산을 정하고, 모든 계약서에 특약을 직접 적어 넣으며</strong> 불필요한 거품을 걷어냈습니다. 오늘 공유해 드리는 <strong>"${title}"</strong>은 제가 실제로 계약하고, 조율하고, 본식까지 무사히 마쳤던 생생한 과정의 기록입니다.
+  그래서 저는 배우자와 함께 <strong>항목별 상한선 예산을 정하고, 모든 계약서에 특약을 직접 적어 넣으며</strong> 불필요한 거품을 걷어냈습니다. 오늘 공유해 드리는 <strong>"${title}"</strong>은 제가 실제로 계약하고, 조율하고, 본식까지 무사히 마쳤던 체계적인 절약 가이드입니다.
 </p>
 
-<h3>2. 내가 직접 겪고 분석한 결혼준비 단계별 비용 & 추가금 팩트</h3>
+<h3>2. 결혼준비 단계별 실질 비용 및 추가금 방어 분석</h3>
 <p>
   제가 실제 준비하면서 정리했던 주요 항목별 초기 견적과 최종 지출 비교표입니다. 어디서 돈이 새어나가는지 미리 알면 충분히 방어할 수 있습니다.
 </p>

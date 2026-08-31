@@ -46,7 +46,7 @@ export function Footer({ onNavigate, onOpenSearchConsole }: FooterProps) {
                   onClick={() => onNavigate("category-신혼금융")}
                   className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
                 >
-                  💰 신혼금융 (대출·청약·세무)
+                  신혼금융 (대출·청약·세무)
                 </button>
               </li>
               <li>
@@ -55,7 +55,7 @@ export function Footer({ onNavigate, onOpenSearchConsole }: FooterProps) {
                   onClick={() => onNavigate("category-신혼가전")}
                   className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
                 >
-                  🏠 신혼가전 (패키지·가구·인테리어)
+                  신혼가전 (패키지·가구·인테리어)
                 </button>
               </li>
               <li>
@@ -64,7 +64,7 @@ export function Footer({ onNavigate, onOpenSearchConsole }: FooterProps) {
                   onClick={() => onNavigate("category-결혼준비")}
                   className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
                 >
-                  💍 결혼준비 (스드메·웨딩홀·타임라인)
+                  결혼준비 (스드메·웨딩홀·타임라인)
                 </button>
               </li>
               <li>
@@ -73,7 +73,7 @@ export function Footer({ onNavigate, onOpenSearchConsole }: FooterProps) {
                   onClick={() => onNavigate("policy")}
                   className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
                 >
-                  📋 정부 정책정보 한눈에 보기
+                  정부 정책정보 한눈에 보기
                 </button>
               </li>
             </ul>
@@ -128,7 +128,7 @@ export function Footer({ onNavigate, onOpenSearchConsole }: FooterProps) {
                     onClick={onOpenSearchConsole}
                     className="hover:text-[#E8745F] text-[#64748B] font-medium transition-colors cursor-pointer flex items-center gap-1"
                   >
-                    <span>🔍 구글 서치 콘솔 색인 현황</span>
+                    <span>[도구] 구글 서치 콘솔 색인 현황</span>
                   </button>
                 </li>
               )}

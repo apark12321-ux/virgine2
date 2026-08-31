@@ -99,17 +99,17 @@ export function buildSmartGoogleSearch(rawQuery: string): SmartSearchResult {
 
     suggestions.push(
       {
-        label: `📊 '${clean}' 2026 신청 자격·소득 요건`,
+        label: `[분석] '${clean}' 2026 신청 자격·소득 요건`,
         query: assembleCleanQuery(clean, "2026 신혼부부 소득 기준 신청 자격", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "2026 신혼부부 소득 기준 신청 자격", ""))}`
       },
       {
-        label: `🧮 '${clean}' 우대금리 항목 및 모의 계산`,
+        label: `[계산] '${clean}' 우대금리 항목 및 모의 계산`,
         query: assembleCleanQuery(clean, "우대금리 자녀 청약통장 상환 모의계산", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "우대금리 자녀 청약통장 상환 모의계산", ""))}`
       },
       {
-        label: `🏛️ 주택도시기금 '${clean}' 최신 공식 공고`,
+        label: `[공식] 주택도시기금 '${clean}' 최신 공식 공고`,
         query: assembleCleanQuery("주택도시기금", clean, "상품 안내 및 신청"),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery("주택도시기금", clean, "상품 안내 및 신청"))}`
       }
@@ -144,17 +144,17 @@ export function buildSmartGoogleSearch(rawQuery: string): SmartSearchResult {
 
     suggestions.push(
       {
-        label: `🎯 '${clean}' 신혼부부 가점표 및 커트라인`,
+        label: `[전략] '${clean}' 신혼부부 가점표 및 커트라인`,
         query: assembleCleanQuery(clean, "신혼부부 특별공급 가점 계산 당첨 커트라인 2026", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "신혼부부 특별공급 가점 계산 당첨 커트라인 2026", ""))}`
       },
       {
-        label: `📑 청약홈 '${clean}' 2026 입주자 모집 공고`,
+        label: `[공고] 청약홈 '${clean}' 2026 입주자 모집 공고`,
         query: assembleCleanQuery("청약홈", clean, "입주자 모집 공고 일정"),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery("청약홈", clean, "입주자 모집 공고 일정"))}`
       },
       {
-        label: `👶 부부 중복청약 허용 및 신생아 우선공급`,
+        label: `[제도] 부부 중복청약 허용 및 신생아 우선공급`,
         query: "신혼부부 청약 부부 중복청약 허용 신생아 우선공급 가점",
         url: `https://www.google.com/search?q=${encodeURIComponent("신혼부부 청약 부부 중복청약 허용 신생아 우선공급 가점")}`
       }
@@ -189,17 +189,17 @@ export function buildSmartGoogleSearch(rawQuery: string): SmartSearchResult {
 
     suggestions.push(
       {
-        label: `🛒 '${clean}' 2026 신혼 졸업 패키지 견적`,
+        label: `[견적] '${clean}' 2026 신혼 졸업 패키지 견적`,
         query: assembleCleanQuery(clean, "신혼가전 패키지 졸업 견적 체감가 2026", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "신혼가전 패키지 졸업 견적 체감가 2026", ""))}`
       },
       {
-        label: `⚖️ 삼성 vs LG '${clean}' 스펙·실사용 비교`,
+        label: `[비교] 삼성 vs LG '${clean}' 스펙·실사용 비교`,
         query: assembleCleanQuery(clean, "삼성 비스포크 LG 오브제 스펙 실사용 비교", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "삼성 비스포크 LG 오브제 스펙 실사용 비교", ""))}`
       },
       {
-        label: `📐 신혼집 평수별 '${clean}' 사이즈·공간 실측`,
+        label: `[실측] 신혼집 평수별 '${clean}' 사이즈·공간 실측`,
         query: assembleCleanQuery(clean, "신혼집 평수 59타입 84타입 빌트인 설치 공간", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "신혼집 평수 59타입 84타입 빌트인 설치 공간", ""))}`
       }
@@ -225,17 +225,17 @@ export function buildSmartGoogleSearch(rawQuery: string): SmartSearchResult {
 
     suggestions.push(
       {
-        label: `💍 '${clean}' 평균 견적 및 필수 추가금 방어`,
+        label: `[견적] '${clean}' 평균 견적 및 필수 추가금 방어`,
         query: assembleCleanQuery(clean, "평균 견적 추가금 원본비 헬퍼비 피팅비 2026", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "평균 견적 추가금 원본비 헬퍼비 피팅비 2026", ""))}`
       },
       {
-        label: `📋 '${clean}' 계약 전 당일 계약 혜택 및 체크리스트`,
+        label: `[체크] '${clean}' 계약 전 당일 계약 혜택 및 체크리스트`,
         query: assembleCleanQuery(clean, "계약 전 확인사항 당일혜택 위약금 환불", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "계약 전 확인사항 당일혜택 위약금 환불", ""))}`
       },
       {
-        label: `🗓️ 결혼 6개월 전 '${clean}' 준비 타임라인`,
+        label: `[일정] 결혼 6개월 전 '${clean}' 준비 타임라인`,
         query: assembleCleanQuery(clean, "결혼준비 순서 타임라인 D-180", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "결혼준비 순서 타임라인 D-180", ""))}`
       }
@@ -261,17 +261,17 @@ export function buildSmartGoogleSearch(rawQuery: string): SmartSearchResult {
 
     suggestions.push(
       {
-        label: `💰 '${clean}' 2026 공제 한도 및 신청 방법`,
+        label: `[세무] '${clean}' 2026 공제 한도 및 신청 방법`,
         query: assembleCleanQuery(clean, "2026년 공제 한도 신청 방법 홈택스", ""),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "2026년 공제 한도 신청 방법 홈택스", ""))}`
       },
       {
-        label: `👶 신혼·출산 가구 '${clean}' 정부 혜택 총정리`,
+        label: `[지원] 신혼·출산 가구 '${clean}' 정부 혜택 총정리`,
         query: assembleCleanQuery("신혼부부 출산", clean, "정부 혜택 지원금 대상"),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery("신혼부부 출산", clean, "정부 혜택 지원금 대상"))}`
       },
       {
-        label: `📑 복지로·국세청 '${clean}' 공식 가이드`,
+        label: `[공식] 복지로·국세청 '${clean}' 공식 가이드`,
         query: assembleCleanQuery("복지로 국세청 홈택스", clean, "공식 신청"),
         url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery("복지로 국세청 홈택스", clean, "공식 신청"))}`
       }
@@ -312,17 +312,17 @@ export function buildSmartGoogleSearch(rawQuery: string): SmartSearchResult {
 
   suggestions.push(
     {
-      label: `🔍 '${clean}' 신혼부부 2026 실전 가이드`,
+      label: `[가이드] '${clean}' 신혼부부 2026 실전 가이드`,
       query: assembleCleanQuery(clean, "신혼부부 2026 추천 가이드", ""),
       url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "신혼부부 2026 추천 가이드", ""))}`
     },
     {
-      label: `📌 '${clean}' 관련 최신 정부 정책 및 혜택`,
+      label: `[정책] '${clean}' 관련 최신 정부 정책 및 혜택`,
       query: assembleCleanQuery(clean, "신혼 정부 정책 혜택 조건 2026", ""),
       url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "신혼 정부 정책 혜택 조건 2026", ""))}`
     },
     {
-      label: `💬 예비부부 커뮤니티 '${clean}' 실제 후기 및 팁`,
+      label: `[후기] 예비부부 커뮤니티 '${clean}' 실제 후기 및 팁`,
       query: assembleCleanQuery(clean, "신혼부부 웨딩 실제 후기 팁", ""),
       url: `https://www.google.com/search?q=${encodeURIComponent(assembleCleanQuery(clean, "신혼부부 웨딩 실제 후기 팁", ""))}`
     }

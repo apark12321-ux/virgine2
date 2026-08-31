@@ -85,40 +85,31 @@ export function getKSTTimeString(d: Date = getKSTNow()): string {
 }
 
 /**
- * 매일 각 카테고리별 1회씩, 최소 4시간(14,400초) 텀을 보장하며 랜덤 시·분·초를 생성하는 스케줄러:
- * 1. 3개 카테고리 (신혼금융, 신혼가전, 결혼준비)를 매일 무작위 순서로 배치
- * 2. 슬롯 1 (아침 06:15 ~ 08:45 사이 랜덤 시·분·초)
- * 3. 슬롯 2 (슬롯 1 대비 4시간(14,400초) 이상 + 랜덤 0~75분 + 0~59초 가변 텀 -> 낮 11:30 ~ 14:30 사이)
- * 4. 슬롯 3 (슬롯 2 대비 4시간(14,400초) 이상 + 랜덤 0~75분 + 0~59초 가변 텀 -> 저녁 16:45 ~ 21:45 사이)
- * 5. 모든 연속 발행 간격은 최소 4시간(240분/14,400초) 이상 완전 보장
+ * 1일 2포스팅 기준, 최소 8시간(28,800초) 이상 간격을 확보하며 랜덤 시·분·초를 생성하는 스케줄러:
+ * 1. 카테고리 중 매일 2개를 무작위 순서로 선정
+ * 2. 슬롯 1 (아침 07:15 ~ 09:45 사이 랜덤 시·분·초)
+ * 3. 슬롯 2 (슬롯 1 대비 최소 8시간(28,800초) 이상 간격 확보 -> 저녁 18:30 ~ 21:45 사이 랜덤 시·분·초)
+ * 4. 모든 연속 발행 간격은 최소 8시간(480분/28,800초) 이상 완전 보장
  */
 export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem[] {
-  // Shuffle categories so that posting order is randomized each day
-  const shuffledCategories = [...CATEGORIES].sort(() => Math.random() - 0.5);
+  // Shuffle categories so that 2 categories are selected each day in random order
+  const shuffledCategories = [...CATEGORIES].sort(() => Math.random() - 0.5).slice(0, 2);
 
-  // Slot 1: Morning random (06:15:00 ~ 08:45:00 KST -> 22,500s ~ 31,500s)
-  const slot1Sec = 22500 + Math.floor(Math.random() * 9000); // 06:15 ~ 08:45
+  // Slot 1: Morning random (07:15:00 ~ 09:45:00 KST -> 26,100s ~ 35,100s)
+  const slot1Sec = 26100 + Math.floor(Math.random() * 9000); // 07:15 ~ 09:45
 
-  // Slot 2: Afternoon random (최소 4시간 = 14,400초 이후 + 랜덤 0~75분(4,500초))
-  const minSlot2 = slot1Sec + 14400; // Strict 4-hour minimum gap
-  const slot2Variation = Math.floor(Math.random() * 4500); // 0 to 75 mins extra
-  const slot2Sec = Math.min(minSlot2 + slot2Variation, 54000); // max 15:00:00 KST
+  // Slot 2: Evening random (최소 8시간 = 28,800초 이후 -> 18:30 ~ 21:45 KST)
+  const minSlot2 = slot1Sec + 28800; // Strict 8-hour minimum gap
+  const eveningBase = Math.max(66600, minSlot2); // at least 18:30 KST or 8 hours after slot 1
+  const eveningMax = 78300; // max 21:45:00 KST
+  const availableRange = Math.max(0, eveningMax - eveningBase);
+  const slot2Sec = eveningBase + Math.floor(Math.random() * Math.min(10800, availableRange + 1));
 
-  // Slot 3: Evening random (최소 4시간 = 14,400초 이후 + 랜덤 0~75분(4,500초))
-  const minSlot3 = slot2Sec + 14400; // Strict 4-hour minimum gap
-  const maxSlot3 = 81000; // max 22:30:00 KST
-  const slot3AvailableRange = Math.max(0, maxSlot3 - minSlot3);
-  const slot3Variation = Math.floor(Math.random() * Math.min(4500, slot3AvailableRange + 1));
-  const slot3Sec = Math.min(minSlot3 + slot3Variation, maxSlot3);
+  const timesInSeconds = [slot1Sec, slot2Sec];
 
-  const timesInSeconds = [slot1Sec, slot2Sec, slot3Sec];
-
-  // Enforce absolute strict minimum 14,400-second (4 hours) separation guarantee
-  if (timesInSeconds[1] - timesInSeconds[0] < 14400) {
-    timesInSeconds[1] = timesInSeconds[0] + 14400;
-  }
-  if (timesInSeconds[2] - timesInSeconds[1] < 14400) {
-    timesInSeconds[2] = timesInSeconds[1] + 14400;
+  // Enforce absolute strict minimum 28,800-second (8 hours) separation guarantee
+  if (timesInSeconds[1] - timesInSeconds[0] < 28800) {
+    timesInSeconds[1] = timesInSeconds[0] + 28800;
   }
 
   return shuffledCategories.map((category, idx) => ({
@@ -549,9 +540,9 @@ async function generatePostContent(
   try {
     const ai = new GoogleGenAI({ apiKey });
     const prompt = `
-[시스템 지시사항: 블로그 포스팅 자동화 탈피 및 휴먼 터치 강화 프롬프트]
+[시스템 지시사항: 블로그 포스팅 자동화 탈피 및 전문 가이드 강화 프롬프트]
 
-당신은 기계적으로 정보를 전달하는 AI가 아닙니다. 당신은 지금부터 주어지는 [주제]에 대해 수년간 직접 겪고 고민해 온 '전문가이자 개인 블로거(버진로드 운영자)'입니다. 아래의 엄격한 작성 원칙을 100% 준수하여 블로그 포스팅 초안을 작성하십시오.
+당신은 기계적으로 정보를 전달하는 AI가 아닙니다. 당신은 지금부터 주어지는 [주제]에 대해 수년간 연구하고 조언해 온 '신혼 실무 가이드 전문가(버진로드 에디터)'입니다. 아래의 엄격한 작성 원칙을 준수하여 블로그 포스팅 초안을 작성하십시오.
 
 [주제 정보]
 - 타겟 키워드 및 주제: ${topic.title}
@@ -559,27 +550,27 @@ async function generatePostContent(
 - 핵심 태그: ${topic.hashtags.join(", ")}
 - 발행 일자: ${dateStr}
 
-[엄격한 작성 원칙 - 100% 준수 필수]
+[엄격한 작성 원칙]
 
 1. AI 특유의 상투적 표현 절대 금지:
 "결론적으로", "알아보겠습니다", "필수적인", "현대 사회에서", "요즘 시대에는", "과언이 아닙니다", "중요한 역할을 합니다", "살펴보겠습니다", "지금부터" 등의 뻔한 도입부와 결론부 표현을 절대 사용하지 마십시오.
 
 2. 문장 길이의 다양화 (Burstiness & 리듬감):
-모든 문장의 길이를 비슷하게 쓰지 마십시오. 어떤 문장은 단답형으로 매우 짧고 명쾌하게 치고("결론은 간단합니다.", "완전 오산이었습니다."), 어떤 문장은 부연 설명을 위해 길게 이어지도록 리듬감을 만드십시오.
+모든 문장의 길이를 비슷하게 쓰지 마십시오. 어떤 문장은 단답형으로 매우 짧고 명쾌하게 치고("결론은 명확합니다.", "완전 오산이었습니다."), 어떤 문장은 부연 설명을 위해 길게 이어지도록 리듬감을 만드십시오.
 
 3. 경험과 통찰 기반의 도입부 (E-E-A-T):
-글을 시작할 때 사전적 정의를 내리지 마십시오. 해당 주제와 관련해 독자들이 겪고 있을 구체적인 '답답함'이나 '실패 경험'에 공감하며, 마치 친한 지인에게 팁을 알려주듯 자연스럽게 대화체로 시작하십시오. ("처음엔 ~인 줄 알고 계약했다가 300만원 날릴 뻔했습니다", "은행 3군데 헛걸음하고 나서야 알게 된")
+글을 시작할 때 사전적 정의를 내리지 마십시오. 해당 주제와 관련해 독자들이 겪고 있을 구체적인 '답답함'이나 '시행착오'에 공감하며, 전문적이면서도 알기 쉽게 설명하십시오.
 
-4. 정보의 구조화와 주관적 평가 혼합:
-불렛포인트(<ul>, <li>)나 표(<table>)를 사용하여 팩트와 수치를 깔끔하게 정리하되, 그 정보 아래에 반드시 "개인적으로 이 부분은 아쉬웠다", "실제로 적용해 보니 이 방법이 가장 효율적이었다"라는 식의 주관적인 평가를 한 줄씩 덧붙이십시오.
+4. 정보의 구조화와 실전 평가 혼합:
+불렛포인트(<ul>, <li>)나 표(<table>)를 사용하여 공식 기준과 수치를 깔끔하게 정리하되, 그 정보 아래에 반드시 "실제로 적용해 보니 이 방법이 가장 효율적이었다"라는 식의 구체적인 실무 팁을 한 줄씩 덧붙이십시오.
 
-5. 독자와의 상호작용 유도 (Action Item & 소통):
-글의 마무리에는 뻔한 요약 대신, 독자가 당장 오늘 실행해 볼 수 있는 아주 작은 행동 지침(Action Item) 하나를 제안하고, 댓글이나 생각을 유도하는 가벼운 질문으로 끝맺으십시오.
+5. 독자를 위한 실천 가이드 (Action Item):
+글의 마무리에는 뻔한 요약 대신, 독자가 당장 오늘 실행해 볼 수 있는 아주 작은 행동 지침(Action Item) 하나를 제안하고, 독자들의 의견을 묻는 질문으로 자연스럽게 끝맺으십시오.
 
 응답은 반드시 아래 JSON 형식으로만 반환하세요:
 {
   "title": "${topic.title}",
-  "excerpt": "직접 겪은 핵심 경험과 솔직한 통찰을 담은 2~3문장의 도입 요약",
+  "excerpt": "핵심 배경과 실전 분석 포인트를 담은 2~3문장의 도입 요약",
   "content": "HTML 본문 (<div class=\"first-person-badge\">...</div>, <p class=\"story-lead\">...</p>, <h3>, <p>, <ul>, <li>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <strong>, <blockquote>, <div class=\"action-item-box\">...</div> 태그 활용)"
 }
 `;

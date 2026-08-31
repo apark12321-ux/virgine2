@@ -159,7 +159,7 @@ export function GuideReader({
       localStorage.setItem(`virginroad_likes_${post.id}`, String(nextCount));
     } catch {}
     if (nextState) {
-      showToast("이 글에 공감해 주셔서 감사합니다! ❤️", "success");
+      showToast("이 글에 공감해 주셔서 감사합니다.", "success");
     }
   };
 
@@ -548,8 +548,8 @@ export function GuideReader({
         {POST_EXTRA_MAP[post.id] && (
           <div className="mt-8 p-6 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-left space-y-2">
             <div className="flex items-center gap-2 text-[#E8745F] font-bold text-[14px]">
-              <span>💡</span>
-              <span>한줄 요약</span>
+              <span>[핵심 요약]</span>
+              <span>작성자 한줄 포인트</span>
             </div>
             <p className="text-[14.5px] text-[#334155] leading-relaxed break-keep">
               &ldquo;{POST_EXTRA_MAP[post.id].persona.message}&rdquo;
@@ -571,7 +571,7 @@ export function GuideReader({
         {POST_EXTRA_MAP[post.id] && POST_EXTRA_MAP[post.id].aeoFaq.length > 0 && (
           <div className="mt-8 pt-6 border-t border-[#F1F5F9]">
             <h3 className="text-[16px] font-bold text-[#111827] mb-3">
-              💬 자주 묻는 질문 (FAQ)
+              [FAQ] 자주 묻는 질문
             </h3>
             <div className="space-y-2.5">
               {POST_EXTRA_MAP[post.id].aeoFaq.map((faq, idx) => {
@@ -662,11 +662,11 @@ export function GuideReader({
               <div className="flex items-center gap-2">
                 <span className="text-[15.5px] font-bold text-[#111827]">에디터 박아람 (Virginroad)</span>
                 <span className="text-[11px] font-extrabold bg-[#FFF1EE] text-[#E8745F] px-2 py-0.5 rounded-full border border-[#FFD2BD]">
-                  실전 기록자
+                  전문 에디터
                 </span>
               </div>
               <p className="text-[13.5px] text-[#475569] leading-relaxed break-keep">
-                직접 계약서에 도장 찍고 발품 팔아 겪은 100% 실전 경험과 공식 정책 지침만을 정직하게 공유합니다. 포털에 넘쳐나는 복사-붙여넣기 글 대신, 신혼부부의 든든한 나침반이 되어 드리겠습니다.
+                공식 정책 기준과 실제 현장 노하우를 바탕으로 예비·신혼부부에게 꼭 필요한 핵심 정보를 체계적으로 전달합니다. 신혼 여정의 든든한 길잡이가 되어 드리겠습니다.
               </p>
             </div>
           </div>
@@ -819,7 +819,7 @@ export function GuideReader({
         {relatedPosts.length > 0 && (
           <div className="mt-10 pt-8 border-t border-[#F1F5F9]">
             <h3 className="text-[16px] font-bold text-[#111827] mb-4">
-              📌 &lsquo;{post.category}&rsquo; 관련 인기 글
+              [추천] &lsquo;{post.category}&rsquo; 관련 인기 글
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {relatedPosts.map((rPost) => (

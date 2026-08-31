@@ -14,7 +14,7 @@ import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
 import { expandContentIfNeeded } from "./lib/contentExpander";
-import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Copy, ExternalLink, User, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Copy, ExternalLink, User, ChevronLeft, ChevronRight, CheckCircle2, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
 import { handleFirestoreError, OperationType } from "./lib/views";
@@ -492,10 +492,10 @@ export default function App() {
                         </button>
                       </div>
                       <h1 className="text-[20px] sm:text-[24px] font-extrabold text-[#111827] leading-[1.38] tracking-tight mb-2.5 break-keep">
-                        &ldquo;발품 팔고 부딪혀가며 배운 신혼금융 &middot; 청약 &middot; 가전 알짜 팁만 기록합니다.&rdquo;
+                        신혼부부를 위한 실전 금융 &middot; 청약 &middot; 가전 &middot; 웨딩 가이드
                       </h1>
                       <p className="text-[14px] leading-relaxed text-[#475569] break-keep">
-                        은행 창구 상담부터 가전 오픈점 견적까지, 직접 도장 찍고 겪은 100% 실전 경험과 공식 정책 지침을 바탕으로 정직하게 쓴 글들입니다.
+                        디딤돌·버팀목 정책 대출, 청약 특별공급, 가전 견적 비교 및 결혼식 예산 절감 노하우를 명확하고 체계적으로 전해드립니다.
                       </p>
                     </div>
                   )}
@@ -629,8 +629,8 @@ export default function App() {
                     /* Clean No-Result & Smart Google Search Section */
                     <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center space-y-6 shadow-xs">
                       <div className="max-w-md mx-auto">
-                        <div className="w-12 h-12 rounded-full bg-[#F1F5F9] text-[#64748B] flex items-center justify-center mx-auto text-xl mb-3">
-                          🔍
+                        <div className="w-12 h-12 rounded-full bg-[#F1F5F9] text-[#64748B] flex items-center justify-center mx-auto mb-3">
+                          <Search className="w-5 h-5 text-[#64748B]" />
                         </div>
                         <h3 className="text-[19px] font-bold text-[#111827] mb-2">
                           &lsquo;{searchQuery}&rsquo; 검색 결과가 없습니다

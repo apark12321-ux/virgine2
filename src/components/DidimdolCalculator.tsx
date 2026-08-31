@@ -452,7 +452,7 @@ export function DidimdolCalculator() {
             </p>
 
             <div className="bg-[#F5F6FD] rounded-[12px] p-5 border border-[#E2E4F0] my-6">
-              <h4 className="font-bold text-[#151320] text-[15px] mb-3">💡 디딤돌대출 신청 전 자격 자격체크 리스트</h4>
+              <h4 className="font-bold text-[#151320] text-[15px] mb-3">[체크포인트] 디딤돌대출 신청 전 자격체크 리스트</h4>
               <ul className="space-y-2 text-[13.5px] text-[#5B5870] list-disc list-inside">
                 <li><strong className="text-[#3F3D56]">무주택 세대주 요건:</strong> 세대주를 포함한 세대원 전원이 신청일 기준 무주택 상태여야 합니다.</li>
                 <li><strong className="text-[#3F3D56]">맞벌이 연소득 제한:</strong> 신혼부부 가구는 부부 합산 연간 세전 소득 8,500만 원 이하여야 혜택이 적용됩니다.</li>
