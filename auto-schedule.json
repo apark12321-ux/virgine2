@@ -137,7 +137,276 @@
         "targetTime": "17:12",
         "published": false
       }
+    ],
+    "2026-08-24": [
+      {
+        "id": "sched-20260824-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "06:32:55",
+        "published": true,
+        "postId": "auto-fin-20260824-8994",
+        "postTitle": "2026년 하반기 신혼부부 디딤돌대출 우대금리 항목별 극대화 전략",
+        "publishedAt": "2026-08-24 06:32:55"
+      },
+      {
+        "id": "sched-20260824-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "10:56:00",
+        "published": true,
+        "postId": "auto-app-20260824-2694",
+        "postTitle": "신혼 침대 매트리스 브랜드별(에이스·시몬스·템퍼·씰리) 경도 및 프레임 선택 요령",
+        "publishedAt": "2026-08-24 10:56:00"
+      },
+      {
+        "id": "sched-20260824-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "15:38:49",
+        "published": true,
+        "postId": "auto-wed-20260824-2325",
+        "postTitle": "신혼여행 허니문 휴양지 vs 휴양+쇼핑 추천 코스 — 발리, 칸쿤, 하와이 2026 비교",
+        "publishedAt": "2026-08-24 15:38:49"
+      }
+    ],
+    "2026-08-25": [
+      {
+        "id": "sched-20260825-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "07:30:31",
+        "published": true,
+        "postId": "auto-fin-20260825-3970",
+        "postTitle": "신혼부부 전세보증금 반환보증보험(HUG·SGI) 가입 절차 및 보증료 30만 원 전액 지원 환급",
+        "publishedAt": "2026-08-25 07:30:31"
+      },
+      {
+        "id": "sched-20260825-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "12:24:05",
+        "published": true,
+        "postId": "auto-app-20260825-7466",
+        "postTitle": "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
+        "publishedAt": "2026-08-25 12:24:05"
+      },
+      {
+        "id": "sched-20260825-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "17:22:00",
+        "published": true,
+        "postId": "auto-wed-20260825-7924",
+        "postTitle": "2026년 예단·예물 절차와 비용 간소화 가이드 — 현물 예단 대신 가전·가구 실속 대체",
+        "publishedAt": "2026-08-25 17:22:00"
+      }
+    ],
+    "2026-08-26": [
+      {
+        "id": "sched-20260826-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "08:28:30",
+        "published": true,
+        "postId": "auto-wed-20260826-9185",
+        "postTitle": "신혼여행 허니문 휴양지 vs 휴양+쇼핑 추천 코스 — 발리, 칸쿤, 하와이 2026 비교",
+        "publishedAt": "2026-08-26 08:28:30"
+      },
+      {
+        "id": "sched-20260826-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "12:30:34",
+        "published": true,
+        "postId": "auto-app-20260826-7916",
+        "postTitle": "20평대 vs 30평대 신혼집 평수별 냉장고 키친핏 vs 프리스탠딩 용량 선택 가이드",
+        "publishedAt": "2026-08-26 12:30:34"
+      },
+      {
+        "id": "sched-20260826-신혼금융-3",
+        "category": "신혼금융",
+        "targetTime": "16:40:05",
+        "published": true,
+        "postId": "auto-fin-20260826-2929",
+        "postTitle": "신혼부부 버팀목 전세자금대출 수도권 3억 원 한도 증액 및 보증금 조건 가이드",
+        "publishedAt": "2026-08-26 16:40:05"
+      }
+    ],
+    "2026-08-27": [
+      {
+        "id": "sched-20260827-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "07:28:19",
+        "published": true,
+        "postId": "auto-fin-20260827-4012",
+        "postTitle": "신혼부부 버팀목 전세자금대출 수도권 3억 원 한도 증액 및 보증금 조건 가이드",
+        "publishedAt": "2026-08-27 07:28:19"
+      },
+      {
+        "id": "sched-20260827-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "12:40:37",
+        "published": true,
+        "postId": "auto-app-20260827-2399",
+        "postTitle": "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드",
+        "publishedAt": "2026-08-27 12:40:37"
+      },
+      {
+        "id": "sched-20260827-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "17:27:26",
+        "published": true,
+        "postId": "auto-wed-20260827-1150",
+        "postTitle": "결혼식 6개월 전 웨딩홀 대관료 및 식대 네고 전략과 골든타임 예약 성공법",
+        "publishedAt": "2026-08-27 17:27:26"
+      }
+    ],
+    "2026-08-28": [
+      {
+        "id": "sched-20260828-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "08:20:00",
+        "published": true,
+        "postId": "auto-wed-20260828-6656",
+        "postTitle": "신혼부부 모바일 청첩장 셀프 제작과 계좌번호 표기 에티켓 가이드",
+        "publishedAt": "2026-08-28 08:20:00"
+      },
+      {
+        "id": "sched-20260828-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "13:00:20",
+        "published": true,
+        "postId": "auto-app-20260828-9771",
+        "postTitle": "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
+        "publishedAt": "2026-08-28 13:00:20"
+      },
+      {
+        "id": "sched-20260828-신혼금융-3",
+        "category": "신혼금융",
+        "targetTime": "17:25:17",
+        "published": true,
+        "postId": "auto-fin-20260828-1876",
+        "postTitle": "2026년 신혼부부 ISA 계좌와 연금저축펀드 절세 혜택 극대화 포트폴리오",
+        "publishedAt": "2026-08-28 17:25:17"
+      }
+    ],
+    "2026-08-29": [
+      {
+        "id": "sched-20260829-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:28:39",
+        "published": true,
+        "postId": "auto-fin-20260829-5729",
+        "postTitle": "2026년 신혼부부 ISA 계좌와 연금저축펀드 절세 혜택 극대화 포트폴리오",
+        "publishedAt": "2026-08-29 08:28:39"
+      },
+      {
+        "id": "sched-20260829-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "12:54:09",
+        "published": true,
+        "postId": "auto-app-20260829-2116",
+        "postTitle": "20평대 vs 30평대 신혼집 평수별 냉장고 키친핏 vs 프리스탠딩 용량 선택 가이드",
+        "publishedAt": "2026-08-29 12:54:09"
+      },
+      {
+        "id": "sched-20260829-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "17:22:35",
+        "published": true,
+        "postId": "auto-wed-20260829-9072",
+        "postTitle": "웨딩 밴드 반지 브랜드별(까르띠에·티파니·불가리·종로공방) 견적 및 디자인 비교",
+        "publishedAt": "2026-08-29 17:22:35"
+      }
+    ],
+    "2026-08-30": [
+      {
+        "id": "sched-20260830-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:08:42",
+        "published": true,
+        "postId": "auto-fin-20260830-6423",
+        "postTitle": "신혼부부 통장 쪼개기 4대 원칙 — 고정비·변동비·비상금·투자 통장 세팅법",
+        "publishedAt": "2026-08-30 08:08:42"
+      },
+      {
+        "id": "sched-20260830-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "13:20:56",
+        "published": true,
+        "postId": "auto-app-20260830-1493",
+        "postTitle": "20평대 vs 30평대 신혼집 평수별 냉장고 키친핏 vs 프리스탠딩 용량 선택 가이드",
+        "publishedAt": "2026-08-30 13:20:56"
+      },
+      {
+        "id": "sched-20260830-결혼준비-3",
+        "category": "결혼준비",
+        "targetTime": "18:12:28",
+        "published": true,
+        "postId": "auto-wed-20260830-5220",
+        "postTitle": "2026년 웨딩드레스 스드메 견적 비교 및 추가금 없는 정찰제 숍 고르는 법",
+        "publishedAt": "2026-08-30 18:12:28"
+      }
+    ],
+    "2026-08-31": [
+      {
+        "id": "sched-20260831-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "08:10:34",
+        "published": true,
+        "postId": "auto-app-20260831-9991",
+        "postTitle": "백화점 vs 오픈점 vs 하이마트 신혼가전 패키지 견적 1,000만 원 체감가 할인 받는 법",
+        "publishedAt": "2026-08-31 08:10:34"
+      },
+      {
+        "id": "sched-20260831-결혼준비-2",
+        "category": "결혼준비",
+        "targetTime": "12:24:10",
+        "published": true,
+        "postId": "auto-wed-20260831-4319",
+        "postTitle": "신혼부부 모바일 청첩장 셀프 제작과 계좌번호 표기 에티켓 가이드",
+        "publishedAt": "2026-08-31 12:24:10"
+      },
+      {
+        "id": "sched-20260831-신혼금융-3",
+        "category": "신혼금융",
+        "targetTime": "17:24:54",
+        "published": false
+      }
+    ],
+    "2026-09-01": [
+      {
+        "id": "sched-20260901-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "06:29:43",
+        "published": false
+      },
+      {
+        "id": "sched-20260901-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "11:07:17",
+        "published": false
+      },
+      {
+        "id": "sched-20260901-신혼금융-3",
+        "category": "신혼금융",
+        "targetTime": "15:26:11",
+        "published": false
+      }
+    ],
+    "2026-09-02": [
+      {
+        "id": "sched-20260902-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "08:35:36",
+        "published": false
+      },
+      {
+        "id": "sched-20260902-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "13:45:34",
+        "published": false
+      },
+      {
+        "id": "sched-20260902-신혼금융-3",
+        "category": "신혼금융",
+        "targetTime": "17:51:44",
+        "published": false
+      }
     ]
   },
-  "lastCheck": "2026-08-17T12:29:06.538Z"
+  "lastCheck": "2026-08-31T17:03:14.967Z"
 }

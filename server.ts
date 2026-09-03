@@ -6,7 +6,7 @@ import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
 import { runAutoPublisherService } from "./src/lib/autoPublisher";
 import { extractSeoKeywords } from "./src/lib/seoKeywords";
-import { generateRealisticPostDateTime, formatPostDateTime } from "./src/lib/utils";
+import { generateRealisticPostDateTime, formatPostDateTime, parsePostTimestamp } from "./src/lib/utils";
 import {
   submitUrlsToSearchConsole,
   getIndexingLogs,
@@ -383,7 +383,9 @@ async function fetchMergedPosts(): Promise<any[]> {
     }
   });
 
-  return combined.map(post => {
+  const sorted = combined.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
+
+  return sorted.map(post => {
     const hashtags = post.hashtags || [];
     const expandedContent = expandContentIfNeeded(post.title, post.category, hashtags, post.content || "", post.id, post.image);
     return {

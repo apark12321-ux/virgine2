@@ -172,7 +172,7 @@ export default function App() {
   const [, setUser] = useState<FirebaseUser | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
   
-  // Google Search Console Auto-Indexing Modal State
+  // Google Search Console Auto-Indexing Modal State (Hidden from regular visitors)
   const [isSearchConsoleModalOpen, setIsSearchConsoleModalOpen] = useState(false);
   const [selectedPostForIndexing, setSelectedPostForIndexing] = useState<{ slug?: string; title?: string }>({});
 
@@ -180,6 +180,24 @@ export default function App() {
     setSelectedPostForIndexing({ slug, title });
     setIsSearchConsoleModalOpen(true);
   };
+
+  // Hidden admin shortcut: accessible via URL (?admin=seo) or keyboard shortcut (Ctrl+Shift+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        setIsSearchConsoleModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("admin") === "seo" || params.get("seo") === "1") {
+        setIsSearchConsoleModalOpen(true);
+      }
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   
   // Custom Toast Notification State
   const [toast, setToast] = useState<{
@@ -447,7 +465,6 @@ export default function App() {
       <Navbar
         onSearch={setSearchQuery}
         onNavigate={handleNavigate}
-        onOpenSearchConsole={() => handleOpenSearchConsole()}
         searchQuery={searchQuery}
         currentPage={currentPage}
       />
@@ -546,37 +563,43 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Category Filter Tabs */}
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
-                    <button
-                      type="button"
-                      onClick={() => handleNavigate("home")}
-                      className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
-                        currentPage === "home" && !searchQuery
-                          ? "bg-[#1E1B2E] text-white"
-                          : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
-                      }`}
-                    >
-                      전체 ({allPosts.length})
-                    </button>
-                    {CATEGORIES.map((cat) => {
-                      const count = allPosts.filter((p) => p.category === cat).length;
-                      const isActive = activeCategory === cat;
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => handleNavigate(`category-${cat}`)}
-                          className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
-                            isActive
-                              ? "bg-[#1E1B2E] text-white"
-                              : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
-                          }`}
-                        >
-                          {cat} ({count})
-                        </button>
-                      );
-                    })}
+                  {/* Category Filter Tabs & Sort Indicator */}
+                  <div className="flex items-center justify-between gap-3 overflow-x-auto pb-1 hide-scrollbar">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleNavigate("home")}
+                        className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                          currentPage === "home" && !searchQuery
+                            ? "bg-[#1E1B2E] text-white"
+                            : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
+                        }`}
+                      >
+                        전체 ({allPosts.length})
+                      </button>
+                      {CATEGORIES.map((cat) => {
+                        const count = allPosts.filter((p) => p.category === cat).length;
+                        const isActive = activeCategory === cat;
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => handleNavigate(`category-${cat}`)}
+                            className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                              isActive
+                                ? "bg-[#1E1B2E] text-white"
+                                : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
+                            }`}
+                          >
+                            {cat} ({count})
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="hidden sm:flex items-center gap-1 text-[12px] font-medium text-[#64748B] bg-white border border-[#E2E8F0] px-3 py-1.5 rounded-lg shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                      <span>최신순 정렬</span>
+                    </div>
                   </div>
 
                   {/* Posts Grid & In-feed Ads */}
@@ -725,7 +748,6 @@ export default function App() {
                 relatedPosts={relatedPosts}
                 onNavigate={handleNavigate}
                 showToast={showToast}
-                onOpenSearchConsole={(slug, title) => handleOpenSearchConsole(slug, title)}
               />
             </motion.article>
           )}
@@ -897,7 +919,6 @@ export default function App() {
 
       <Footer
         onNavigate={handleNavigate}
-        onOpenSearchConsole={() => handleOpenSearchConsole()}
       />
 
       {/* Google Search Console Auto-Indexing Modal */}

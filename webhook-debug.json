@@ -1624,5 +1624,250 @@
     "responseSent": {
       "count": 90
     }
+  },
+  {
+    "timestamp": "2026-08-31T07:53:35.496Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "175.197.23.242, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.175\", \"Chromium\";v=\"151.0.7922.175\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.175\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"bbf90-YTHgGVyS++KWXEbcAsqKZ57aR/8\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "46fb27b2119277233983bf42dba8342d/16866802907566921701",
+      "x-client-data": "CgSDossB",
+      "cookie": "__SECURE-aistudio_auth_token=diO0NKBH4guntUXyMhPLDVviuVmzsD3guyYM_9E7pA8=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-46fb27b2119277233983bf42dba8342d-ea12ebe15a0d57e5-00",
+      "forwarded": "for=\"175.197.23.242\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 90
+    }
+  },
+  {
+    "timestamp": "2026-08-31T07:53:35.705Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "175.197.23.242, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.175\", \"Chromium\";v=\"151.0.7922.175\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.175\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"bc29c-hPTNv5WRXnoips8V6xFChY0GyOI\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "bb4ef83848e76a583983bf42dba83ab5/17697956776899519924",
+      "x-client-data": "CgSDossB",
+      "cookie": "__SECURE-aistudio_auth_token=diO0NKBH4guntUXyMhPLDVviuVmzsD3guyYM_9E7pA8=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-bb4ef83848e76a583983bf42dba83ab5-f59bc5ebb95025b4-00",
+      "forwarded": "for=\"175.197.23.242\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 90
+    }
+  },
+  {
+    "timestamp": "2026-08-31T08:00:58.989Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "accept-encoding": "identity",
+      "host": "localhost:3000",
+      "user-agent": "Python-urllib/3.10",
+      "connection": "close"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 90
+    }
+  },
+  {
+    "timestamp": "2026-08-31T08:01:10.739Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "accept-encoding": "identity",
+      "host": "localhost:3000",
+      "user-agent": "Python-urllib/3.10",
+      "connection": "close"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 90
+    }
+  },
+  {
+    "timestamp": "2026-08-31T08:03:15.438Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "accept-encoding": "identity",
+      "host": "localhost:3000",
+      "user-agent": "Python-urllib/3.10",
+      "connection": "close"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 90
+    }
+  },
+  {
+    "timestamp": "2026-09-03T05:49:08.083Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.174\", \"Chromium\";v=\"151.0.7922.174\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.174\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "52257316b3c64c429b6c2dccdea68f17/344737899469704563",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-52257316b3c64c429b6c2dccdea68f17-04c8c14b06818d73-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 84
+    }
+  },
+  {
+    "timestamp": "2026-09-03T05:49:08.258Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.174\", \"Chromium\";v=\"151.0.7922.174\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"151.0.7922.174\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"c4340-jag4wf6e7uOdpz+xvuIbgJ31xFg\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "c6986270f2b2fb2d9b6c2dccdea68e23/314805818425941351",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-c6986270f2b2fb2d9b6c2dccdea68e23-045e6a3954811d67-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 84
+    }
+  },
+  {
+    "timestamp": "2026-09-03T05:57:32.821Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "accept-encoding": "identity",
+      "host": "localhost:3000",
+      "user-agent": "Python-urllib/3.10",
+      "connection": "close"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 85
+    }
   }
 ]

@@ -37,8 +37,9 @@ export function PostCard({ post, onClick, featured = false }: PostCardProps) {
           />
           {/* Top category badges */}
           <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-            <span className="bg-[#1E1B2E] text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs">
-              추천 포스팅
+            <span className="bg-[#1E1B2E] text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF7D54] animate-pulse" />
+              <span>최신 포스팅</span>
             </span>
             <span
               style={{ backgroundColor: colors.bg, color: colors.text, borderColor: colors.border }}
