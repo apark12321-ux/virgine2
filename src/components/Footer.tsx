@@ -29,7 +29,7 @@ export function Footer({ onNavigate }: FooterProps) {
 
             <div className="pt-1 text-[12px] text-[#64748B] space-y-1">
               <p>운영: 상상아트 | 대표자: 박아람 | 사업자등록번호: 272-14-01256</p>
-              <p>통신판매업 신고번호: 제2023-화성동탄-1098호 | 문의: <a href="mailto:apark12321@gmail.com" className="text-[#1E1B2E] font-medium hover:underline">apark12321@gmail.com</a></p>
+              <p>통신판매업 신고번호: 제2023-화성동탄-1098호 | 이메일: <a href="mailto:apark12321@gmail.com" className="text-[#1E1B2E] font-medium hover:underline">apark12321@gmail.com</a></p>
             </div>
           </div>
 
@@ -109,15 +109,6 @@ export function Footer({ onNavigate }: FooterProps) {
                   className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
                 >
                   공지사항
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate("partnership")}
-                  className="hover:text-[#1E1B2E] transition-colors cursor-pointer"
-                >
-                  제휴 및 비즈니스 문의
                 </button>
               </li>
             </ul>

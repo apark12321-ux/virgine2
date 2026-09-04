@@ -261,7 +261,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             <span>경기도 화성시 동탄대로</span>
           </div>
           <div className="flex items-start gap-2 sm:col-span-2 pt-2 border-t border-[#F1F5F9]">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">문의 및 제휴:</span>
+            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">공식 이메일:</span>
             <a
               href="mailto:apark12321@gmail.com"
               className="text-[#E8745F] font-semibold hover:underline flex items-center gap-1"

@@ -1,49 +1,5 @@
 [
   {
-    "timestamp": "2026-08-16T17:03:22.440Z",
-    "method": "GET",
-    "url": "/api/posts",
-    "headers": {
-      "host": "localhost:3000",
-      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
-      "x-real-ip": "169.254.169.126",
-      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
-      "x-forwarded-proto": "http",
-      "connection": "upgrade",
-      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.138\", \"Chromium\";v=\"151.0.7922.138\"",
-      "sec-ch-ua-platform": "\"Windows\"",
-      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
-      "sec-ch-ua-bitness": "\"64\"",
-      "sec-ch-ua-model": "\"\"",
-      "sec-ch-ua-mobile": "?0",
-      "sec-ch-ua-form-factors": "\"Desktop\"",
-      "sec-ch-ua-wow64": "?0",
-      "sec-ch-ua-arch": "\"x86\"",
-      "sec-ch-ua-full-version": "\"151.0.7922.138\"",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
-      "sec-ch-ua-platform-version": "\"19.0.0\"",
-      "accept": "*/*",
-      "sec-fetch-site": "same-origin",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-dest": "empty",
-      "sec-fetch-storage-access": "active",
-      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
-      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-      "if-none-match": "W/\"8659f-SKyj7eaKD7wOuRUvYspn9v6YiLk\"",
-      "priority": "u=1, i",
-      "x-cloud-trace-context": "8546bbd3c9dbc4cdb11a6eaa9235f193/10252709983131799147",
-      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
-      "traceparent": "00-8546bbd3c9dbc4cdb11a6eaa9235f193-8e48f16891ac0e6b-00",
-      "forwarded": "for=\"14.5.122.229\";proto=https"
-    },
-    "query": {},
-    "body": {},
-    "error": null,
-    "responseSent": {
-      "count": 134
-    }
-  },
-  {
     "timestamp": "2026-08-16T17:03:22.638Z",
     "method": "GET",
     "url": "/api/posts",
@@ -1868,6 +1824,110 @@
     "error": null,
     "responseSent": {
       "count": 85
+    }
+  },
+  {
+    "timestamp": "2026-09-04T17:27:22.577Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Chromium\";v=\"152.0.7977.83\", \"Not?A_Brand\";v=\"24.0.0.0\", \"Google Chrome\";v=\"152.0.7977.83\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Chromium\";v=\"152\", \"Not?A_Brand\";v=\"24\", \"Google Chrome\";v=\"152\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"152.0.7977.83\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "76f523e1f1710da8ed89b56199334c8d/7554624520718955684",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-76f523e1f1710da8ed89b56199334c8d-68d76af9b8e8b4a4-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 84
+    }
+  },
+  {
+    "timestamp": "2026-09-04T17:27:22.738Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
+      "x-real-ip": "169.254.169.126",
+      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
+      "x-forwarded-proto": "http",
+      "connection": "upgrade",
+      "sec-ch-ua-full-version-list": "\"Chromium\";v=\"152.0.7977.83\", \"Not?A_Brand\";v=\"24.0.0.0\", \"Google Chrome\";v=\"152.0.7977.83\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua": "\"Chromium\";v=\"152\", \"Not?A_Brand\";v=\"24\", \"Google Chrome\";v=\"152\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"152.0.7977.83\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "accept": "*/*",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-storage-access": "active",
+      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
+      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "if-none-match": "W/\"c431d-ENV/IhwKIAdjJup5nm/v504ABsw\"",
+      "priority": "u=1, i",
+      "x-cloud-trace-context": "a149584a43058ad8ed89b56199334077/16304498163072855596",
+      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
+      "traceparent": "00-a149584a43058ad8ed89b56199334077-e24536b1c2f76e2c-00",
+      "forwarded": "for=\"14.5.122.229\";proto=https"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 84
+    }
+  },
+  {
+    "timestamp": "2026-09-04T17:31:00.209Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "accept-encoding": "identity",
+      "host": "localhost:3000",
+      "user-agent": "Python-urllib/3.10",
+      "connection": "close"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 84
     }
   }
 ]

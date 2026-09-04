@@ -423,7 +423,6 @@ async function startServer() {
         "",
         "/about",
         "/privacy",
-        "/partnership",
         "/announcement",
         "/terms",
         "/policy",
@@ -1271,7 +1270,6 @@ Sitemap: ${hostUrl}/sitemap.xml
         { path: "/", priority: "1.0", changefreq: "daily" },
         { path: "/about", priority: "0.5", changefreq: "weekly" },
         { path: "/privacy", priority: "0.5", changefreq: "monthly" },
-        { path: "/partnership", priority: "0.6", changefreq: "weekly" },
         { path: "/announcement", priority: "0.6", changefreq: "weekly" },
         { path: "/terms", priority: "0.3", changefreq: "monthly" },
         { path: "/policy", priority: "0.8", changefreq: "daily" },
@@ -1508,9 +1506,6 @@ Sitemap: ${hostUrl}/sitemap.xml
         } else if (pathname === "/privacy") {
           title = "개인정보 처리방침 | 버진로드";
           description = "버진로드의 개인정보 수집 및 이용에 관한 안내입니다.";
-        } else if (pathname === "/partnership") {
-          title = "제휴 및 비즈니스 문의 | 버진로드";
-          description = "버진로드와 광고, 콘텐츠 협업, 파트너십 문의를 위한 안내 페이지입니다.";
         } else if (pathname === "/announcement") {
           title = "공지사항 | 버진로드";
           description = "버진로드의 서비스 운영 관련 공지사항을 안내합니다.";

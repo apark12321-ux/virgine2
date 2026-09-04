@@ -23,7 +23,7 @@ import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { slugify, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
 import { buildSmartGoogleSearch } from "./lib/searchHelper";
 
-type Page = "home" | "about" | "privacy" | "partnership" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
+type Page = "home" | "about" | "privacy" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
 
 const SITE_URL = "https://virginroad.kr";
 const SITE_NAME = "버진로드";
@@ -36,7 +36,6 @@ function pageFromUrl(): Page {
   if (path === "/" || path === "") return "home";
   if (path === "/about") return "about";
   if (path === "/privacy") return "privacy";
-  if (path === "/partnership") return "partnership";
   if (path === "/announcement") return "announcement";
   if (path === "/terms") return "terms";
   if (path === "/policy") return "policy";
@@ -53,7 +52,6 @@ function urlFromPage(page: Page, posts: Post[]): string {
   if (page === "home") return "/";
   if (page === "about") return "/about";
   if (page === "privacy") return "/privacy";
-  if (page === "partnership") return "/partnership";
   if (page === "announcement") return "/announcement";
   if (page === "terms") return "/terms";
   if (page === "policy") return "/policy";
@@ -479,7 +477,6 @@ export default function App() {
             currentPage !== "privacy" &&
             currentPage !== "terms" &&
             currentPage !== "announcement" &&
-            currentPage !== "partnership" &&
             currentPage !== "policy" &&
             currentPage !== "tools-didimdol" &&
             currentPage !== "tools-cheongyak" && (
@@ -821,7 +818,7 @@ export default function App() {
               </p>
 
               <h2>1. 개인정보 수집 및 이용 목적</h2>
-              <p>본 블로그는 회원가입 없이 모든 정보와 계산기 기능을 100% 무료로 이용하실 수 있습니다. 이용자가 이메일 문의 또는 댓글 등록 시 입력하는 닉네임과 연락처는 답변 및 원활한 소통 목적으로만 사용되며 외부에 무단 제공되지 않습니다.</p>
+              <p>본 블로그는 회원가입 없이 모든 정보와 계산기 기능을 100% 무료로 이용하실 수 있습니다. 이용자가 댓글 등록 시 입력하는 닉네임은 건전한 소통 목적으로만 사용되며 외부에 무단 제공되지 않습니다.</p>
 
               <h2>2. 구글 애드센스 및 제3자 광고 쿠키(Cookie) 고지</h2>
               <p>
@@ -838,13 +835,13 @@ export default function App() {
                 웹사이트의 품질 향상 및 서비스 최적화를 위해 방문자의 브라우저 종류, 방문 일시, 참조 페이지 등 비식별 통계 정보가 자동 수집될 수 있으며, 이는 개인을 특정할 수 없습니다.
               </p>
 
-              <h2>4. 개인정보 보호책임자 및 문의처</h2>
+              <h2>4. 개인정보 보호책임자 안내</h2>
               <p>
-                개인정보 처리 및 블로그 운영에 관한 모든 문의는 아래로 연락 주시면 신속하고 성실하게 답변드리겠습니다.
+                개인정보 처리 및 블로그 운영에 관한 모든 사항은 아래 안내된 책임자에게 연락 주시면 신속하고 성실하게 처리해 드리겠습니다.
               </p>
               <div className="p-4 bg-[#F8FAFC] rounded-xl text-[13.5px] text-[#334155] mt-3">
                 <p><strong>운영자/책임자:</strong> 박아람 (버진로드 / 상상아트)</p>
-                <p><strong>이메일 문의:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#E8745F] font-semibold">apark12321@gmail.com</a></p>
+                <p><strong>이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#E8745F] font-semibold">apark12321@gmail.com</a></p>
                 <p><strong>시행일자:</strong> 2026년 1월 1일</p>
               </div>
             </motion.div>
@@ -896,22 +893,6 @@ export default function App() {
               </h1>
               <h2>버진로드 블로그 운영 안내</h2>
               <p>2026년 기준 최신 신혼부부 정책 및 디딤돌 대출 조건 개정안이 전 포스팅에 반영되었습니다.</p>
-            </motion.div>
-          )}
-
-          {currentPage === "partnership" && (
-            <motion.div
-              key="partnership-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
-            >
-              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
-                제휴 및 비즈니스 문의
-              </h1>
-              <p>신혼 금융, 인테리어, 가전 및 웨딩 관련 협업 및 기고 제보는 아래 이메일로 연락주시면 검토 후 회신드리겠습니다.</p>
-              <p>이메일: <a href="mailto:apark12321@gmail.com">apark12321@gmail.com</a></p>
             </motion.div>
           )}
         </AnimatePresence>
