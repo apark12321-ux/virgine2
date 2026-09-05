@@ -102,16 +102,6 @@
           e.stopPropagation();
         }
       }, true);
-
-      // Only load AdSense if not running inside an iframe (like AI Studio preview)
-      // to prevent sandbox security policy blocks and untraceable 'Script error' logs.
-      if (window.self === window.top) {
-        const adScript = document.createElement("script");
-        adScript.async = true;
-        adScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9552509372228899";
-        adScript.crossOrigin = "anonymous";
-        document.head.appendChild(adScript);
-      }
     </script>
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
   </head>
