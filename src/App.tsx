@@ -6,29 +6,45 @@ import { PostCard } from "./components/PostCard";
 import { GuideReader } from "./components/GuideReader";
 import { AdSenseUnit } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
-import { DidimdolCalculator } from "./components/DidimdolCalculator";
-import { CheongyakCalculator } from "./components/CheongyakCalculator";
 import { AboutPage } from "./components/AboutPage";
 import { SearchConsoleModal } from "./components/SearchConsoleModal";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
-import { POST_EXTRA_MAP, PostExtra } from "./postMeta";
 import { Post } from "./types";
 import { expandContentIfNeeded } from "./lib/contentExpander";
-import { Share2, Printer, ArrowRight, TrendingUp, ArrowUpRight, Copy, ExternalLink, User, ChevronLeft, ChevronRight, CheckCircle2, Search } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  ChevronsLeft, 
+  ChevronsRight, 
+  Search, 
+  LayoutList, 
+  LayoutGrid, 
+  FolderOpen,
+  ArrowRight
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
 import { handleFirestoreError, OperationType } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { slugify, formatPostDateTime, parsePostTimestamp, normalizeTitle } from "./lib/utils";
-import { buildSmartGoogleSearch } from "./lib/searchHelper";
+import { slugify, parsePostTimestamp, normalizeTitle } from "./lib/utils";
 
-type Page = "home" | "about" | "privacy" | "announcement" | "terms" | "policy" | "tools-didimdol" | "tools-cheongyak" | `category-${string}` | `post-${string}`;
+type Page = 
+  | "home" 
+  | "about" 
+  | "privacy" 
+  | "announcement" 
+  | "terms" 
+  | "policy" 
+  | `category-${string}` 
+  | `post-${string}`;
 
 const SITE_URL = "https://virginroad.kr";
 const SITE_NAME = "버진로드";
 const DEFAULT_TITLE = "버진로드 - 2026 신혼부부 금융·청약·가전 실전 가이드";
-const DEFAULT_DESCRIPTION = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우와 계산기를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
+const DEFAULT_DESCRIPTION = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
+
+const POSTS_PER_PAGE = 10;
 
 function pageFromUrl(): Page {
   if (typeof window === "undefined") return "home";
@@ -39,8 +55,6 @@ function pageFromUrl(): Page {
   if (path === "/announcement") return "announcement";
   if (path === "/terms") return "terms";
   if (path === "/policy") return "policy";
-  if (path === "/tools/didimdol") return "tools-didimdol";
-  if (path === "/tools/cheongyak") return "tools-cheongyak";
   const catMatch = path.match(/^\/category\/(.+)$/);
   if (catMatch) return `category-${decodeURIComponent(catMatch[1])}` as Page;
   const postMatch = path.match(/^\/post\/(.+)$/);
@@ -55,14 +69,12 @@ function urlFromPage(page: Page, posts: Post[]): string {
   if (page === "announcement") return "/announcement";
   if (page === "terms") return "/terms";
   if (page === "policy") return "/policy";
-  if (page === "tools-didimdol") return "/tools/didimdol";
-  if (page === "tools-cheongyak") return "/tools/cheongyak";
   if (page.startsWith("category-")) {
     return `/category/${encodeURIComponent(page.replace("category-", ""))}`;
   }
   if (page.startsWith("post-")) {
     const key = page.replace("post-", "");
-    const post = posts.find(p => p.id === key || slugify(p.title) === key);
+    const post = posts.find((p) => p.id === key || slugify(p.title) === key);
     if (post) {
       const slug = slugify(post.title) || post.id;
       return `/post/${slug}`;
@@ -109,26 +121,26 @@ function setArticleJsonLd(post: Post | null) {
   const data = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": post.title,
-    "description": post.excerpt,
-    "image": [post.image],
-    "datePublished": post.date,
-    "dateModified": post.updated || post.date,
-    "author": {
+    headline: post.title,
+    description: post.excerpt,
+    image: [post.image],
+    datePublished: post.date,
+    dateModified: post.updated || post.date,
+    author: {
       "@type": "Organization",
-      "name": "버진로드",
-      "url": `${SITE_URL}/about`
+      name: "버진로드",
+      url: `${SITE_URL}/about`
     },
-    "publisher": {
+    publisher: {
       "@type": "Organization",
-      "name": "상상아트",
-      "alternateName": SITE_NAME,
-      "url": SITE_URL,
-      "logo": { "@type": "ImageObject", "url": `${SITE_URL}/icon.svg` }
+      name: "상상아트",
+      alternateName: SITE_NAME,
+      url: SITE_URL,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
     },
-    "mainEntityOfPage": { "@type": "WebPage", "@id": `${SITE_URL}/post/${slug}` },
-    "articleSection": post.category,
-    "inLanguage": "ko-KR"
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/post/${slug}` },
+    articleSection: post.category,
+    inLanguage: "ko-KR"
   };
   el.textContent = JSON.stringify(data);
 }
@@ -150,10 +162,10 @@ function setBreadcrumbJsonLd(post: Post | null) {
   const data = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "홈", "item": SITE_URL + "/" },
-      { "@type": "ListItem", "position": 2, "name": post.category, "item": `${SITE_URL}/category/${encodeURIComponent(post.category)}` },
-      { "@type": "ListItem", "position": 3, "name": post.title, "item": `${SITE_URL}/post/${slug}` }
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "홈", item: SITE_URL + "/" },
+      { "@type": "ListItem", position: 2, name: post.category, item: `${SITE_URL}/category/${encodeURIComponent(post.category)}` },
+      { "@type": "ListItem", position: 3, name: post.title, item: `${SITE_URL}/post/${slug}` }
     ]
   };
   el.textContent = JSON.stringify(data);
@@ -166,20 +178,15 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     return params.get("q") || "";
   });
+  const [feedPage, setFeedPage] = useState<number>(1);
+  const [viewMode, setViewMode] = useState<"list" | "card">("list");
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [, setUser] = useState<FirebaseUser | null>(null);
-  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
-  
-  // Google Search Console Auto-Indexing Modal State (Hidden from regular visitors)
+
+  // Hidden admin shortcut for Google Search Console indexing
   const [isSearchConsoleModalOpen, setIsSearchConsoleModalOpen] = useState(false);
   const [selectedPostForIndexing, setSelectedPostForIndexing] = useState<{ slug?: string; title?: string }>({});
 
-  const handleOpenSearchConsole = (slug?: string, title?: string) => {
-    setSelectedPostForIndexing({ slug, title });
-    setIsSearchConsoleModalOpen(true);
-  };
-
-  // Hidden admin shortcut: accessible via URL (?admin=seo) or keyboard shortcut (Ctrl+Shift+S)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "s") {
@@ -196,8 +203,8 @@ export default function App() {
     }
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-  
-  // Custom Toast Notification State
+
+  // Toast Notification
   const [toast, setToast] = useState<{
     id: string;
     message: string;
@@ -212,27 +219,26 @@ export default function App() {
     });
   };
 
-  const smartSearch = useMemo(() => buildSmartGoogleSearch(searchQuery), [searchQuery]);
-
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => {
-      setToast(null);
-    }, 3000);
+    const timer = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // Browser History & Popstate
   useEffect(() => {
     const onPopState = () => {
       setCurrentPage(pageFromUrl());
       const params = new URLSearchParams(window.location.search);
       setSearchQuery(params.get("q") || "");
+      setFeedPage(1);
       window.scrollTo(0, 0);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
+  // Sync Search Query to URL
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -257,7 +263,8 @@ export default function App() {
       } else {
         window.history.pushState({}, "", newUrl);
       }
-    }, 500);
+      setFeedPage(1);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -267,46 +274,50 @@ export default function App() {
     return () => unsubscribeAuth();
   }, []);
 
+  // Fetch API posts & Firestore
   useEffect(() => {
-    // 1. Fetch from our backend REST API
     fetch("/api/posts")
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("API response error");
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         if (data && Array.isArray(data)) {
           setRealPosts(data);
         }
       })
-      .catch(err => console.error("Failed to fetch merged API posts:", err));
+      .catch((err) => console.error("Failed to fetch merged API posts:", err));
 
-    // 2. Firestore live subscription
     const q = query(collection(db, "posts"), orderBy("date", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const posts = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as Post[];
-      setRealPosts(prev => {
-        const merged = [...prev];
-        posts.forEach(p => {
-          if (!merged.some(m => m.id === p.id)) {
-            merged.push(p);
-          }
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const posts = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id
+        })) as Post[];
+        setRealPosts((prev) => {
+          const merged = [...prev];
+          posts.forEach((p) => {
+            if (!merged.some((m) => m.id === p.id)) {
+              merged.push(p);
+            }
+          });
+          return merged;
         });
-        return merged;
-      });
-    }, (error) => {
-      try {
-        handleFirestoreError(error, OperationType.GET, "posts");
-      } catch (err) {
-        console.warn("Handled posts onSnapshot warning:", err);
+      },
+      (error) => {
+        try {
+          handleFirestoreError(error, OperationType.GET, "posts");
+        } catch (err) {
+          console.warn("Handled posts onSnapshot warning:", err);
+        }
       }
-    });
+    );
     return () => unsubscribe();
   }, []);
 
+  // Merge and Sanitize Posts
   const allPosts = useMemo(() => {
     const seenTitles = new Set<string>();
     const seenIds = new Set<string>();
@@ -317,11 +328,20 @@ export default function App() {
       if (!p || !p.title) return false;
       const title = (p.title || "").toLowerCase();
       const id = (p.id || "").toLowerCase();
-      const blocked = ["유튜브 쇼츠", "시청 지속시간", "쇼츠 알고리즘", "유튜브 조회수", "indexing api", "[c안]", "유튜브 수익화", "인스타 릴스 알고리즘"];
-      return !blocked.some(b => title.includes(b) || id.includes(b));
+      const blocked = [
+        "유튜브 쇼츠",
+        "시청 지속시간",
+        "쇼츠 알고리즘",
+        "유튜브 조회수",
+        "indexing api",
+        "[c안]",
+        "유튜브 수익화",
+        "인스타 릴스 알고리즘"
+      ];
+      return !blocked.some((b) => title.includes(b) || id.includes(b));
     };
 
-    realPosts.forEach(real => {
+    realPosts.forEach((real) => {
       if (real && real.id && real.title && isRelevant(real)) {
         const norm = normalizeTitle(real.title);
         const slug = slugify(real.title);
@@ -334,7 +354,7 @@ export default function App() {
       }
     });
 
-    MOCK_POSTS.forEach(mockPost => {
+    MOCK_POSTS.forEach((mockPost) => {
       if (!isRelevant(mockPost)) return;
       const norm = normalizeTitle(mockPost.title);
       const slug = slugify(mockPost.title);
@@ -346,7 +366,7 @@ export default function App() {
       }
     });
 
-    const sanitized = uniquePosts.map(p => {
+    const sanitized = uniquePosts.map((p) => {
       const author = "버진로드";
       const title = (p.title || "").replace(/홈코노미뉴스/g, "버진로드");
       const excerpt = (p.excerpt || "").replace(/홈코노미뉴스/g, "버진로드");
@@ -356,7 +376,7 @@ export default function App() {
         .replace(/버진로드 편집부에서/g, "꼼꼼하게 정리한")
         .replace(/버진로드 편집부/g, "버진로드");
 
-      if (!MOCK_POSTS.some(mp => mp.id === p.id)) {
+      if (!MOCK_POSTS.some((mp) => mp.id === p.id)) {
         content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id, p.image);
       }
       return { ...p, author, title, excerpt, content };
@@ -365,41 +385,49 @@ export default function App() {
     return sanitized.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
   }, [realPosts]);
 
+  // Filter Posts
   const filteredPosts = useMemo(() => {
     let posts = allPosts;
     if (currentPage.startsWith("category-")) {
       const category = currentPage.replace("category-", "");
-      posts = posts.filter(p => p.category === category);
+      posts = posts.filter((p) => p.category === category);
     }
     if (searchQuery) {
-      posts = posts.filter(p =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+      posts = posts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return posts;
   }, [currentPage, searchQuery, allPosts]);
 
+  // Pagination Calculation
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
+  const paginatedPosts = useMemo(() => {
+    const start = (feedPage - 1) * POSTS_PER_PAGE;
+    return filteredPosts.slice(start, start + POSTS_PER_PAGE);
+  }, [filteredPosts, feedPage]);
+
+  // Single Post Data
   const currentPost = useMemo(() => {
     if (!currentPage.startsWith("post-")) return null;
     const key = currentPage.replace("post-", "");
-    return allPosts.find(p => p.id === key || slugify(p.title) === key) || null;
+    return allPosts.find((p) => p.id === key || slugify(p.title) === key) || null;
   }, [currentPage, allPosts]);
 
-  // Current Post Navigation (Prev / Next)
   const { prevPost, nextPost } = useMemo(() => {
     if (!currentPost) return { prevPost: null, nextPost: null };
-    const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
+    const currentIndex = allPosts.findIndex((p) => p.id === currentPost.id);
     const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
     const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
     return { prevPost: prev, nextPost: next };
   }, [currentPost, allPosts]);
 
-  // Related Posts in same category
   const relatedPosts = useMemo(() => {
     if (!currentPost) return [];
     return allPosts
-      .filter(p => p.category === currentPost.category && p.id !== currentPost.id)
+      .filter((p) => p.category === currentPost.category && p.id !== currentPost.id)
       .slice(0, 3);
   }, [currentPost, allPosts]);
 
@@ -409,7 +437,6 @@ export default function App() {
     let description = DEFAULT_DESCRIPTION;
     let canonical = SITE_URL + "/";
     let ogImage = `${SITE_URL}/og-image.png`;
-    let ogImageAlt = "버진로드 블로그";
 
     if (currentPost) {
       const slug = slugify(currentPost.title) || currentPost.id;
@@ -417,15 +444,13 @@ export default function App() {
       description = currentPost.excerpt;
       canonical = `${SITE_URL}/post/${slug}`;
       ogImage = currentPost.image || ogImage;
-      ogImageAlt = currentPost.title;
     } else if (currentPage.startsWith("category-")) {
       const category = currentPage.replace("category-", "");
       title = `${category} 글 모음 - 버진로드 블로그`;
       description = `${category}에 관한 실전 팁과 최신 정책 가이드를 모아둔 공간입니다.`;
       canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
     } else if (currentPage === "about") {
-      title = "블로그 소개 및 안내 - 버진로드";
-      description = "예비·신혼부부의 주거 마련과 현명한 자산 관리를 위한 실전 가이드 블로그 버진로드 소개입니다.";
+      title = "블로그 소개 및 편집원칙 - 버진로드";
       canonical = `${SITE_URL}/about`;
     } else if (currentPage === "privacy") {
       title = "개인정보 처리방침 - 버진로드";
@@ -433,6 +458,9 @@ export default function App() {
     } else if (currentPage === "terms") {
       title = "이용약관 및 면책고지 - 버진로드";
       canonical = `${SITE_URL}/terms`;
+    } else if (currentPage === "announcement") {
+      title = "공지사항 - 버진로드";
+      canonical = `${SITE_URL}/announcement`;
     }
 
     document.title = title;
@@ -453,289 +481,42 @@ export default function App() {
       window.history.pushState({}, "", nextUrl);
     }
     setCurrentPage(nextPage);
+    setFeedPage(1);
     window.scrollTo(0, 0);
   };
 
-  const activeCategory = currentPage.startsWith("category-") ? currentPage.replace("category-", "") : undefined;
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setFeedPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const activeCategory = currentPage.startsWith("category-")
+    ? currentPage.replace("category-", "")
+    : undefined;
 
   return (
-    <div className="min-h-screen bg-[#FDFDFE] text-[#1E1B2E] font-sans antialiased selection:bg-[#E8745F] selection:text-white">
+    <div className="min-h-screen bg-[#fdfdfd] text-[#1f2937] font-sans antialiased selection:bg-rose-500 selection:text-white flex flex-col justify-between">
+      {/* 1. Header Navigation */}
       <Navbar
-        onSearch={setSearchQuery}
+        onSearch={(q) => {
+          setSearchQuery(q);
+          setFeedPage(1);
+        }}
         onNavigate={handleNavigate}
         searchQuery={searchQuery}
         currentPage={currentPage}
       />
 
-      <main className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <AnimatePresence mode="wait">
+      {/* 2. Main Content Container (Classic 2-Column Tistory Layout) */}
+      <main className="max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           {/* ========================================================================= */}
-          {/* 1. HOME / CATEGORY / SEARCH (2-COLUMN EDITORIAL BLOG LAYOUT)             */}
+          {/* LEFT / CENTER COLUMN (Col-span-8): Main Blog Feed or Reader or Page       */}
           {/* ========================================================================= */}
-          {!currentPost &&
-            currentPage !== "about" &&
-            currentPage !== "privacy" &&
-            currentPage !== "terms" &&
-            currentPage !== "announcement" &&
-            currentPage !== "policy" &&
-            currentPage !== "tools-didimdol" &&
-            currentPage !== "tools-cheongyak" && (
-              <motion.div
-                key="blog-feed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start"
-              >
-                {/* Main Article Stream (col-span-8) */}
-                <div className="lg:col-span-8 space-y-8">
-                  {/* Blog Channel Greeting Banner (When on Home without search) */}
-                  {currentPage === "home" && !searchQuery && (
-                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-7 shadow-xs">
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-2 text-[12px] font-bold text-[#E8745F]">
-                          <span className="w-2 h-2 rounded-full bg-[#E8745F]" />
-                          <span>버진로드 &middot; 에디터 박아람의 실전 노트</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleNavigate("about")}
-                          className="text-[12px] font-semibold text-[#64748B] hover:text-[#E8745F] transition-colors"
-                        >
-                          에디터 소개 &rarr;
-                        </button>
-                      </div>
-                      <h1 className="text-[20px] sm:text-[24px] font-extrabold text-[#111827] leading-[1.38] tracking-tight mb-2.5 break-keep">
-                        신혼부부를 위한 실전 금융 &middot; 청약 &middot; 가전 &middot; 웨딩 가이드
-                      </h1>
-                      <p className="text-[14px] leading-relaxed text-[#475569] break-keep">
-                        디딤돌·버팀목 정책 대출, 청약 특별공급, 가전 견적 비교 및 결혼식 예산 절감 노하우를 명확하고 체계적으로 전해드립니다.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Category Header (When on specific category) */}
-                  {activeCategory && !searchQuery && (
-                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-xs flex items-center justify-between">
-                      <div>
-                        <span className="text-[11px] font-extrabold text-[#E8745F] uppercase tracking-wider">
-                          카테고리
-                        </span>
-                        <h1 className="text-[24px] font-bold text-[#111827] mt-0.5 tracking-tight">
-                          {activeCategory}
-                        </h1>
-                        <p className="text-[13.5px] text-[#64748B] mt-1">
-                          총 {filteredPosts.length}편의 실전 가이드가 등록되어 있습니다.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleNavigate("home")}
-                        className="text-[12.5px] font-semibold text-[#64748B] hover:text-[#111827] px-3 py-1.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]"
-                      >
-                        전체글 보기
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Search Query Header */}
-                  {searchQuery && (
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-[12px] font-medium text-[#64748B]">검색어</p>
-                        <h2 className="text-[18px] font-bold text-[#111827]">
-                          &lsquo;{searchQuery}&rsquo; 검색 결과 ({filteredPosts.length}건)
-                        </h2>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchQuery("");
-                          handleNavigate("home");
-                        }}
-                        className="text-[13px] font-semibold text-[#E8745F] hover:underline shrink-0"
-                      >
-                        검색 초기화
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Category Filter Tabs & Sort Indicator */}
-                  <div className="flex items-center justify-between gap-3 overflow-x-auto pb-1 hide-scrollbar">
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleNavigate("home")}
-                        className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
-                          currentPage === "home" && !searchQuery
-                            ? "bg-[#1E1B2E] text-white"
-                            : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
-                        }`}
-                      >
-                        전체 ({allPosts.length})
-                      </button>
-                      {CATEGORIES.map((cat) => {
-                        const count = allPosts.filter((p) => p.category === cat).length;
-                        const isActive = activeCategory === cat;
-                        return (
-                          <button
-                            key={cat}
-                            type="button"
-                            onClick={() => handleNavigate(`category-${cat}`)}
-                            className={`px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-colors cursor-pointer shrink-0 ${
-                              isActive
-                                ? "bg-[#1E1B2E] text-white"
-                                : "bg-white text-[#475569] hover:bg-[#F1F5F9] border border-[#E2E8F0]"
-                            }`}
-                          >
-                            {cat} ({count})
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div className="hidden sm:flex items-center gap-1 text-[12px] font-medium text-[#64748B] bg-white border border-[#E2E8F0] px-3 py-1.5 rounded-lg shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                      <span>최신순 정렬</span>
-                    </div>
-                  </div>
-
-                  {/* Posts Grid & In-feed Ads */}
-                  {filteredPosts.length > 0 ? (
-                    <div className="space-y-6">
-                      {/* Featured 1st Post (Only on clean home) */}
-                      {currentPage === "home" && !searchQuery && filteredPosts.length > 0 && (
-                        <PostCard
-                          post={filteredPosts[0]}
-                          onClick={(id) => handleNavigate(`post-${id}`)}
-                          featured={true}
-                        />
-                      )}
-
-                      {/* Top In-feed AdSense Slot */}
-                      <AdSenseUnit slot="home-feed-01" label="광고 / Ad" format="fluid" />
-
-                      {/* Main Posts 2-column Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        {(currentPage === "home" && !searchQuery ? filteredPosts.slice(1, 7) : filteredPosts.slice(0, 6)).map(
-                          (post) => (
-                            <PostCard
-                              key={post.id}
-                              post={post}
-                              onClick={(id) => handleNavigate(`post-${id}`)}
-                            />
-                          )
-                        )}
-                      </div>
-
-                      {/* Middle In-feed AdSense Slot */}
-                      <AdSenseUnit slot="home-feed-02" label="광고 / Ad" format="fluid" />
-
-                      {/* Remaining Posts */}
-                      {(currentPage === "home" && !searchQuery ? filteredPosts.slice(7) : filteredPosts.slice(6)).length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                          {(currentPage === "home" && !searchQuery ? filteredPosts.slice(7) : filteredPosts.slice(6)).map(
-                            (post) => (
-                              <PostCard
-                                key={post.id}
-                                post={post}
-                                onClick={(id) => handleNavigate(`post-${id}`)}
-                              />
-                            )
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    /* Clean No-Result & Smart Google Search Section */
-                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center space-y-6 shadow-xs">
-                      <div className="max-w-md mx-auto">
-                        <div className="w-12 h-12 rounded-full bg-[#F1F5F9] text-[#64748B] flex items-center justify-center mx-auto mb-3">
-                          <Search className="w-5 h-5 text-[#64748B]" />
-                        </div>
-                        <h3 className="text-[19px] font-bold text-[#111827] mb-2">
-                          &lsquo;{searchQuery}&rsquo; 검색 결과가 없습니다
-                        </h3>
-                        <p className="text-[13.5px] text-[#64748B] leading-relaxed mb-5">
-                          단어의 철자를 확인하시거나, 아래의 맞춤형 구글 검색을 활용해 관련 정책 자료를 탐색해 보세요.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSearchQuery("");
-                            handleNavigate("home");
-                          }}
-                          className="px-5 py-2.5 bg-[#1E1B2E] text-white text-[13px] font-bold rounded-xl hover:bg-[#332D4E] transition-colors"
-                        >
-                          전체 포스팅 목록으로 돌아가기
-                        </button>
-                      </div>
-
-                      {/* Smart Google Search Card */}
-                      <div className="mt-6 p-5 bg-[#F8FAFC] border border-[#BFDBFE] rounded-xl text-left">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
-                          <div>
-                            <span className="text-[11px] font-extrabold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
-                              구글 맞춤 연계 검색
-                            </span>
-                            <h4 className="text-[15px] font-bold text-[#1E1B2E] mt-1">
-                              구글에서 &lsquo;{searchQuery}&rsquo; 추천 검색어로 검색하기
-                            </h4>
-                          </div>
-                          <a
-                            href={smartSearch.primaryUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 bg-[#2563EB] text-white text-[12.5px] font-bold rounded-lg inline-flex items-center gap-1.5 hover:bg-[#1D4ED8] transition-colors shrink-0"
-                          >
-                            <span>구글 검색</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                        <div className="pt-3 flex items-center justify-between text-[13px] text-[#475569]">
-                          <span className="font-mono font-medium truncate">{smartSearch.primaryQuery}</span>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(smartSearch.primaryQuery);
-                                showToast("검색어가 클립보드에 복사되었습니다.", "success");
-                              } catch {
-                                showToast("복사에 실패했습니다.", "error");
-                              }
-                            }}
-                            className="text-[11.5px] text-[#64748B] hover:text-[#111827] flex items-center gap-1 shrink-0 ml-3"
-                          >
-                            <Copy className="w-3 h-3" />
-                            <span>복사</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Sticky Sidebar (col-span-4) */}
-                <div className="lg:col-span-4 lg:sticky lg:top-24">
-                  <Sidebar
-                    posts={allPosts}
-                    categories={CATEGORIES}
-                    activeCategory={activeCategory}
-                    onNavigate={handleNavigate}
-                  />
-                </div>
-              </motion.div>
-            )}
-
-          {/* ========================================================================= */}
-          {/* 2. POST DETAIL VIEW (EDITORIAL ARTICLE + TABLE OF CONTENTS + SIDEBAR)     */}
-          {/* ========================================================================= */}
-          {currentPost && (
-            <motion.article
-              key="post-detail"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
+          <section className="lg:col-span-8 w-full min-w-0">
+            {/* VIEW 1: BLOG POST READER */}
+            {currentPost && (
               <GuideReader
                 post={currentPost}
                 allPosts={allPosts}
@@ -746,163 +527,330 @@ export default function App() {
                 onNavigate={handleNavigate}
                 showToast={showToast}
               />
-            </motion.article>
-          )}
+            )}
 
-          {/* ========================================================================= */}
-          {/* 3. POLICY HUB VIEW                                                        */}
-          {/* ========================================================================= */}
-          {currentPage === "policy" && (
-            <motion.div
-              key="policy-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <PolicyHub compact={false} onNavigate={handleNavigate} />
-            </motion.div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* 4. CALCULATORS (DIDIMDOL & CHEONGYAK)                                     */}
-          {/* ========================================================================= */}
-          {currentPage === "tools-didimdol" && (
-            <motion.div
-              key="tools-didimdol-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <DidimdolCalculator />
-            </motion.div>
-          )}
-
-          {currentPage === "tools-cheongyak" && (
-            <motion.div
-              key="tools-cheongyak-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <CheongyakCalculator />
-            </motion.div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* 5. ABOUT / PRIVACY / TERMS PAGES                                          */}
-          {/* ========================================================================= */}
-          {currentPage === "about" && (
-            <motion.div
-              key="about-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
+            {/* VIEW 2: ABOUT PAGE */}
+            {currentPage === "about" && (
               <AboutPage onNavigate={handleNavigate} />
-            </motion.div>
-          )}
+            )}
 
-          {currentPage === "privacy" && (
-            <motion.div
-              key="privacy-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
-            >
-              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
-                개인정보 처리방침 (Privacy Policy)
-              </h1>
-              <p className="text-[14.5px] leading-relaxed text-[#475569] mb-8">
-                버진로드(Virginroad, 이하 &lsquo;본 블로그&rsquo;)는 이용자의 개인정보를 소중하게 보호하며, 관련 법령 및 구글 애드센스(Google AdSense) 정책을 철저히 준수합니다.
-              </p>
+            {/* VIEW 3: POLICY HUB */}
+            {currentPage === "policy" && (
+              <PolicyHub compact={false} onNavigate={handleNavigate} />
+            )}
 
-              <h2>1. 개인정보 수집 및 이용 목적</h2>
-              <p>본 블로그는 회원가입 없이 모든 정보와 계산기 기능을 100% 무료로 이용하실 수 있습니다. 이용자가 댓글 등록 시 입력하는 닉네임은 건전한 소통 목적으로만 사용되며 외부에 무단 제공되지 않습니다.</p>
+            {/* VIEW 4: PRIVACY POLICY */}
+            {currentPage === "privacy" && (
+              <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left article-body">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                  개인정보 처리방침 (Privacy Policy)
+                </h1>
+                <p className="text-[14.5px] leading-relaxed text-gray-700 mb-6">
+                  버진로드(Virginroad, 이하 &lsquo;본 블로그&rsquo;)는 이용자의 개인정보를 소중하게 보호하며, 관련 법령 및 구글 애드센스(Google AdSense) 운영 정책을 철저히 준수합니다.
+                </p>
 
-              <h2>2. 구글 애드센스 및 제3자 광고 쿠키(Cookie) 고지</h2>
-              <p>
-                본 블로그는 구글(Google)을 비롯한 제3자 광고 공급업체를 통해 광고를 게재할 수 있습니다.
-              </p>
-              <ul>
-                <li>Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자가 본 웹사이트 또는 다른 웹사이트를 이전에 방문한 기록을 바탕으로 광고를 게재합니다.</li>
-                <li>Google의 광고 쿠키 사용으로 Google 및 파트너는 사용자의 본 사이트 및 인터넷의 다른 사이트 방문 기록을 바탕으로 적절한 광고를 사용자에게 표시할 수 있습니다.</li>
-                <li>사용자는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#E8745F] font-semibold underline">Google 광고 설정</a>을 방문하여 맞춤설정 광고를 사용 중지할 수 있습니다. (또는 <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#E8745F] font-semibold underline">aboutads.info</a>를 방문하여 맞춤설정 광고에 사용되는 제3자 공급업체의 쿠키 사용을 선택 해제할 수 있습니다.)</li>
-              </ul>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">1. 개인정보 수집 항목 및 목적</h2>
+                <p className="text-[14px] text-gray-700 leading-relaxed">
+                  본 블로그는 별도의 회원가입 없이 모든 정보와 콘텐츠를 100% 무료로 이용하실 수 있습니다. 이용자가 댓글 작성 시 입력하는 닉네임과 내용은 건전한 블로그 커뮤니티 운영 목적으로만 사용되며, 외부에 무단 제공되지 않습니다.
+                </p>
 
-              <h2>3. 로그 데이터 및 웹 분석 도구</h2>
-              <p>
-                웹사이트의 품질 향상 및 서비스 최적화를 위해 방문자의 브라우저 종류, 방문 일시, 참조 페이지 등 비식별 통계 정보가 자동 수집될 수 있으며, 이는 개인을 특정할 수 없습니다.
-              </p>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 구글 애드센스 및 제3자 광고 쿠키(Cookie) 고지</h2>
+                <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
+                  본 블로그는 Google을 비롯한 제3자 광고 공급업체를 통해 광고를 게재합니다.
+                </p>
+                <ul className="list-disc list-inside text-[13.5px] text-gray-600 space-y-1.5 pl-2 mb-4">
+                  <li>Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자가 본 웹사이트 또는 다른 웹사이트를 이전에 방문한 기록을 바탕으로 광고를 게재합니다.</li>
+                  <li>Google의 광고 쿠키 사용으로 Google 및 파트너는 사용자의 본 사이트 및 인터넷의 다른 사이트 방문 기록을 바탕으로 적절한 광고를 게재할 수 있습니다.</li>
+                  <li>사용자는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-rose-600 font-semibold underline">Google 광고 설정</a>을 방문하여 맞춤설정 광고를 사용 중지할 수 있습니다.</li>
+                </ul>
 
-              <h2>4. 개인정보 보호책임자 안내</h2>
-              <p>
-                개인정보 처리 및 블로그 운영에 관한 모든 사항은 아래 안내된 책임자에게 연락 주시면 신속하고 성실하게 처리해 드리겠습니다.
-              </p>
-              <div className="p-4 bg-[#F8FAFC] rounded-xl text-[13.5px] text-[#334155] mt-3">
-                <p><strong>운영자/책임자:</strong> 박아람 (버진로드 / 상상아트)</p>
-                <p><strong>이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#E8745F] font-semibold">apark12321@gmail.com</a></p>
-                <p><strong>시행일자:</strong> 2026년 1월 1일</p>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">3. 개인정보 보호책임자 및 문의처</h2>
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-700 space-y-1">
+                  <p><strong>운영자:</strong> 박아람 (버진로드 / 상상아트)</p>
+                  <p><strong>이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-rose-600 font-medium">apark12321@gmail.com</a></p>
+                  <p><strong>시행일자:</strong> 2026년 1월 1일</p>
+                </div>
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {currentPage === "terms" && (
-            <motion.div
-              key="terms-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
-            >
-              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
-                이용약관 및 면책고지 (Terms of Service & Disclaimer)
-              </h1>
-              <p className="text-[14.5px] leading-relaxed text-[#475569] mb-8">
-                본 약관은 버진로드(Virginroad) 블로그가 제공하는 모든 콘텐츠, 계산 도구 및 정보 서비스의 이용에 관한 조건과 책임을 규정합니다.
-              </p>
+            {/* VIEW 5: TERMS OF SERVICE */}
+            {currentPage === "terms" && (
+              <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left article-body">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                  이용약관 및 면책고지 (Terms of Service)
+                </h1>
+                <p className="text-[14.5px] leading-relaxed text-gray-700 mb-6">
+                  본 약관은 버진로드(Virginroad) 블로그가 제공하는 정보와 가이드의 이용 조건 및 면책 사항을 규정합니다.
+                </p>
 
-              <h2>1. 저작권 및 지적재산권 보호</h2>
-              <p>본 블로그에 게시된 모든 텍스트, 직접 가공한 표/데이터, 자체 개발 계산기 로직 및 디자인 저작권은 버진로드(상상아트)에 있습니다. 저작권자의 서면 동의 없는 무단 복제, AI 크롤링 스크래핑, 2차 저작물 상업 배포를 엄격히 금합니다.</p>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">1. 저작권 및 팩트체크 기준</h2>
+                <p className="text-[14px] text-gray-700 leading-relaxed">
+                  본 블로그에 작성된 모든 칼럼, 조견표, 데이터 분석 가이드는 공공기관(국토교통부, 주택도시기금, 한국주택금융공사, 청약홈)의 고시 자료를 철저히 검증하여 작성된 버진로드의 저작물입니다. 무단 전재 및 AI 불법 스크래핑을 엄격히 금합니다.
+                </p>
 
-              <h2>2. 금융 및 정책 정보에 대한 면책 고지</h2>
-              <p>
-                본 블로그에서 다루는 디딤돌대출, 신생아특례, 버팀목전세자금, 신혼부부 특별공급 청약 등의 모든 정보는 국토교통부, 한국주택금융공사(HF), 주택도시기금(HUG), 한국부동산원 청약홈의 최신 공시자료를 근거로 성실히 작성되었습니다.
-              </p>
-              <p>
-                그러나 정부 정책 및 수탁 시중은행의 심사 기준, 금리 우대 항목은 수시로 개정될 수 있습니다. 본 블로그의 계산 결과 및 가이드는 참고용이며 법적 효력을 갖지 않으므로, 최종 계약 및 대출 실행 전 반드시 관계 기관 및 취급 은행 창구를 통해 확인하시기 바랍니다. 본 블로그는 이용자의 개별 금융 결정에 따른 결과에 대해 법적 책임을 지지 않습니다.
-              </p>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 금융·정책 정보에 대한 면책 고지</h2>
+                <p className="text-[14px] text-gray-700 leading-relaxed">
+                  본 블로그의 대출 금리, 한도 요건, 청약 자격 정보는 참고용으로 제공되며, 정부 정책 개정 및 수탁 은행 심사 지침에 따라 차이가 발생할 수 있습니다. 대출 실행 및 청약 신청 전 반드시 관계 기관 및 취급 은행을 통해 최종 확인하시기 바랍니다.
+                </p>
+              </div>
+            )}
 
-              <h2>3. 서비스의 변경 및 중단</h2>
-              <p>
-                본 블로그는 정보의 정확성을 위해 지속적으로 콘텐츠를 업데이트하며, 사전 고지 없이 게시물의 수정이나 보완이 이루어질 수 있습니다.
-              </p>
-            </motion.div>
-          )}
+            {/* VIEW 6: ANNOUNCEMENT */}
+            {currentPage === "announcement" && (
+              <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                  공지사항
+                </h1>
+                <div className="space-y-4">
+                  <div className="p-5 border border-gray-200 rounded-lg hover:border-rose-300 transition-colors">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-xs bg-rose-50 text-rose-600 font-bold px-2 py-0.5 rounded">
+                        공지
+                      </span>
+                      <span className="text-xs text-gray-400">2026.09.09</span>
+                    </div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">
+                      2026년 주거금융·디딤돌 금리 개편안 전면 반영 안내
+                    </h2>
+                    <p className="text-[13.5px] text-gray-600 leading-relaxed">
+                      국토교통부 및 주택도시기금의 최신 신혼부부·신생아 특례 정책 개정 사항이 본 블로그의 86편 전 포스팅에 완벽히 반영되었습니다. 신혼부부 여러분의 많은 성원 바랍니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          {currentPage === "announcement" && (
-            <motion.div
-              key="announcement-page"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-[860px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-10 lg:p-12 shadow-xs article-body"
-            >
-              <h1 className="text-[28px] sm:text-[34px] font-extrabold text-[#111827] mb-6">
-                공지사항
-              </h1>
-              <h2>버진로드 블로그 운영 안내</h2>
-              <p>2026년 기준 최신 신혼부부 정책 및 디딤돌 대출 조건 개정안이 전 포스팅에 반영되었습니다.</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* VIEW 7: HOME / CATEGORY / SEARCH (MAIN BLOG FEED) */}
+            {!currentPost &&
+              currentPage !== "about" &&
+              currentPage !== "privacy" &&
+              currentPage !== "terms" &&
+              currentPage !== "announcement" &&
+              currentPage !== "policy" && (
+                <div className="space-y-6">
+                  {/* Category / Search Header Banner */}
+                  <div className="bg-white border border-[#e5e7eb] rounded-lg p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <FolderOpen className="w-4 h-4 text-rose-600" />
+                        <span className="text-[12px] font-bold text-rose-600 uppercase tracking-wider">
+                          {activeCategory ? `카테고리: ${activeCategory}` : searchQuery ? "검색 결과" : "전체 글 목록"}
+                        </span>
+                      </div>
+                      <h2 className="text-[20px] sm:text-[22px] font-bold text-[#111827]">
+                        {activeCategory ? (
+                          <span>{activeCategory}</span>
+                        ) : searchQuery ? (
+                          <span>&lsquo;{searchQuery}&rsquo; 검색 ({filteredPosts.length}건)</span>
+                        ) : (
+                          <span>신혼부부 주거·금융·가전 실전 가이드</span>
+                        )}
+                      </h2>
+                      <p className="text-[13px] text-[#6b7280] mt-1">
+                        총 <strong className="text-rose-600">{filteredPosts.length}</strong>편의 포스팅이 등록되어 있습니다.
+                      </p>
+                    </div>
+
+                    {/* View Switcher (목록형 / 웹진형) */}
+                    <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        className={`p-1.5 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
+                          viewMode === "list"
+                            ? "bg-white text-gray-900 shadow-2xs font-bold"
+                            : "text-gray-500 hover:text-gray-900"
+                        }`}
+                        title="목록형 보기"
+                      >
+                        <LayoutList className="w-4 h-4" />
+                        <span className="hidden sm:inline">목록형</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("card")}
+                        className={`p-1.5 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
+                          viewMode === "card"
+                            ? "bg-white text-gray-900 shadow-2xs font-bold"
+                            : "text-gray-500 hover:text-gray-900"
+                        }`}
+                        title="카드형 보기"
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                        <span className="hidden sm:inline">카드형</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Feed In-Stream AdSense Slot (Top) */}
+                  <AdSenseUnit slot="home-feed-top" label="광고 / Sponsored" format="fluid" />
+
+                  {/* Post Stream */}
+                  {filteredPosts.length > 0 ? (
+                    <div className="bg-white border border-[#e5e7eb] rounded-lg p-5 sm:p-7 shadow-2xs">
+                      {viewMode === "list" ? (
+                        <div className="divide-y divide-gray-100">
+                          {paginatedPosts.map((post, idx) => (
+                            <div key={post.id}>
+                              <PostCard
+                                post={post}
+                                onClick={(id) => handleNavigate(`post-${id}`)}
+                                viewMode="list"
+                              />
+                              {/* In-feed middle Ad after 4th post on page */}
+                              {idx === 3 && (
+                                <div className="py-4">
+                                  <AdSenseUnit slot="home-feed-mid" label="광고 / Sponsored" format="fluid" />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {paginatedPosts.map((post) => (
+                            <PostCard
+                              key={post.id}
+                              post={post}
+                              onClick={(id) => handleNavigate(`post-${id}`)}
+                              viewMode="card"
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Pagination (Classic Tistory Style) */}
+                      {totalPages > 1 && (
+                        <div className="mt-8 pt-6 border-t border-[#e5e7eb] flex items-center justify-center gap-1 text-[13px]">
+                          {/* First Page */}
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(1)}
+                            disabled={feedPage === 1}
+                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            title="첫 페이지"
+                          >
+                            <ChevronsLeft className="w-4 h-4" />
+                          </button>
+
+                          {/* Prev Page */}
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(feedPage - 1)}
+                            disabled={feedPage === 1}
+                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            title="이전 페이지"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+
+                          {/* Page Numbers */}
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                            // Show window around current page
+                            if (
+                              pageNum === 1 ||
+                              pageNum === totalPages ||
+                              (pageNum >= feedPage - 2 && pageNum <= feedPage + 2)
+                            ) {
+                              const isActive = pageNum === feedPage;
+                              return (
+                                <button
+                                  key={pageNum}
+                                  type="button"
+                                  onClick={() => handlePageChange(pageNum)}
+                                  className={`min-w-[34px] h-[34px] rounded-md font-bold transition-colors cursor-pointer ${
+                                    isActive
+                                      ? "bg-rose-600 text-white"
+                                      : "text-gray-700 hover:bg-gray-100"
+                                  }`}
+                                >
+                                  {pageNum}
+                                </button>
+                              );
+                            }
+                            if (pageNum === feedPage - 3 || pageNum === feedPage + 3) {
+                              return (
+                                <span key={pageNum} className="px-1 text-gray-400">
+                                  ...
+                                </span>
+                              );
+                            }
+                            return null;
+                          })}
+
+                          {/* Next Page */}
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(feedPage + 1)}
+                            disabled={feedPage === totalPages}
+                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            title="다음 페이지"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+
+                          {/* Last Page */}
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(totalPages)}
+                            disabled={feedPage === totalPages}
+                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            title="마지막 페이지"
+                          >
+                            <ChevronsRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* No Results */
+                    <div className="bg-white border border-[#e5e7eb] rounded-lg p-10 text-center space-y-4 shadow-2xs">
+                      <Search className="w-10 h-10 text-gray-300 mx-auto" />
+                      <h3 className="text-lg font-bold text-gray-900">
+                        &lsquo;{searchQuery}&rsquo; 검색 결과가 없습니다
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        다른 키워드로 검색하시거나 전체 목록으로 돌아가 보세요.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          handleNavigate("home");
+                        }}
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded transition-colors"
+                      >
+                        전체 글 목록으로 돌아가기
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+          </section>
+
+          {/* ========================================================================= */}
+          {/* RIGHT COLUMN (Col-span-4): Classic Tistory / Naver Blog Sidebar           */}
+          {/* ========================================================================= */}
+          <section className="lg:col-span-4 w-full">
+            <Sidebar
+              posts={allPosts}
+              categories={CATEGORIES}
+              activeCategory={activeCategory}
+              onNavigate={handleNavigate}
+              currentPostId={currentPost?.id}
+              onSearch={(q) => {
+                setSearchQuery(q);
+                handleNavigate("home");
+              }}
+            />
+          </section>
+        </div>
       </main>
 
-      <Footer
-        onNavigate={handleNavigate}
-      />
+      {/* 3. Footer */}
+      <Footer onNavigate={handleNavigate} />
 
-      {/* Google Search Console Auto-Indexing Modal */}
+      {/* Google Search Console Modal (Admin only) */}
       <SearchConsoleModal
         isOpen={isSearchConsoleModalOpen}
         onClose={() => setIsSearchConsoleModalOpen(false)}
@@ -915,15 +863,11 @@ export default function App() {
         {toast && (
           <motion.div
             key={toast.id}
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2.5 bg-[#1E1B2E] text-white px-5 py-3 rounded-xl shadow-xl border border-[#3E385C]/60 text-[13.5px] font-semibold"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-lg shadow-xl text-[13.5px] font-semibold"
           >
-            {toast.type === "success" && <span className="text-emerald-400">✓</span>}
-            {toast.type === "error" && <span className="text-rose-400">✕</span>}
-            {toast.type === "info" && <span className="text-indigo-400">ℹ</span>}
             <span>{toast.message}</span>
           </motion.div>
         )}

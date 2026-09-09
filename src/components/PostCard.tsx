@@ -1,148 +1,113 @@
 import React from "react";
 import { Post } from "../types";
 import { formatPostDateTime } from "../lib/utils";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, User, MessageSquare, Clock } from "lucide-react";
 
 interface PostCardProps {
   post: Post;
   onClick: (id: string) => void;
   featured?: boolean;
+  viewMode?: "list" | "card";
   key?: React.Key;
 }
 
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  "신혼금융": { bg: "#EFF6FF", text: "#1D4ED8", border: "#DBEAFE" },
-  "신혼가전": { bg: "#F0FDF4", text: "#15803D", border: "#DCFCE7" },
-  "결혼준비": { bg: "#FFF1F2", text: "#BE123C", border: "#FFE4E6" },
-};
-
-export function PostCard({ post, onClick, featured = false }: PostCardProps) {
-  const colors = CATEGORY_COLORS[post.category] || CATEGORY_COLORS["신혼금융"];
+export function PostCard({ post, onClick, featured = false, viewMode = "list" }: PostCardProps) {
   const formattedDateTime = formatPostDateTime(post.date, post.id);
 
-  if (featured) {
+  // Classic Tistory / Naver Blog List Item (Default)
+  if (viewMode === "list") {
     return (
       <article
         onClick={() => onClick(post.id)}
-        className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 grid grid-cols-1 md:grid-cols-12 gap-0"
-        id={`featured-post-${post.id}`}
+        className="group cursor-pointer py-5 sm:py-6 border-b border-[#e5e7eb] last:border-b-0 hover:bg-[#fafafa]/80 -mx-3 sm:-mx-4 px-3 sm:px-4 rounded-md transition-colors text-left"
+        id={`post-${post.id}`}
       >
-        <div className="md:col-span-6 relative aspect-[16/10] md:aspect-auto overflow-hidden bg-[#F1F5F9]">
-          <img
-            src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
-            alt={post.title}
-            referrerPolicy="no-referrer"
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
-          />
-          {/* Top category badges */}
-          <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-            <span className="bg-[#1E1B2E] text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF7D54] animate-pulse" />
-              <span>최신 포스팅</span>
-            </span>
-            <span
-              style={{ backgroundColor: colors.bg, color: colors.text, borderColor: colors.border }}
-              className="text-[12px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs"
-            >
-              {post.category}
-            </span>
-          </div>
+        <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-4">
+          {/* Left / Main Text Area */}
+          <div className="flex-1 min-w-0 pr-0 sm:pr-4">
+            {/* Category tag */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[12px] font-bold text-rose-600">
+                {post.category}
+              </span>
+              <span className="text-gray-300">·</span>
+              <span className="text-[12px] text-gray-500">실전 가이드</span>
+            </div>
 
-          {/* Thumbnail Date & Time Overlay Badge */}
-          <div className="absolute bottom-3.5 right-3.5 flex items-center gap-1.5 bg-black/75 backdrop-blur-xs text-white text-[11.5px] font-semibold px-2.5 py-1 rounded-lg shadow-sm border border-white/10">
-            <Calendar className="w-3.5 h-3.5 text-[#FFB199]" />
-            <span className="tabular-nums">{formattedDateTime}</span>
-          </div>
-        </div>
-
-        <div className="md:col-span-6 p-6 sm:p-7 flex flex-col justify-between">
-          <div>
-            <h2 className="text-[20px] sm:text-[23px] font-bold text-[#111827] leading-[1.38] mb-3 break-keep group-hover:text-[#E8745F] transition-colors tracking-tight">
+            {/* Post Title */}
+            <h2 className="text-[17px] sm:text-[19px] font-bold text-[#111827] group-hover:text-rose-600 group-hover:underline underline-offset-4 decoration-rose-400 transition-colors leading-[1.4] break-keep mb-2">
               {post.title}
             </h2>
-            <p className="text-[14.5px] leading-[1.7] text-[#475569] line-clamp-3 break-keep mb-5">
+
+            {/* Post Excerpt */}
+            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#4b5563] line-clamp-2 sm:line-clamp-3 break-keep mb-3">
               {post.excerpt}
             </p>
+
+            {/* Meta info (Author, Date, Category) */}
+            <div className="flex items-center gap-3 text-[12px] text-[#9ca3af]">
+              <span className="font-medium text-[#4b5563]">버진로드</span>
+              <span>·</span>
+              <span>{formattedDateTime}</span>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between text-[12.5px] text-[#64748B] pt-4 border-t border-[#F1F5F9]">
-            <div className="flex items-center gap-1.5 font-semibold text-[#1E1B2E]">
-              <span className="w-4 h-4 rounded-md bg-[#1E1B2E] text-white text-[9px] font-bold flex items-center justify-center">
-                V
-              </span>
-              <span>버진로드</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[#475569]">
-              <Clock className="w-3.5 h-3.5 text-[#94A3B8]" />
-              <span className="tabular-nums font-medium">{formattedDateTime}</span>
-            </div>
+          {/* Right Thumbnail Image (Classic 120x100 / 140x110) */}
+          <div className="w-full sm:w-[150px] lg:w-[160px] aspect-[16/10] sm:aspect-[4/3] rounded-md overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+            <img
+              src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
+              alt={post.title}
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600";
+              }}
+            />
           </div>
         </div>
       </article>
     );
   }
 
+  // Card View Mode (Classic Naver Blog / Tistory Grid Card)
   return (
     <article
       onClick={() => onClick(post.id)}
-      className="group cursor-pointer bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-2xl overflow-hidden shadow-xs hover:shadow-sm transition-all duration-200 flex flex-col h-full text-left"
+      className="group cursor-pointer bg-white border border-[#e5e7eb] hover:border-gray-400 rounded-lg overflow-hidden transition-all duration-200 flex flex-col h-full text-left"
       id={`post-${post.id}`}
     >
-      {/* Thumbnail */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#F8FAFC]">
+      <div className="aspect-[16/10] overflow-hidden bg-gray-100">
         <img
           src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
           alt={post.title}
           referrerPolicy="no-referrer"
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
           onError={(e) => {
-            (e.target as HTMLImageElement).src =
-              "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800";
+            const target = e.currentTarget;
+            target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600";
           }}
         />
-        {/* Category badge */}
-        <div className="absolute top-3 left-3">
-          <span
-            style={{ backgroundColor: colors.bg, color: colors.text, borderColor: colors.border }}
-            className="text-[11.5px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs"
-          >
-            {post.category}
-          </span>
-        </div>
-
-        {/* Thumbnail Date & Time Overlay Badge */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/75 backdrop-blur-xs text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-sm border border-white/10">
-          <Calendar className="w-3 h-3 text-[#FFB199]" />
-          <span className="tabular-nums">{formattedDateTime}</span>
-        </div>
       </div>
 
-      {/* Body Content */}
-      <div className="p-5 flex flex-col flex-1 justify-between">
+      <div className="p-4 sm:p-5 flex flex-col justify-between flex-1">
         <div>
-          <h3 className="text-[17px] sm:text-[18.5px] font-bold leading-[1.4] text-[#111827] mb-2.5 break-keep line-clamp-2 group-hover:text-[#E8745F] transition-colors tracking-tight">
+          <span className="text-[11.5px] font-bold text-rose-600 uppercase tracking-wider mb-1 block">
+            {post.category}
+          </span>
+          <h2 className="text-[16px] font-bold text-[#111827] group-hover:text-rose-600 line-clamp-2 leading-snug break-keep mb-2 transition-colors">
             {post.title}
-          </h3>
-
-          <p className="text-[13.5px] leading-[1.65] text-[#475569] line-clamp-2 break-keep mb-4">
+          </h2>
+          <p className="text-[13px] leading-relaxed text-[#4b5563] line-clamp-2 break-keep mb-3">
             {post.excerpt}
           </p>
         </div>
 
-        {/* Footer Meta */}
-        <div className="flex items-center justify-between text-[12px] text-[#64748B] pt-3.5 border-t border-[#F1F5F9]">
-          <div className="flex items-center gap-1.5 font-medium text-[#1E1B2E]">
-            <span className="w-3.5 h-3.5 rounded-sm bg-[#1E1B2E] text-white text-[8px] font-bold flex items-center justify-center">
-              V
-            </span>
-            <span>버진로드</span>
-          </div>
-          <div className="flex items-center gap-1.5 tabular-nums text-[#64748B]">
-            <Clock className="w-3 h-3 text-[#94A3B8]" />
-            <span className="font-medium text-[#334155]">{formattedDateTime}</span>
-          </div>
+        <div className="flex items-center justify-between text-[11.5px] text-[#9ca3af] pt-3 border-t border-gray-100">
+          <span>버진로드</span>
+          <span>{formattedDateTime}</span>
         </div>
       </div>
     </article>

@@ -392,21 +392,198 @@
         "id": "sched-20260902-결혼준비-1",
         "category": "결혼준비",
         "targetTime": "08:35:36",
-        "published": false
+        "published": true,
+        "postId": "auto-wed-20260902-4641",
+        "postTitle": "2026년 웨딩드레스 스드메 견적 비교 및 추가금 없는 정찰제 숍 고르는 법",
+        "publishedAt": "2026-09-02 08:35:36"
       },
       {
         "id": "sched-20260902-신혼가전-2",
         "category": "신혼가전",
         "targetTime": "13:45:34",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260902-5905",
+        "postTitle": "20평대 vs 30평대 신혼집 평수별 냉장고 키친핏 vs 프리스탠딩 용량 선택 가이드",
+        "publishedAt": "2026-09-02 13:45:34"
       },
       {
         "id": "sched-20260902-신혼금융-3",
         "category": "신혼금융",
         "targetTime": "17:51:44",
+        "published": true,
+        "postId": "auto-fin-20260902-4119",
+        "postTitle": "신혼부부 통장 쪼개기 4대 원칙 — 고정비·변동비·비상금·투자 통장 세팅법",
+        "publishedAt": "2026-09-02 17:51:44"
+      }
+    ],
+    "2026-09-03": [
+      {
+        "id": "sched-20260903-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:17:54",
+        "published": true,
+        "postId": "auto-fin-20260903-1879",
+        "postTitle": "2026년 신혼부부 ISA 계좌와 연금저축펀드 절세 혜택 극대화 포트폴리오",
+        "publishedAt": "2026-09-03 09:17:54"
+      },
+      {
+        "id": "sched-20260903-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "21:25:03",
+        "published": true,
+        "postId": "auto-app-20260903-4003",
+        "postTitle": "백화점 vs 오픈점 vs 하이마트 신혼가전 패키지 견적 1,000만 원 체감가 할인 받는 법",
+        "publishedAt": "2026-09-03 21:25:03"
+      }
+    ],
+    "2026-09-04": [
+      {
+        "id": "sched-20260904-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:43:14",
+        "published": true,
+        "postId": "auto-wed-20260904-9893",
+        "postTitle": "웨딩 밴드 반지 브랜드별(까르띠에·티파니·불가리·종로공방) 견적 및 디자인 비교",
+        "publishedAt": "2026-09-04 09:43:14"
+      },
+      {
+        "id": "sched-20260904-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "21:03:36",
+        "published": true,
+        "postId": "auto-app-20260904-7295",
+        "postTitle": "신혼집 거실 공기청정기 & 제습기 용량 선택 공식 — 실평수 대비 1.5배 마력 계산법",
+        "publishedAt": "2026-09-04 21:03:36"
+      }
+    ],
+    "2026-09-05": [
+      {
+        "id": "sched-20260905-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:30:32",
+        "published": true,
+        "postId": "auto-wed-20260905-1335",
+        "postTitle": "신혼부부 모바일 청첩장 셀프 제작과 계좌번호 표기 에티켓 가이드",
+        "publishedAt": "2026-09-05 09:30:32"
+      },
+      {
+        "id": "sched-20260905-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:41:23",
+        "published": true,
+        "postId": "auto-app-20260905-2826",
+        "postTitle": "신혼 침대 매트리스 브랜드별(에이스·시몬스·템퍼·씰리) 경도 및 프레임 선택 요령",
+        "publishedAt": "2026-09-05 19:41:23"
+      }
+    ],
+    "2026-09-06": [
+      {
+        "id": "sched-20260906-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "07:24:01",
+        "published": true,
+        "postId": "auto-wed-20260906-5991",
+        "postTitle": "신혼집 입주 전 필수 셀프 체크리스트 — 입주 청소·줄눈·탄성코트·방충망 시공 순서",
+        "publishedAt": "2026-09-06 07:24:01"
+      },
+      {
+        "id": "sched-20260906-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:31:36",
+        "published": true,
+        "postId": "auto-app-20260906-2626",
+        "postTitle": "2026년 삼성 비스포크 AI 콤보 vs LG 트롬 워시콤보 올인원 세탁건조기 실사용 분석",
+        "publishedAt": "2026-09-06 19:31:36"
+      }
+    ],
+    "2026-09-07": [
+      {
+        "id": "sched-20260907-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "09:28:32",
+        "published": true,
+        "postId": "auto-app-20260907-1437",
+        "postTitle": "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드",
+        "publishedAt": "2026-09-07 09:28:32"
+      },
+      {
+        "id": "sched-20260907-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "20:47:43",
+        "published": true,
+        "postId": "auto-fin-20260907-9702",
+        "postTitle": "2026년 신혼부부 맞벌이 합산소득 2억 원 완화에 따른 정책금융 상품 총정리",
+        "publishedAt": "2026-09-07 20:47:43"
+      }
+    ],
+    "2026-09-08": [
+      {
+        "id": "sched-20260908-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:17:55",
+        "published": true,
+        "postId": "auto-fin-20260908-7481",
+        "postTitle": "신혼부부 전세보증금 반환보증보험(HUG·SGI) 가입 절차 및 보증료 30만 원 전액 지원 환급",
+        "publishedAt": "2026-09-08 08:17:55"
+      },
+      {
+        "id": "sched-20260908-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "21:23:25",
+        "published": true,
+        "postId": "auto-app-20260908-4586",
+        "postTitle": "신혼집 주방 인테리어 식기세척기 빌트인 장내림 시공 및 전기 용량 체크포인트",
+        "publishedAt": "2026-09-08 21:23:25"
+      }
+    ],
+    "2026-09-09": [
+      {
+        "id": "sched-20260909-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:44:53",
+        "published": true,
+        "postId": "auto-fin-20260909-2110",
+        "postTitle": "2026년 신생아 특례 자녀수별 대출 우대금리 및 5년 연장 가이드",
+        "publishedAt": "2026-09-09 09:44:53"
+      },
+      {
+        "id": "sched-20260909-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:44:55",
+        "published": true,
+        "postId": "auto-app-20260909-8919",
+        "postTitle": "2026년 맞벌이 신혼부부를 위한 로봇청소기 직수형 vs 집진형 완벽 스펙 비교",
+        "publishedAt": "2026-09-09 19:44:55"
+      }
+    ],
+    "2026-09-10": [
+      {
+        "id": "sched-20260910-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:40:26",
+        "published": false
+      },
+      {
+        "id": "sched-20260910-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:21:55",
+        "published": false
+      }
+    ],
+    "2026-09-11": [
+      {
+        "id": "sched-20260911-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "08:01:06",
+        "published": false
+      },
+      {
+        "id": "sched-20260911-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "19:21:14",
         "published": false
       }
     ]
   },
-  "lastCheck": "2026-08-31T17:03:14.967Z"
+  "lastCheck": "2026-09-09T20:29:50.070Z"
 }

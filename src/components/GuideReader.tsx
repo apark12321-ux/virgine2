@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Post } from "../types";
-import { POST_EXTRA_MAP } from "../postMeta";
 import { formatPostDateTime } from "../lib/utils";
 import { AdSenseUnit } from "./AdSenseUnit";
-import { Sidebar } from "./Sidebar";
 import {
   Share2,
   Printer,
@@ -11,20 +9,15 @@ import {
   ChevronRight,
   CheckCircle2,
   List,
-  ArrowUp,
-  BookOpen,
-  Hash,
-  Sparkles,
-  Layers,
-  Calendar,
-  Globe,
   Heart,
   MessageSquare,
   Send,
   User,
   CornerDownRight,
-  ShieldCheck,
-  Mail
+  Copy,
+  Calendar,
+  Eye,
+  FolderOpen
 } from "lucide-react";
 
 export interface TocItem {
@@ -56,10 +49,6 @@ interface GuideReaderProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void;
 }
 
-/**
- * Parses raw HTML content, extracts H2 and H3 tags,
- * and ensures each heading in the rendered HTML has a unique ID and scroll-margin.
- */
 function processHeadings(rawHtml: string): {
   processedHtml: string;
   tocItems: TocItem[];
@@ -69,12 +58,10 @@ function processHeadings(rawHtml: string): {
   const tocItems: TocItem[] = [];
   let index = 0;
 
-  // Regular expression matching <h2>...</h2> and <h3>...</h3>
   const headingRegex = /<(h[23])(\s+[^>]*)?>([\s\S]*?)<\/\1>/gi;
 
   const processedHtml = rawHtml.replace(headingRegex, (match, tag, existingAttrs, innerContent) => {
     const level = tag.toLowerCase() === "h2" ? 2 : 3;
-    // Strip nested HTML tags for TOC text
     const cleanText = innerContent.replace(/<[^>]+>/g, "").trim();
     if (!cleanText) return match;
 
@@ -84,21 +71,11 @@ function processHeadings(rawHtml: string): {
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "");
 
-    const id = `toc-heading-${index++}-${safeSlug || "section"}`;
-    tocItems.push({
-      id,
-      text: cleanText,
-      level
-    });
+    const id = `toc-${index++}-${safeSlug || "section"}`;
+    tocItems.push({ id, text: cleanText, level });
 
-    // Remove any existing id from existingAttrs to avoid duplicates
-    const sanitizedAttrs = (existingAttrs || "")
-      .replace(/\bid="[^"]*"/gi, "")
-      .trim();
-
-    return `<${tag} id="${id}" class="scroll-mt-28 group relative font-extrabold ${sanitizedAttrs}">
-      <span class="inline-flex items-center gap-1.5">${innerContent}</span>
-    </${tag}>`;
+    const sanitizedAttrs = (existingAttrs || "").replace(/\bid="[^"]*"/gi, "").trim();
+    return `<${tag} id="${id}" class="scroll-mt-20 ${sanitizedAttrs}">${innerContent}</${tag}>`;
   });
 
   return { processedHtml, tocItems };
@@ -114,16 +91,10 @@ export function GuideReader({
   onNavigate,
   showToast
 }: GuideReaderProps) {
-  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
-  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
-  const [readingProgress, setReadingProgress] = useState<number>(0);
-  const [mobileTocOpen, setMobileTocOpen] = useState<boolean>(false);
-  const articleContentRef = useRef<HTMLDivElement>(null);
-  const tocNavRef = useRef<HTMLElement>(null);
-  const isUserClickingRef = useRef<boolean>(false);
-  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isTocOpen, setIsTocOpen] = useState(true);
+  const formattedDate = formatPostDateTime(post.date, post.id);
 
-  // Heart / Reaction State with local persistence
+  // Heart / Reaction State
   const [isLiked, setIsLiked] = useState<boolean>(() => {
     try {
       return localStorage.getItem(`virginroad_liked_${post.id}`) === "true";
@@ -133,812 +104,438 @@ export function GuideReader({
   });
 
   const [likeCount, setLikeCount] = useState<number>(() => {
-    // Stable pseudo-realistic initial count based on post id
-    let base = 28;
-    for (let i = 0; i < post.id.length; i++) {
-      base += post.id.charCodeAt(i);
-    }
-    const seed = 12 + (base % 37);
     try {
       const stored = localStorage.getItem(`virginroad_likes_${post.id}`);
-      return stored ? parseInt(stored, 10) : seed;
+      return stored ? parseInt(stored, 10) : 0;
     } catch {
-      return seed;
+      return 0;
     }
   });
 
   const handleToggleLike = () => {
-    const nextState = !isLiked;
-    setIsLiked(nextState);
-    const nextCount = nextState ? likeCount + 1 : Math.max(0, likeCount - 1);
-    setLikeCount(nextCount);
-    try {
-      localStorage.setItem(`virginroad_liked_${post.id}`, String(nextState));
-      localStorage.setItem(`virginroad_likes_${post.id}`, String(nextCount));
-    } catch {}
-    if (nextState) {
-      showToast("이 글에 공감해 주셔서 감사합니다.", "success");
+    if (isLiked) {
+      setIsLiked(false);
+      setLikeCount((prev) => Math.max(0, prev - 1));
+      try {
+        localStorage.removeItem(`virginroad_liked_${post.id}`);
+        localStorage.setItem(`virginroad_likes_${post.id}`, String(Math.max(0, likeCount - 1)));
+      } catch {}
+      showToast("공감이 취소되었습니다.", "info");
+    } else {
+      setIsLiked(true);
+      setLikeCount((prev) => prev + 1);
+      try {
+        localStorage.setItem(`virginroad_liked_${post.id}`, "true");
+        localStorage.setItem(`virginroad_likes_${post.id}`, String(likeCount + 1));
+      } catch {}
+      showToast("이 포스팅을 공감하셨습니다. 감사합니다!", "success");
     }
   };
 
-  // Reader Comments State
-  const initialDefaultComments: ReaderComment[] = useMemo(() => [
-    {
-      id: "c1",
-      author: "동탄예비신부",
-      date: "2일 전",
-      content: "실제 경험담 위주로 솔직하게 풀어주셔서 머리에 쏙쏙 들어오네요! 특히 놓치기 쉬운 특약 사항 꿀팁 덕분에 계약할 때 큰 도움 받았습니다. 감사합니다.",
-      reply: {
-        author: "박아람 (버진로드)",
-        date: "1일 전",
-        content: "도움이 되셨다니 정말 기쁩니다! 계약서 작성하실 때 끝까지 꼼꼼히 확인하시고, 행복한 신혼집 마련되시길 진심으로 응원합니다 :)"
-      }
-    },
-    {
-      id: "c2",
-      author: "마포새댁",
-      date: "5일 전",
-      content: "은행 창구에서도 잘 안 알려주던 디테일한 차이점을 이렇게 깔끔하게 짚어주시니 속이 다 시원하네요. 북마크해 두고 정독 중입니다!",
-      reply: {
-        author: "박아람 (버진로드)",
-        date: "4일 전",
-        content: "감사합니다! 앞으로도 발품 팔아 건진 진짜 꿀팁들만 모아서 업데이트하겠습니다. 궁금한 점 있으시면 언제든 편하게 물어보세요!"
-      }
-    }
-  ], []);
-
-  const [comments, setComments] = useState<ReaderComment[]>(() => {
+  const handleCopyLink = async () => {
     try {
-      const stored = localStorage.getItem(`virginroad_comments_${post.id}`);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch {}
-    return initialDefaultComments;
-  });
-
-  const [newCommentAuthor, setNewCommentAuthor] = useState("");
-  const [newCommentText, setNewCommentText] = useState("");
-
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCommentAuthor.trim() || !newCommentText.trim()) {
-      showToast("닉네임과 댓글 내용을 모두 입력해 주세요.", "error");
-      return;
+      await navigator.clipboard.writeText(window.location.href);
+      showToast("포스팅 링크가 클립보드에 복사되었습니다.", "success");
+    } catch {
+      showToast("링크 복사에 실패했습니다.", "error");
     }
-    const newComment: ReaderComment = {
-      id: `c_${Date.now()}`,
-      author: newCommentAuthor.trim(),
-      date: "방금 전",
-      content: newCommentText.trim()
-    };
-    const updated = [newComment, ...comments];
-    setComments(updated);
-    try {
-      localStorage.setItem(`virginroad_comments_${post.id}`, JSON.stringify(updated));
-    } catch {}
-    setNewCommentText("");
-    showToast("소중한 의견과 질문이 등록되었습니다!", "success");
   };
 
-  // Extract headings and inject IDs
+  // Process Headings for TOC
   const { processedHtml, tocItems } = useMemo(() => {
     return processHeadings(post.content);
   }, [post.content]);
 
-  // Set initial active heading when post or headings change
-  useEffect(() => {
-    if (tocItems.length > 0) {
-      setActiveHeadingId(tocItems[0].id);
+  // Signature Tistory: Other posts in same category (카테고리의 다른 글)
+  const categoryPosts = useMemo(() => {
+    return allPosts.filter((p) => p.category === post.category).slice(0, 5);
+  }, [allPosts, post.category]);
+
+  // Reader Comments (Loaded from localStorage, no fake mock comments)
+  const [comments, setComments] = useState<ReaderComment[]>(() => {
+    try {
+      const stored = localStorage.getItem(`virginroad_comments_${post.id}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
     }
-  }, [tocItems]);
+  });
 
-  // ScrollSpy & Reading Progress Tracker
-  useEffect(() => {
-    if (tocItems.length === 0) return;
+  const [newAuthor, setNewAuthor] = useState("");
+  const [newContent, setNewContent] = useState("");
 
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const docEl = document.documentElement;
-          const scrollTop = window.scrollY || docEl.scrollTop;
-          const scrollHeight = docEl.scrollHeight - docEl.clientHeight;
-
-          // Precise article-based reading progress calculation
-          let progress = 0;
-          if (articleContentRef.current) {
-            const rect = articleContentRef.current.getBoundingClientRect();
-            const articleTop = rect.top + scrollTop;
-            const articleHeight = rect.height;
-            const windowHeight = window.innerHeight;
-
-            const startOffset = Math.max(0, articleTop - 120);
-            const endOffset = articleTop + articleHeight - windowHeight * 0.7;
-            const totalDistance = endOffset - startOffset;
-
-            if (scrollTop <= startOffset) {
-              progress = startOffset > 0 ? Math.min(10, Math.round((scrollTop / startOffset) * 10)) : 0;
-            } else if (scrollTop >= endOffset || (scrollHeight > 0 && scrollTop >= scrollHeight - 80)) {
-              progress = 100;
-            } else if (totalDistance > 0) {
-              const currentDistance = scrollTop - startOffset;
-              progress = Math.min(100, Math.max(10, Math.round(10 + (currentDistance / totalDistance) * 90)));
-            }
-          } else if (scrollHeight > 0) {
-            progress = Math.min(100, Math.max(0, Math.round((scrollTop / scrollHeight) * 100)));
-          }
-
-          setReadingProgress(progress);
-
-          // If a click navigation is currently in progress, let the click handler control active state
-          if (isUserClickingRef.current) {
-            ticking = false;
-            return;
-          }
-
-          // If user scrolled almost to the very bottom, activate the last heading
-          if (scrollHeight > 0 && scrollTop >= scrollHeight - 60) {
-            const lastItem = tocItems[tocItems.length - 1];
-            if (lastItem) {
-              setActiveHeadingId(lastItem.id);
-            }
-            ticking = false;
-            return;
-          }
-
-          // Calculate current active heading with sticky navbar threshold
-          const offsetThreshold = 130; // Navbar height (~64px) + comfortable trigger buffer
-          let currentActive = tocItems[0].id;
-
-          for (let i = 0; i < tocItems.length; i++) {
-            const item = tocItems[i];
-            const el = document.getElementById(item.id);
-            if (el) {
-              const top = el.getBoundingClientRect().top;
-              if (top <= offsetThreshold) {
-                currentActive = item.id;
-              } else {
-                break;
-              }
-            }
-          }
-
-          setActiveHeadingId(currentActive);
-          ticking = false;
-        });
-
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Initial evaluation
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-    };
-  }, [tocItems]);
-
-  // Automatically scroll TOC container so the active item is always visible
-  useEffect(() => {
-    if (!activeHeadingId || !tocNavRef.current) return;
-    const activeBtn = tocNavRef.current.querySelector<HTMLElement>(`[data-heading-id="${activeHeadingId}"]`);
-    if (activeBtn) {
-      const container = tocNavRef.current;
-      const btnTop = activeBtn.offsetTop;
-      const btnHeight = activeBtn.offsetHeight;
-      const containerScrollTop = container.scrollTop;
-      const containerHeight = container.clientHeight;
-
-      if (btnTop < containerScrollTop || btnTop + btnHeight > containerScrollTop + containerHeight) {
-        container.scrollTo({
-          top: Math.max(0, btnTop - containerHeight / 2 + btnHeight / 2),
-          behavior: "smooth"
-        });
-      }
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAuthor.trim() || !newContent.trim()) {
+      showToast("닉네임과 댓글 내용을 모두 입력해주세요.", "error");
+      return;
     }
-  }, [activeHeadingId]);
-
-  // Smooth scroll to target heading with precise offset & visual highlight
-  const scrollToHeading = (id: string) => {
-    const target = document.getElementById(id);
-    if (!target) return;
-
-    // Prevent ScrollSpy from overriding during the smooth scroll animation
-    isUserClickingRef.current = true;
-    setActiveHeadingId(id);
-    setMobileTocOpen(false);
-
-    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-    clickTimeoutRef.current = setTimeout(() => {
-      isUserClickingRef.current = false;
-    }, 850);
-
-    const NAVBAR_HEIGHT = 80;
-    const targetRect = target.getBoundingClientRect();
-    const absoluteTop = targetRect.top + window.pageYOffset - NAVBAR_HEIGHT;
-
-    window.scrollTo({
-      top: Math.max(0, absoluteTop),
-      behavior: "smooth"
-    });
-
-    // Brief subtle highlight on arrival
-    target.classList.add("ring-2", "ring-[#E8745F]/40", "rounded-lg", "transition-all", "duration-500");
-    setTimeout(() => {
-      target.classList.remove("ring-2", "ring-[#E8745F]/40");
-    }, 1500);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const today = new Date().toISOString().split("T")[0].replace(/-/g, ".");
+    const newComment: ReaderComment = {
+      id: `c_${Date.now()}`,
+      author: newAuthor.trim(),
+      date: today,
+      content: newContent.trim()
+    };
+    const updated = [...comments, newComment];
+    setComments(updated);
+    try {
+      localStorage.setItem(`virginroad_comments_${post.id}`, JSON.stringify(updated));
+    } catch {}
+    setNewAuthor("");
+    setNewContent("");
+    showToast("댓글이 성공적으로 등록되었습니다.", "success");
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-      {/* ========================================================================= */}
-      {/* TOP FIXED READING PROGRESS BAR                                            */}
-      {/* ========================================================================= */}
-      <div
-        className="fixed top-0 left-0 right-0 h-[3.5px] bg-black/5 z-[100] pointer-events-none"
-        aria-hidden="true"
-      >
-        <div
-          className="relative h-full bg-gradient-to-r from-[#E8745F] via-[#FF8A65] to-[#E8745F] transition-[width] duration-150 ease-out shadow-[0_1px_8px_rgba(232,116,95,0.5)]"
-          style={{ width: `${readingProgress}%` }}
+    <div className="w-full bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 lg:p-12 shadow-2xs font-sans text-left">
+      {/* 1. Breadcrumb (홈 > 카테고리 > 포스트 제목) */}
+      <nav aria-label="Breadcrumb" className="text-[12.5px] text-[#6b7280] mb-4 flex items-center gap-1.5 flex-wrap">
+        <button
+          type="button"
+          onClick={() => onNavigate("home")}
+          className="hover:text-rose-600 transition-colors cursor-pointer"
         >
-          {readingProgress > 0 && readingProgress < 100 && (
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#E8745F]" />
-          )}
+          홈
+        </button>
+        <span className="text-gray-300">&gt;</span>
+        <button
+          type="button"
+          onClick={() => onNavigate(`category-${post.category}`)}
+          className="hover:text-rose-600 font-medium transition-colors cursor-pointer"
+        >
+          {post.category}
+        </button>
+        <span className="text-gray-300">&gt;</span>
+        <span className="text-gray-400 truncate max-w-[280px] sm:max-w-md">{post.title}</span>
+      </nav>
+
+      {/* 2. Article Header (Classic Korean Blog Style) */}
+      <header className="pb-6 border-b border-[#e5e7eb] mb-8">
+        <div className="mb-2.5">
+          <button
+            type="button"
+            onClick={() => onNavigate(`category-${post.category}`)}
+            className="text-[13px] font-bold text-rose-600 hover:underline cursor-pointer"
+          >
+            [{post.category}]
+          </button>
         </div>
-      </div>
 
-      {/* ========================================================================= */}
-      {/* 1. MAIN ARTICLE READING COLUMN (col-span-8)                               */}
-      {/* ========================================================================= */}
-      <div className="lg:col-span-8 bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-8 lg:p-10 shadow-xs">
-        {/* Breadcrumbs */}
-        <nav aria-label="breadcrumb" className="text-[12.5px] font-medium text-[#64748B] mb-5">
-          <ol className="flex items-center gap-1.5">
-            <li>
-              <button
-                type="button"
-                onClick={() => onNavigate("home")}
-                className="hover:text-[#111827] cursor-pointer"
-              >
-                홈
-              </button>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <button
-                type="button"
-                onClick={() => onNavigate(`category-${post.category}`)}
-                className="text-[#E8745F] font-semibold hover:underline cursor-pointer"
-              >
-                {post.category}
-              </button>
-            </li>
-          </ol>
-        </nav>
-
-        {/* Article Headline */}
-        <h1 className="text-[26px] sm:text-[34px] lg:text-[38px] font-extrabold text-[#111827] leading-[1.3] tracking-tight mb-4 break-keep">
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#111827] leading-[1.35] tracking-tight break-keep mb-4">
           {post.title}
         </h1>
 
-        {/* Subtitle / Excerpt */}
-        <p className="text-[16px] sm:text-[17.5px] leading-relaxed text-[#475569] mb-6 break-keep">
-          {post.excerpt}
-        </p>
-
-        {/* Meta Bar */}
-        <div className="flex items-center justify-between py-4 border-y border-[#F1F5F9] mb-8 text-[13px] text-[#64748B]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1E1B2E] text-white flex items-center justify-center font-black text-[15px] shadow-xs">
-              V
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-[#111827]">버진로드</span>
-                <span className="text-[11px] text-[#E8745F] font-semibold bg-[#EEF0FB] px-1.5 py-0.5 rounded">
-                  포스팅
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[12px] text-[#94A3B8] mt-0.5 tabular-nums">
-                <span>{formatPostDateTime(post.date, post.id)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              title="포스트 링크 복사"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(window.location.href);
-                  showToast("포스트 주소가 복사되었습니다!", "success");
-                } catch {
-                  showToast("주소 복사에 실패했습니다.", "error");
-                }
-              }}
-              className="p-2 text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              title="포스트 인쇄"
-              onClick={() => window.print()}
-              className="p-2 text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9] rounded-lg transition-colors hidden sm:block cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Featured Image */}
-        <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-[#F8FAFC] mb-8 border border-[#F1F5F9]">
-          <img
-            src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=1200"}
-            alt={post.title}
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/75 backdrop-blur-xs text-white text-[12px] font-semibold px-3 py-1.5 rounded-lg shadow-sm border border-white/10">
-            <Calendar className="w-3.5 h-3.5 text-[#FFB199]" />
-            <span className="tabular-nums">{formatPostDateTime(post.date, post.id)}</span>
-          </div>
-        </div>
-
-        {/* In-Article Mobile/Tablet Quick TOC Box */}
-        {tocItems.length > 0 && (
-          <div className="mb-8 p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl lg:hidden">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-[14px] font-bold text-[#1E1B2E]">
-                <List className="w-4 h-4 text-[#E8745F]" />
-                <span>글 목차 (빠른 이동)</span>
-              </div>
-              <span className="text-[11px] font-bold text-[#64748B] bg-white px-2 py-0.5 rounded border border-[#E2E8F0]">
-                총 {tocItems.length}개 섹션
-              </span>
-            </div>
-            <nav className="space-y-1.5">
-              {tocItems.map((item, idx) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  data-heading-id={item.id}
-                  onClick={() => scrollToHeading(item.id)}
-                  className={`w-full text-left py-1.5 px-2.5 rounded-lg text-[13px] leading-snug transition-all flex items-start gap-2 cursor-pointer ${
-                    activeHeadingId === item.id
-                      ? "bg-[#EEF0FB] text-[#E8745F] font-bold shadow-2xs border-l-3 border-[#E8745F]"
-                      : "text-[#475569] hover:bg-white hover:text-[#111827]"
-                  } ${item.level === 3 ? "pl-5 text-[12.5px]" : ""}`}
-                >
-                  <span className="text-[11px] opacity-60 mt-0.5 shrink-0">
-                    {item.level === 2 ? `${idx + 1}.` : "•"}
-                  </span>
-                  <span className="break-keep">{item.text}</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-        )}
-
-        {/* Top In-Article AdSense Slot */}
-        <AdSenseUnit slot="article-top-01" label="광고 / Ad" format="auto" />
-
-        {/* Article Body Content with Injected Heading IDs */}
-        <div
-          ref={articleContentRef}
-          className="article-body text-[16.5px] sm:text-[17.5px] leading-[1.85] text-[#24292f]"
-          dangerouslySetInnerHTML={{ __html: processedHtml }}
-        />
-
-        {/* Middle In-Article AdSense Slot */}
-        <AdSenseUnit slot="article-mid-02" label="광고 / Ad" format="auto" />
-
-        {/* Key Takeaway Card */}
-        {POST_EXTRA_MAP[post.id] && (
-          <div className="mt-8 p-6 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-left space-y-2">
-            <div className="flex items-center gap-2 text-[#E8745F] font-bold text-[14px]">
-              <span>[핵심 요약]</span>
-              <span>작성자 한줄 포인트</span>
-            </div>
-            <p className="text-[14.5px] text-[#334155] leading-relaxed break-keep">
-              &ldquo;{POST_EXTRA_MAP[post.id].persona.message}&rdquo;
-            </p>
-          </div>
-        )}
-
-        {/* Reference Source Note (Simple & Clean) */}
-        {POST_EXTRA_MAP[post.id]?.geoSource && (
-          <div className="mt-4 px-4 py-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-left text-[12.5px] text-[#64748B] flex items-center gap-2">
-            <span className="font-semibold text-[#475569]">참고:</span>
-            <span className="break-keep">
-              {POST_EXTRA_MAP[post.id].geoSource.agency} ({POST_EXTRA_MAP[post.id].geoSource.basis})
-            </span>
-          </div>
-        )}
-
-        {/* FAQ Section */}
-        {POST_EXTRA_MAP[post.id] && POST_EXTRA_MAP[post.id].aeoFaq.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-[#F1F5F9]">
-            <h3 className="text-[16px] font-bold text-[#111827] mb-3">
-              [FAQ] 자주 묻는 질문
-            </h3>
-            <div className="space-y-2.5">
-              {POST_EXTRA_MAP[post.id].aeoFaq.map((faq, idx) => {
-                const isOpen = openFaqIdx === idx;
-                return (
-                  <div key={idx} className="border border-[#E2E8F0] rounded-xl overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                      className="w-full flex items-center justify-between p-4 text-left bg-[#F8FAFC] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
-                    >
-                      <span className="text-[14px] font-semibold text-[#111827] break-keep">
-                        <span className="text-[#E8745F] font-bold mr-1">Q.</span> {faq.q}
-                      </span>
-                      <span className="text-[12px] text-[#64748B] shrink-0 ml-2">
-                        {isOpen ? "▲" : "▼"}
-                      </span>
-                    </button>
-                    {isOpen && (
-                      <div className="p-4 bg-white border-t border-[#E2E8F0] text-[13.5px] text-[#475569] leading-relaxed break-keep">
-                        <strong className="text-[#16A34A] mr-1">A.</strong> {faq.a}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Reader Reaction & Like Bar */}
-        <div className="mt-8 pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleToggleLike}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-[14px] transition-all cursor-pointer shadow-xs ${
-                isLiked
-                  ? "bg-[#FFF1EE] text-[#E8745F] border-2 border-[#E8745F] scale-102"
-                  : "bg-white text-[#475569] hover:text-[#E8745F] border border-[#E2E8F0] hover:border-[#CBD5E1]"
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${isLiked ? "fill-[#E8745F] text-[#E8745F]" : ""}`} />
-              <span>공감해요</span>
-              <span className="bg-[#F1F5F9] px-2 py-0.5 rounded-full text-[12px] tabular-nums font-semibold text-[#1E1B2E]">
-                {likeCount}
-              </span>
-            </button>
-            <span className="text-[12.5px] text-[#64748B]">
-              {isLiked ? "응원해 주셔서 감사합니다!" : "이 글이 도움이 되셨다면 공감을 눌러주세요"}
-            </span>
+        <div className="flex items-center justify-between flex-wrap gap-3 text-[13px] text-[#6b7280] pt-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="font-semibold text-[#111827]">버진로드</span>
+            <span className="text-gray-300">·</span>
+            <span>{formattedDate}</span>
+            {comments.length > 0 && (
+              <>
+                <span className="text-gray-300">·</span>
+                <span>댓글 {comments.length}</span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(window.location.href);
-                  showToast("글 주소가 복사되었습니다!", "success");
-                } catch {
-                  showToast("복사에 실패했습니다.", "error");
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[12.5px] text-[#475569] font-semibold transition-colors cursor-pointer"
+              onClick={handleCopyLink}
+              className="px-2.5 py-1 text-[12px] text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>공유</span>
+              <Copy className="w-3.5 h-3.5" />
+              <span>URL 복사</span>
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[12.5px] text-[#475569] font-semibold transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-[12px] text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>인쇄</span>
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Author Persona Signature Box */}
-        <div className="mt-8 p-6 sm:p-7 bg-[#FFFDFB] border border-[#FED7AA]/60 rounded-2xl text-left space-y-4 shadow-2xs">
-          <div className="flex items-start gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#1E1B2E] via-[#2A243E] to-[#E8745F] text-white flex items-center justify-center font-black text-[22px] shadow-sm shrink-0 border border-white">
-              V
+      {/* 3. Table of Contents (Classic Tistory TOC Plugin Style) */}
+      {tocItems.length > 0 && (
+        <div className="bg-[#f9fafb] border border-[#e5e7eb] rounded-lg p-5 mb-8 text-left">
+          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsTocOpen(!isTocOpen)}>
+            <div className="flex items-center gap-2 font-bold text-[14px] text-[#111827]">
+              <List className="w-4 h-4 text-rose-600" />
+              <span>목차 (Table of Contents)</span>
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[15.5px] font-bold text-[#111827]">에디터 박아람 (Virginroad)</span>
-                <span className="text-[11px] font-extrabold bg-[#FFF1EE] text-[#E8745F] px-2 py-0.5 rounded-full border border-[#FFD2BD]">
-                  전문 에디터
-                </span>
-              </div>
-              <p className="text-[13.5px] text-[#475569] leading-relaxed break-keep">
-                공식 정책 기준과 실제 현장 노하우를 바탕으로 예비·신혼부부에게 꼭 필요한 핵심 정보를 체계적으로 전달합니다. 신혼 여정의 든든한 길잡이가 되어 드리겠습니다.
-              </p>
-            </div>
-          </div>
-          <div className="pt-3 border-t border-[#FEE2E2] flex items-center justify-between text-[12.5px] text-[#64748B]">
-            <span className="italic">"궁금한 점이나 추가로 다뤄주었으면 하는 주제가 있다면 아래 댓글로 편하게 남겨주세요."</span>
-            <button
-              type="button"
-              onClick={() => onNavigate("about")}
-              className="text-[#E8745F] hover:underline font-bold shrink-0 ml-2"
-            >
-              블로그 소개 보기 &rarr;
-            </button>
-          </div>
-        </div>
-
-        {/* Interactive Reader Comments & Discussion */}
-        <div className="mt-10 pt-8 border-t border-[#F1F5F9] text-left">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#E8745F]" />
-              <h3 className="text-[16.5px] font-bold text-[#111827]">
-                독자 댓글 & 질문 <span className="text-[#E8745F] text-[14px]">({comments.length})</span>
-              </h3>
-            </div>
-            <span className="text-[12px] text-[#94A3B8]">
-              클린하고 따뜻한 소통 공간입니다
+            <span className="text-[12px] text-gray-500 hover:underline">
+              {isTocOpen ? "접기 ▲" : "열기 ▼"}
             </span>
           </div>
 
-          {/* Comment Input Form */}
-          <form onSubmit={handleAddComment} className="mb-6 p-4 sm:p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl space-y-3">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="닉네임 (예: 마포새댁)"
-                value={newCommentAuthor}
-                onChange={(e) => setNewCommentAuthor(e.target.value)}
-                maxLength={20}
-                className="w-48 px-3 py-1.5 text-[13px] bg-white border border-[#CBD5E1] rounded-lg focus:outline-none focus:border-[#E8745F] focus:ring-1 focus:ring-[#E8745F]"
-              />
-              <span className="text-[11.5px] text-[#94A3B8]">로그인 없이 바로 작성 가능합니다</span>
-            </div>
-            <textarea
-              rows={3}
-              placeholder="글을 읽고 궁금한 점이나 의견을 남겨주시면 에디터가 직접 답변해 드립니다."
-              value={newCommentText}
-              onChange={(e) => setNewCommentText(e.target.value)}
-              className="w-full p-3 text-[13.5px] leading-relaxed bg-white border border-[#CBD5E1] rounded-xl focus:outline-none focus:border-[#E8745F] focus:ring-1 focus:ring-[#E8745F] resize-none"
-            />
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E1B2E] hover:bg-[#E8745F] text-white text-[13px] font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+          {isTocOpen && (
+            <ol className="mt-3.5 pt-3.5 border-t border-gray-200 space-y-2 text-[13.5px]">
+              {tocItems.map((item, idx) => (
+                <li
+                  key={item.id}
+                  className={`${item.level === 3 ? "pl-4 text-[13px] text-gray-600" : "font-medium text-gray-800"}`}
+                >
+                  <a
+                    href={`#${item.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const target = document.getElementById(item.id);
+                      if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }
+                    }}
+                    className="hover:text-rose-600 transition-colors"
+                  >
+                    <span className="text-rose-600 mr-1.5">{idx + 1}.</span>
+                    <span>{item.text}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
+
+      {/* Top In-Article AdSense Banner */}
+      <div className="my-6">
+        <AdSenseUnit slot="article-top-01" label="광고 / Sponsored" format="fluid" />
+      </div>
+
+      {/* 4. Article Body (Tistory / Naver SmartEditor ONE Typography) */}
+      <div
+        className="article-body font-sans text-[16.5px] leading-[1.85] text-[#2c3e50] space-y-6 break-keep"
+        dangerouslySetInnerHTML={{ __html: processedHtml }}
+      />
+
+      {/* Mid In-Article AdSense Banner */}
+      <div className="my-8">
+        <AdSenseUnit slot="article-mid-01" label="광고 / Sponsored" format="fluid" />
+      </div>
+
+      {/* 5. Tag Cloud / Hashtags */}
+      {post.hashtags && post.hashtags.length > 0 && (
+        <div className="pt-8 pb-6 border-t border-[#e5e7eb] flex flex-wrap gap-2 items-center">
+          <span className="text-[13px] font-bold text-gray-500 mr-1">태그:</span>
+          {post.hashtags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[12.5px] text-gray-700 bg-gray-100 hover:bg-rose-50 hover:text-rose-600 px-2.5 py-1 rounded transition-colors"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 6. Empathy / Like Heart Button (Classic Tistory / Naver "공감" Button) */}
+      <div className="py-8 text-center border-t border-b border-[#e5e7eb] my-8 bg-[#fafafa] rounded-lg">
+        <p className="text-[13.5px] text-gray-600 mb-3">
+          이 글이 도움이 되셨다면 <strong className="text-gray-900">공감(♥)</strong>을 눌러주세요!
+        </p>
+        <button
+          type="button"
+          onClick={handleToggleLike}
+          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-[14px] transition-all cursor-pointer shadow-xs ${
+            isLiked
+              ? "bg-rose-600 text-white hover:bg-rose-700 scale-103"
+              : "bg-white text-gray-700 hover:text-rose-600 border border-gray-300 hover:border-rose-300"
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isLiked ? "fill-white" : "text-rose-500"}`} />
+          <span>공감</span>
+          {likeCount > 0 && <span className="ml-0.5 text-xs font-semibold">{likeCount}</span>}
+        </button>
+      </div>
+
+      {/* 7. Author Profile Card (Classic Tistory Author Box) */}
+      <div className="bg-[#f9fafb] border border-[#e5e7eb] rounded-lg p-5 my-8 flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-lg shrink-0">
+          V
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-bold text-[15px] text-[#111827]">버진로드 (Virginroad)</h4>
+            <span className="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-medium">
+              에디터
+            </span>
+          </div>
+          <p className="text-[13px] leading-relaxed text-[#4b5563] break-keep mb-2">
+            2026년 기준 정부 최신 공시 및 실무 심사 기준을 바탕으로 직접 검증한 신혼부부 주거·금융·가전 백서를 연재하고 있습니다.
+          </p>
+          <div className="text-[12px] text-gray-500">
+            문의: <a href="mailto:apark12321@gmail.com" className="text-rose-600 hover:underline">apark12321@gmail.com</a>
+          </div>
+        </div>
+      </div>
+
+      {/* 8. Signature Tistory: Other Posts in this Category (카테고리의 다른 글) */}
+      <div className="border border-[#e5e7eb] rounded-lg overflow-hidden my-8">
+        <div className="bg-[#f3f4f6] px-4 py-2.5 border-b border-[#e5e7eb] font-bold text-[13.5px] text-[#111827] flex items-center justify-between">
+          <span>&lsquo;{post.category}&rsquo; 카테고리의 다른 글</span>
+          <button
+            type="button"
+            onClick={() => onNavigate(`category-${post.category}`)}
+            className="text-[12px] text-gray-500 hover:text-rose-600 font-normal cursor-pointer"
+          >
+            전체보기 &rarr;
+          </button>
+        </div>
+        <ul className="divide-y divide-gray-100 text-[13.5px]">
+          {categoryPosts.map((cp) => {
+            const isCurrent = cp.id === post.id;
+            return (
+              <li
+                key={cp.id}
+                onClick={() => onNavigate(`post-${cp.id}`)}
+                className={`px-4 py-2.5 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors ${
+                  isCurrent ? "bg-rose-50/50 font-bold text-rose-700" : "text-gray-700"
+                }`}
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>댓글 등록</span>
-              </button>
-            </div>
-          </form>
-
-          {/* Comments List */}
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div key={comment.id} className="p-4 bg-white border border-[#E2E8F0] rounded-xl space-y-2.5">
-                <div className="flex items-center justify-between text-[12.5px]">
-                  <div className="flex items-center gap-2 font-bold text-[#1E1B2E]">
-                    <div className="w-6 h-6 rounded-full bg-[#F1F5F9] text-[#475569] flex items-center justify-center text-[11px] font-extrabold">
-                      {comment.author.charAt(0)}
-                    </div>
-                    <span>{comment.author}</span>
-                  </div>
-                  <span className="text-[#94A3B8] text-[11.5px]">{comment.date}</span>
+                <div className="flex items-center gap-2 truncate pr-4">
+                  <span className="text-xs text-gray-400">·</span>
+                  <span className="truncate">{cp.title}</span>
+                  {isCurrent && (
+                    <span className="text-[11px] bg-rose-600 text-white px-1.5 py-0.2 rounded shrink-0">
+                      현재글
+                    </span>
+                  )}
                 </div>
-                <p className="text-[13.5px] text-[#334155] leading-relaxed break-keep pl-8">
-                  {comment.content}
-                </p>
+                <span className="text-xs text-gray-400 shrink-0 tabular-nums">
+                  {formatPostDateTime(cp.date, cp.id)}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
-                {/* Author Reply (if present) */}
+      {/* 9. Previous / Next Post Navigation (이전글 / 다음글) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-8 border-t border-b border-[#e5e7eb] py-4 text-[13.5px]">
+        <div>
+          {prevPost ? (
+            <button
+              type="button"
+              onClick={() => onNavigate(`post-${prevPost.id}`)}
+              className="w-full text-left p-3 hover:bg-gray-50 rounded transition-colors group cursor-pointer"
+            >
+              <div className="text-[11.5px] text-gray-400 flex items-center gap-1 mb-1">
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>이전 글</span>
+              </div>
+              <p className="text-gray-800 group-hover:text-rose-600 font-medium line-clamp-1 transition-colors">
+                {prevPost.title}
+              </p>
+            </button>
+          ) : (
+            <div className="p-3 text-gray-400 text-xs">이전 글이 없습니다.</div>
+          )}
+        </div>
+
+        <div className="border-t sm:border-t-0 sm:border-l border-gray-100 sm:pl-3">
+          {nextPost ? (
+            <button
+              type="button"
+              onClick={() => onNavigate(`post-${nextPost.id}`)}
+              className="w-full text-right p-3 hover:bg-gray-50 rounded transition-colors group cursor-pointer"
+            >
+              <div className="text-[11.5px] text-gray-400 flex items-center justify-end gap-1 mb-1">
+                <span>다음 글</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </div>
+              <p className="text-gray-800 group-hover:text-rose-600 font-medium line-clamp-1 transition-colors">
+                {nextPost.title}
+              </p>
+            </button>
+          ) : (
+            <div className="p-3 text-gray-400 text-xs text-right">다음 글이 없습니다.</div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom In-Article AdSense Banner */}
+      <div className="my-6">
+        <AdSenseUnit slot="article-bottom-01" label="광고 / Sponsored" format="fluid" />
+      </div>
+
+      {/* 10. Comments Section (댓글 영역) */}
+      <section className="pt-6 border-t border-[#e5e7eb]" id="comments">
+        <h3 className="text-[17px] font-bold text-[#111827] mb-6 flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-rose-600" />
+          <span>댓글 ({comments.length})</span>
+        </h3>
+
+        {/* Existing Comments List */}
+        <div className="space-y-4 mb-8">
+          {comments.length === 0 ? (
+            <div className="p-6 text-center text-[13px] text-gray-500 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg">
+              등록된 댓글이 없습니다. 첫 번째 댓글을 남겨보세요.
+            </div>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg text-left">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-[13.5px] text-[#111827]">{comment.author}</span>
+                  <span className="text-[11.5px] text-gray-400">{comment.date}</span>
+                </div>
+                <p className="text-[13.5px] text-gray-700 leading-relaxed break-keep">{comment.content}</p>
+
+                {/* Author Reply */}
                 {comment.reply && (
-                  <div className="mt-3 ml-6 pl-4 border-l-2 border-[#E8745F] bg-[#FFF8F6] p-3 rounded-r-xl space-y-1 text-left">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12px] font-bold text-[#E8745F]">
-                        {comment.reply.author}
+                  <div className="mt-3.5 pt-3.5 border-t border-gray-200 pl-4 border-l-2 border-rose-500 bg-white p-3 rounded">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-[12.5px] text-rose-600 flex items-center gap-1">
+                        <CornerDownRight className="w-3.5 h-3.5" />
+                        <span>{comment.reply.author}</span>
                       </span>
-                      <span className="text-[11px] text-[#94A3B8]">{comment.reply.date}</span>
+                      <span className="text-[11px] text-gray-400">{comment.reply.date}</span>
                     </div>
-                    <p className="text-[13px] text-[#475569] leading-relaxed break-keep">
+                    <p className="text-[13px] text-gray-600 leading-relaxed break-keep">
                       {comment.reply.content}
                     </p>
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Hashtags */}
-        {post.hashtags && post.hashtags.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-[#F1F5F9] flex flex-wrap gap-2">
-            {post.hashtags.map((tag) => (
-              <span
-                key={tag}
-                className="text-[12px] font-medium text-[#475569] bg-[#F1F5F9] px-3 py-1 rounded-full"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Bottom In-Article AdSense Slot */}
-        <AdSenseUnit slot="article-bottom-03" label="스폰서 추천 광고" format="auto" />
-
-        {/* Prev / Next Post Navigation */}
-        <div className="mt-8 pt-6 border-t border-[#F1F5F9] grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {prevPost ? (
-            <button
-              type="button"
-              onClick={() => onNavigate(`post-${prevPost.id}`)}
-              className="p-4 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-left transition-colors cursor-pointer group"
-            >
-              <span className="text-[11px] text-[#94A3B8] font-bold flex items-center gap-1 mb-1">
-                <ChevronLeft className="w-3.5 h-3.5" /> 이전 글
-              </span>
-              <p className="text-[13.5px] font-bold text-[#111827] group-hover:text-[#E8745F] line-clamp-1 transition-colors">
-                {prevPost.title}
-              </p>
-            </button>
-          ) : (
-            <div />
-          )}
-
-          {nextPost && (
-            <button
-              type="button"
-              onClick={() => onNavigate(`post-${nextPost.id}`)}
-              className="p-4 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-right transition-colors cursor-pointer group"
-            >
-              <span className="text-[11px] text-[#94A3B8] font-bold flex items-center justify-end gap-1 mb-1">
-                다음 글 <ChevronRight className="w-3.5 h-3.5" />
-              </span>
-              <p className="text-[13.5px] font-bold text-[#111827] group-hover:text-[#E8745F] line-clamp-1 transition-colors">
-                {nextPost.title}
-              </p>
-            </button>
+            ))
           )}
         </div>
 
-        {/* Related Posts in same category */}
-        {relatedPosts.length > 0 && (
-          <div className="mt-10 pt-8 border-t border-[#F1F5F9]">
-            <h3 className="text-[16px] font-bold text-[#111827] mb-4">
-              [추천] &lsquo;{post.category}&rsquo; 관련 인기 글
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {relatedPosts.map((rPost) => (
-                <button
-                  key={rPost.id}
-                  type="button"
-                  onClick={() => onNavigate(`post-${rPost.id}`)}
-                  className="group p-4 bg-[#F8FAFC] hover:bg-white border border-[#E2E8F0] rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between"
-                >
-                  <h4 className="text-[13.5px] font-bold text-[#111827] group-hover:text-[#E8745F] leading-snug line-clamp-2 break-keep mb-3 transition-colors">
-                    {rPost.title}
-                  </h4>
-                  <span className="text-[11px] text-[#94A3B8] tabular-nums">
-                    {formatPostDateTime(rPost.date, rPost.id)}
-                  </span>
-                </button>
-              ))}
-            </div>
+        {/* Comment Input Form */}
+        <form onSubmit={handleAddComment} className="bg-[#fafafa] border border-[#e5e7eb] rounded-lg p-4 sm:p-5">
+          <h4 className="font-bold text-[14px] text-[#111827] mb-3">댓글 작성</h4>
+          <div className="mb-3">
+            <input
+              type="text"
+              placeholder="작성자 닉네임"
+              value={newAuthor}
+              onChange={(e) => setNewAuthor(e.target.value)}
+              className="w-full sm:w-[200px] h-9 px-3 bg-white border border-[#d1d5db] focus:border-rose-600 text-[13px] rounded outline-none"
+            />
           </div>
-        )}
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 2. STICKY RIGHT COLUMN WITH DYNAMIC TABLE OF CONTENTS (col-span-4)       */}
-      {/* ========================================================================= */}
-      <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
-        {/* Dynamic Table of Contents Widget (Desktop) */}
-        {tocItems.length > 0 && (
-          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-xs text-left" id="article-toc-card">
-            {/* Header & Reading Progress */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
-              <div className="flex items-center gap-2">
-                <List className="w-4 h-4 text-[#E8745F]" />
-                <h3 className="text-[14.5px] font-bold text-[#111827]">
-                  본문 목차
-                </h3>
-              </div>
-              <span className="text-[11.5px] font-bold text-[#E8745F] bg-[#EEF0FB] px-2 py-0.5 rounded-full border border-[#FFD2BD]">
-                {readingProgress}% 읽음
-              </span>
-            </div>
-
-            {/* Reading Progress Mini Bar */}
-            <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden my-3">
-              <div
-                className="bg-[#E8745F] h-full rounded-full transition-all duration-150"
-                style={{ width: `${readingProgress}%` }}
-              />
-            </div>
-
-            {/* TOC Items List */}
-            <nav
-              ref={tocNavRef}
-              className="space-y-1 max-h-[380px] overflow-y-auto pr-1 hide-scrollbar scroll-smooth"
+          <div className="mb-3">
+            <textarea
+              placeholder="건전한 인터넷 문화를 위해 따뜻한 댓글을 남겨주세요."
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+              rows={3}
+              className="w-full p-3 bg-white border border-[#d1d5db] focus:border-rose-600 text-[13px] rounded outline-none resize-y"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] rounded transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              {tocItems.map((item, idx) => {
-                const isActive = activeHeadingId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-heading-id={item.id}
-                    onClick={() => scrollToHeading(item.id)}
-                    className={`w-full text-left py-2 px-3 rounded-xl text-[13px] leading-snug transition-all flex items-start gap-2 cursor-pointer ${
-                      isActive
-                        ? "bg-[#1E1B2E] text-white font-bold shadow-xs translate-x-1 border-l-3 border-[#E8745F]"
-                        : "text-[#475569] hover:bg-[#F8FAFC] hover:text-[#111827]"
-                    } ${item.level === 3 ? "pl-5 text-[12.5px] opacity-90" : ""}`}
-                  >
-                    <span
-                      className={`text-[11px] mt-0.5 shrink-0 ${
-                        isActive ? "text-[#E8745F]" : "text-[#94A3B8]"
-                      }`}
-                    >
-                      {item.level === 2 ? `${idx + 1}.` : "•"}
-                    </span>
-                    <span className="break-keep line-clamp-2">{item.text}</span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Quick Actions Footer */}
-            <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#F1F5F9] text-[12px] text-[#64748B]">
-              <button
-                type="button"
-                onClick={scrollToTop}
-                className="inline-flex items-center gap-1 hover:text-[#111827] font-semibold cursor-pointer py-1 px-2 rounded-lg hover:bg-[#F8FAFC] transition-colors"
-              >
-                <ArrowUp className="w-3.5 h-3.5" />
-                <span>맨 위로</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(window.location.href);
-                    showToast("글 주소가 복사되었습니다!", "success");
-                  } catch {
-                    showToast("복사에 실패했습니다.", "error");
-                  }
-                }}
-                className="inline-flex items-center gap-1 hover:text-[#111827] font-semibold cursor-pointer py-1 px-2 rounded-lg hover:bg-[#F8FAFC] transition-colors"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>공유</span>
-              </button>
-            </div>
+              <Send className="w-3.5 h-3.5" />
+              <span>댓글 등록</span>
+            </button>
           </div>
-        )}
-
-        {/* Regular Sidebar Content (Calculators, Popular Posts, Categories) */}
-        <Sidebar
-          posts={allPosts}
-          categories={categories}
-          activeCategory={post.category}
-          onNavigate={onNavigate}
-          currentPostId={post.id}
-        />
-      </div>
+        </form>
+      </section>
     </div>
   );
 }

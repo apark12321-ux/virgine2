@@ -8,3 +8,5 @@ User-agent: *
 Allow: /
 
 Sitemap: https://virginroad.kr/sitemap.xml
+Sitemap: https://virginroad.kr/rss.xml
+Sitemap: https://virginroad.kr/feed.xml

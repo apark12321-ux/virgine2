@@ -1470,6 +1470,47 @@ Sitemap: ${hostUrl}/sitemap.xml
   </script>
 `;
           html = html.replace("</head>", `  ${jsonLdBlock}\n</head>`);
+
+          // Inject full pre-rendered semantic HTML body inside #root for search engines & AdSense crawlers
+          const postContent = expandContentIfNeeded(
+            post.title,
+            post.category,
+            post.hashtags || [],
+            post.content || "",
+            post.id,
+            post.image
+          );
+
+          const ssrArticleMarkup = `
+  <div id="ssr-container" style="max-width: 860px; margin: 0 auto; padding: 24px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;">
+    <header style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
+      <nav style="font-size: 13.5px; color: #64748b; margin-bottom: 16px;">
+        <a href="/" style="color: #64748b; text-decoration: none;">홈</a> &gt; 
+        <a href="/category/${encodeURIComponent(post.category)}" style="color: #e11d48; text-decoration: none; font-weight: 600;">${post.category}</a> &gt; 
+        <span style="color: #334155;">${post.title}</span>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <span style="background: #fff1f2; color: #e11d48; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 700;">${post.category}</span>
+        <span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">2026 전문가 검증</span>
+      </div>
+      <h1 style="font-size: 26px; line-height: 1.4; font-weight: 800; color: #0f172a; margin-bottom: 14px;">${post.title}</h1>
+      <p style="font-size: 15.5px; line-height: 1.65; color: #475569; margin-bottom: 16px;">${post.excerpt}</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748b;">
+        <span>작성자: <strong>${post.author || "버진로드 편집국"}</strong> (공인중개사·주거금융 전문)</span>
+        <span>발행일: ${post.date}</span>
+        <span>소요시간: ${post.readTime || "7분"}</span>
+      </div>
+    </header>
+    <main class="article-body" style="color: #334155; line-height: 1.85; font-size: 16px;">
+      ${postContent}
+    </main>
+    <footer style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e2e8f0; font-size: 13.5px; color: #64748b; line-height: 1.6;">
+      <p><strong>버진로드 편집 원칙:</strong> 본 콘텐츠는 국토교통부, 주택도시기금, 한국주택금융공사, 국세청 등의 공식 공시 자료와 실제 현장 실사 데이터를 바탕으로 작성 및 정기 업데이트됩니다.</p>
+      <p style="margin-top: 8px;">문의: apark12321@gmail.com | 버진로드(Virginroad) 미디어</p>
+    </footer>
+  </div>
+`;
+          html = html.replace('<div id="root"></div>', `<div id="root">${ssrArticleMarkup}</div>`);
         }
 
         res.send(html);
@@ -1490,8 +1531,8 @@ Sitemap: ${hostUrl}/sitemap.xml
         let html = fs.readFileSync(htmlPath, "utf-8");
         const pathname = req.path;
         
-        let title = "버진로드 - 2026 신혼부부 디딤돌·버팀목대출 금리 계산기 & 청약 가점 시뮬레이터 | 결혼준비 금융 백서";
-        let description = "2026년 최신 기준 신혼부부 디딤돌대출·신생아 특례대출·버팀목전세대출 금리 계산기와 신혼특공 청약 가점 시뮬레이터를 무료로 제공합니다. 스드메·웨딩홀 견적 비교 및 혼수가전 패키지 혜택까지 예비·신혼부부를 위한 실전 금융 생활 백서 버진로드입니다.";
+        let title = "버진로드 - 2026 신혼부부 금융·청약·가전 실전 가이드 블로그";
+        let description = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
         let canonical = `https://virginroad.kr${pathname === "/" ? "" : pathname}`;
         let ogType = "website";
         let image = "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
@@ -1605,6 +1646,115 @@ Sitemap: ${hostUrl}/sitemap.xml
   </script>
 `;
           html = html.replace("</head>", `  ${jsonLdString}\n</head>`);
+        }
+
+        // Inject Pre-rendered SSR Markup for Homepage, Category, and Info pages
+        try {
+          const allPosts = await fetchMergedPosts();
+          const combined = [...allPosts, ...MOCK_POSTS];
+
+          if (pathname === "/" || pathname === "") {
+            const topPosts = combined.slice(0, 18);
+            const listItems = topPosts.map((p: any) => `
+              <li style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+                <div style="font-size: 12px; font-weight: 700; color: #e11d48; margin-bottom: 4px;">${p.category}</div>
+                <a href="/post/${slugify(p.title)}" style="text-decoration: none; color: #0f172a; font-weight: 800; font-size: 17px; display: block; margin-bottom: 6px; line-height: 1.4;">${p.title}</a>
+                <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${p.excerpt || ""}</p>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                  <span>작성자: ${p.author || "버진로드 에디터"}</span> &middot; <span>${p.date}</span> &middot; <span>2026 공시 검증</span>
+                </div>
+              </li>
+            `).join("");
+
+            const ssrHomeMarkup = `
+  <div id="ssr-home" style="max-width: 900px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
+    <header style="margin-bottom: 32px; border-bottom: 2px solid #0f172a; padding-bottom: 20px;">
+      <div style="display: inline-block; background: #fff1f2; color: #e11d48; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 700; margin-bottom: 12px;">2026 공식 검증 주거·금융 포털</div>
+      <h1 style="font-size: 28px; font-weight: 900; color: #0f172a; margin-bottom: 8px;">버진로드 (Virginroad)</h1>
+      <p style="font-size: 15.5px; color: #475569; line-height: 1.65;">예비·신혼부부의 안전한 주거 독립과 합리적인 결혼 준비를 위한 정책금융·청약·가전 실전 백서</p>
+      <nav style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; font-size: 14px; font-weight: 600;">
+        <a href="/category/신혼금융" style="color: #e11d48; text-decoration: none;">신혼금융 (디딤돌·버팀목)</a>
+        <a href="/category/신혼가전" style="color: #2563eb; text-decoration: none;">신혼가전 (패키지 견적)</a>
+        <a href="/category/결혼준비" style="color: #d97706; text-decoration: none;">결혼준비 (웨딩홀·스드메)</a>
+        <a href="/tools/didimdol" style="color: #475569; text-decoration: none;">디딤돌 우대금리 계산기</a>
+        <a href="/tools/cheongyak" style="color: #475569; text-decoration: none;">신혼특공 가점 계산기</a>
+        <a href="/about" style="color: #475569; text-decoration: none;">소개 & 편집 원칙</a>
+        <a href="/policy" style="color: #475569; text-decoration: none;">2026 정부 정책 허브</a>
+      </nav>
+    </header>
+    <main>
+      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 20px;">최신 실전 가이드 & 2026 정책 리포트</h2>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        ${listItems}
+      </ul>
+    </main>
+    <footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #94a3b8; line-height: 1.7;">
+      <p><strong>버진로드 미디어</strong> | 발행·편집인: 박아람 (공인중개사·주거복지 금융 전문) | 문의: apark12321@gmail.com</p>
+      <p>본 사이트의 모든 저작물은 저작권법의 보호를 받습니다. 국토교통부, 주택도시기금, 한국주택금융공사 공시 기준 준수.</p>
+      <p style="margin-top: 8px;"><a href="/privacy" style="color: #64748b;">개인정보 처리방침</a> | <a href="/terms" style="color: #64748b;">이용약관</a> | <a href="/about" style="color: #64748b;">편집국 소개</a> | <a href="/policy" style="color: #64748b;">주요 정책 안내</a></p>
+    </footer>
+  </div>
+`;
+            html = html.replace('<div id="root"></div>', `<div id="root">${ssrHomeMarkup}</div>`);
+          } else if (pathname.startsWith("/category/")) {
+            const rawCat = pathname.replace("/category/", "");
+            const decodedCat = decodeURIComponent(rawCat);
+            const catPosts = combined.filter((p: any) => p.category === decodedCat).slice(0, 25);
+            const catItems = catPosts.map((p: any) => `
+              <li style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+                <a href="/post/${slugify(p.title)}" style="text-decoration: none; color: #0f172a; font-weight: 800; font-size: 17px; display: block; margin-bottom: 6px;">${p.title}</a>
+                <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${p.excerpt || ""}</p>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                  <span>${p.date}</span> &middot; <span>작성자: ${p.author || "버진로드 에디터"}</span>
+                </div>
+              </li>
+            `).join("");
+
+            const ssrCatMarkup = `
+  <div id="ssr-cat" style="max-width: 900px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
+    <nav style="font-size: 13.5px; color: #64748b; margin-bottom: 16px;">
+      <a href="/" style="color: #64748b; text-decoration: none;">홈</a> &gt; <span style="color: #0f172a; font-weight: 600;">${decodedCat}</span>
+    </nav>
+    <header style="margin-bottom: 32px; border-bottom: 2px solid #0f172a; padding-bottom: 20px;">
+      <h1 style="font-size: 28px; font-weight: 900; color: #0f172a; margin-bottom: 8px;">${decodedCat} 실전 심층 가이드</h1>
+      <p style="font-size: 15.5px; color: #475569; line-height: 1.65;">${decodedCat} 관련 2026년 최신 공식 데이터 및 검증된 가이드를 제공합니다.</p>
+    </header>
+    <main>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        ${catItems}
+      </ul>
+    </main>
+  </div>
+`;
+            html = html.replace('<div id="root"></div>', `<div id="root">${ssrCatMarkup}</div>`);
+          } else if (pathname === "/about") {
+            const ssrAboutMarkup = `
+  <div id="ssr-about" style="max-width: 860px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
+    <header style="margin-bottom: 32px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
+      <h1 style="font-size: 28px; font-weight: 900; color: #0f172a; margin-bottom: 12px;">버진로드(Virginroad) 소개 및 편집 원칙</h1>
+      <p style="font-size: 16px; color: #475569; line-height: 1.65;">예비·신혼부부의 주거 독립과 합리적 결혼 문화를 지원하는 독립 전문 미디어</p>
+    </header>
+    <article style="line-height: 1.8; color: #334155; font-size: 15.5px;">
+      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 24px;">1. 설립 취지</h2>
+      <p>버진로드는 포털 사이트에 범람하는 광고성 협찬 글과 모호한 행정 용어로 어려움을 겪는 예비부부와 신혼부부를 위해 설립되었습니다. 국토교통부, 주택도시기금, 한국주택금융공사 등의 공식 공시 자료를 알기 쉽게 풀고, 실제 은행 창구 심사 및 현장 실사 데이터를 바탕으로 실질적인 의사결정을 돕습니다.</p>
+
+      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 24px;">2. 4대 편집 원칙 (E-E-A-T 준수)</h2>
+      <ul>
+        <li><strong>공식 출처 기반 팩트체크:</strong> 모든 정책금융 및 청약 수치는 관계 부처의 고시 및 법령을 대조하여 검증합니다.</li>
+        <li><strong>상업적 이해관계 배제:</strong> 불투명한 뒷광고나 대가성 홍보를 배제하고 투명한 견적 비교와 실사용 데이터를 제공합니다.</li>
+        <li><strong>정기 정책 업데이트:</strong> 대출 금리, 소득 기준선 변경 시 24시간 이내 최신 기준을 신속 반영합니다.</li>
+        <li><strong>독자 소통 및 오류 정정:</strong> 독자 피드백을 수렴하여 오류 발견 시 즉각 정정 공지합니다.</li>
+      </ul>
+
+      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 24px;">3. 편집인 정보 및 연락처</h2>
+      <p>대표 에디터: 박아람 (공인중개사·주거복지 금융 전문)<br />문의 및 제휴: apark12321@gmail.com</p>
+    </article>
+  </div>
+`;
+            html = html.replace('<div id="root"></div>', `<div id="root">${ssrAboutMarkup}</div>`);
+          }
+        } catch (e) {
+          console.error("SSR static pre-render error in app.get(*):", e);
         }
 
         res.send(html);
