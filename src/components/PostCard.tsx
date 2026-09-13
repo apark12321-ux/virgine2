@@ -13,53 +13,60 @@ interface PostCardProps {
 
 export function PostCard({ post, onClick, featured = false, viewMode = "list" }: PostCardProps) {
   const formattedDateTime = formatPostDateTime(post.date, post.id);
+  const readTime = Math.max(3, Math.ceil(((post.content || "").length || 2200) / 450));
 
-  // Classic Tistory / Naver Blog List Item (Default)
+  // Benchmark: ko.phongnhaexplorer.com style list item (dwqa-question-item)
   if (viewMode === "list") {
     return (
       <article
         onClick={() => onClick(post.id)}
-        className="group cursor-pointer py-5 sm:py-6 border-b border-[#e5e7eb] last:border-b-0 hover:bg-[#fafafa]/80 -mx-3 sm:-mx-4 px-3 sm:px-4 rounded-md transition-colors text-left"
+        className="group cursor-pointer py-4 sm:py-5 border-b border-[#e2e8f0] last:border-b-0 hover:bg-[#f8fafc] px-3 sm:px-4 -mx-3 sm:-mx-4 rounded transition-colors text-left"
         id={`post-${post.id}`}
       >
         <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-4">
-          {/* Left / Main Text Area */}
+          {/* Main Content Area */}
           <div className="flex-1 min-w-0 pr-0 sm:pr-4">
-            {/* Category tag */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[12px] font-bold text-rose-600">
+            {/* Meta status & category (ko.phongnhaexplorer dwqa-question-meta style) */}
+            <div className="flex items-center gap-2 mb-1.5 text-[12px]">
+              <span className="inline-block px-1.5 py-0.5 text-[11px] font-bold bg-[#f0fdfa] text-[#0f766e] border border-[#ccfbf1] rounded">
+                답변 완료
+              </span>
+              <span className="font-semibold text-[#0284c7]">
                 {post.category}
               </span>
-              <span className="text-gray-300">·</span>
-              <span className="text-[12px] text-gray-500">실전 가이드</span>
+              <span className="text-[#cbd5e1]">·</span>
+              <span className="text-[#64748b]">{formattedDateTime}</span>
             </div>
 
-            {/* Post Title */}
-            <h2 className="text-[17px] sm:text-[19px] font-bold text-[#111827] group-hover:text-rose-600 group-hover:underline underline-offset-4 decoration-rose-400 transition-colors leading-[1.4] break-keep mb-2">
+            {/* Title */}
+            <h2 className="text-[16px] sm:text-[18px] font-bold text-[#0f172a] group-hover:text-[#0f766e] group-hover:underline underline-offset-4 decoration-[#0f766e] transition-colors leading-snug break-keep mb-1.5">
               {post.title}
             </h2>
 
-            {/* Post Excerpt */}
-            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#4b5563] line-clamp-2 sm:line-clamp-3 break-keep mb-3">
+            {/* Excerpt */}
+            <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-[#475569] line-clamp-2 break-keep mb-2">
               {post.excerpt}
             </p>
 
-            {/* Meta info (Author, Date, Category) */}
-            <div className="flex items-center gap-3 text-[12px] text-[#9ca3af]">
-              <span className="font-medium text-[#4b5563]">버진로드</span>
+            {/* Stats: Read time and Author (ko.phongnhaexplorer dwqa-question-stats style) */}
+            <div className="flex items-center gap-3 text-[12px] text-[#94a3b8]">
+              <span className="text-[#64748b]">작성자: 버진로드</span>
               <span>·</span>
-              <span>{formattedDateTime}</span>
+              <span className="text-[#0f766e] font-semibold flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{readTime}분 읽기</span>
+              </span>
             </div>
           </div>
 
-          {/* Right Thumbnail Image (Classic 120x100 / 140x110) */}
-          <div className="w-full sm:w-[150px] lg:w-[160px] aspect-[16/10] sm:aspect-[4/3] rounded-md overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+          {/* Right Thumbnail */}
+          <div className="w-full sm:w-[130px] lg:w-[140px] aspect-[16/10] sm:aspect-[4/3] rounded overflow-hidden bg-gray-100 shrink-0 border border-[#e2e8f0]">
             <img
               src={post.image || "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=800"}
               alt={post.title}
               referrerPolicy="no-referrer"
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
               onError={(e) => {
                 const target = e.currentTarget;
                 target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600";
@@ -71,11 +78,11 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
     );
   }
 
-  // Card View Mode (Classic Naver Blog / Tistory Grid Card)
+  // Card View Mode
   return (
     <article
       onClick={() => onClick(post.id)}
-      className="group cursor-pointer bg-white border border-[#e5e7eb] hover:border-gray-400 rounded-lg overflow-hidden transition-all duration-200 flex flex-col h-full text-left"
+      className="group cursor-pointer bg-white border border-[#e2e8f0] hover:border-[#0f766e] rounded overflow-hidden transition-all duration-200 flex flex-col h-full text-left"
       id={`post-${post.id}`}
     >
       <div className="aspect-[16/10] overflow-hidden bg-gray-100">
@@ -84,7 +91,7 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
           alt={post.title}
           referrerPolicy="no-referrer"
           loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
           onError={(e) => {
             const target = e.currentTarget;
             target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600";
@@ -92,22 +99,27 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
         />
       </div>
 
-      <div className="p-4 sm:p-5 flex flex-col justify-between flex-1">
+      <div className="p-4 flex flex-col justify-between flex-1">
         <div>
-          <span className="text-[11.5px] font-bold text-rose-600 uppercase tracking-wider mb-1 block">
-            {post.category}
-          </span>
-          <h2 className="text-[16px] font-bold text-[#111827] group-hover:text-rose-600 line-clamp-2 leading-snug break-keep mb-2 transition-colors">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="px-1.5 py-0.2 text-[10.5px] font-bold bg-[#f0fdfa] text-[#0f766e] border border-[#ccfbf1] rounded">
+              답변
+            </span>
+            <span className="text-[11.5px] font-semibold text-[#0284c7]">
+              {post.category}
+            </span>
+          </div>
+          <h2 className="text-[15.5px] font-bold text-[#0f172a] group-hover:text-[#0f766e] line-clamp-2 leading-snug break-keep mb-2 transition-colors">
             {post.title}
           </h2>
-          <p className="text-[13px] leading-relaxed text-[#4b5563] line-clamp-2 break-keep mb-3">
+          <p className="text-[12.5px] leading-relaxed text-[#475569] line-clamp-2 break-keep mb-3">
             {post.excerpt}
           </p>
         </div>
 
-        <div className="flex items-center justify-between text-[11.5px] text-[#9ca3af] pt-3 border-t border-gray-100">
-          <span>버진로드</span>
+        <div className="flex items-center justify-between text-[11.5px] text-[#94a3b8] pt-2.5 border-t border-[#f1f5f9]">
           <span>{formattedDateTime}</span>
+          <span className="text-[#0f766e] font-medium">{readTime}분 읽기</span>
         </div>
       </div>
     </article>

@@ -629,54 +629,54 @@ export default function App() {
               currentPage !== "policy" && (
                 <div className="space-y-6">
                   {/* Category / Search Header Banner */}
-                  <div className="bg-white border border-[#e5e7eb] rounded-lg p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <FolderOpen className="w-4 h-4 text-rose-600" />
-                        <span className="text-[12px] font-bold text-rose-600 uppercase tracking-wider">
-                          {activeCategory ? `카테고리: ${activeCategory}` : searchQuery ? "검색 결과" : "전체 글 목록"}
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FolderOpen className="w-3.5 h-3.5 text-[#0f766e]" />
+                        <span className="text-[11.5px] font-bold text-[#0f766e] uppercase tracking-wider">
+                          {activeCategory ? `분야: ${activeCategory}` : searchQuery ? "검색 결과" : "전체 가이드 목록"}
                         </span>
                       </div>
-                      <h2 className="text-[20px] sm:text-[22px] font-bold text-[#111827]">
+                      <h2 className="text-[18px] sm:text-[20px] font-bold text-[#0f172a]">
                         {activeCategory ? (
                           <span>{activeCategory}</span>
                         ) : searchQuery ? (
                           <span>&lsquo;{searchQuery}&rsquo; 검색 ({filteredPosts.length}건)</span>
                         ) : (
-                          <span>신혼부부 주거·금융·가전 실전 가이드</span>
+                          <span>신혼부부 주거·금융·가전 실무 가이드 &amp; Q&amp;A</span>
                         )}
                       </h2>
-                      <p className="text-[13px] text-[#6b7280] mt-1">
-                        총 <strong className="text-rose-600">{filteredPosts.length}</strong>편의 포스팅이 등록되어 있습니다.
+                      <p className="text-[12.5px] text-[#64748b] mt-0.5">
+                        총 <strong className="text-[#0f766e]">{filteredPosts.length}</strong>개의 실전 가이드가 등록되어 있습니다.
                       </p>
                     </div>
 
                     {/* View Switcher (목록형 / 웹진형) */}
-                    <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md shrink-0">
+                    <div className="flex items-center gap-1 bg-[#f1f5f9] p-1 rounded shrink-0 border border-[#e2e8f0]">
                       <button
                         type="button"
                         onClick={() => setViewMode("list")}
-                        className={`p-1.5 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
                           viewMode === "list"
-                            ? "bg-white text-gray-900 shadow-2xs font-bold"
-                            : "text-gray-500 hover:text-gray-900"
+                            ? "bg-white text-[#0f766e] shadow-2xs font-bold border border-[#cbd5e1]"
+                            : "text-[#64748b] hover:text-[#0f172a]"
                         }`}
                         title="목록형 보기"
                       >
-                        <LayoutList className="w-4 h-4" />
+                        <LayoutList className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">목록형</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setViewMode("card")}
-                        className={`p-1.5 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
                           viewMode === "card"
-                            ? "bg-white text-gray-900 shadow-2xs font-bold"
-                            : "text-gray-500 hover:text-gray-900"
+                            ? "bg-white text-[#0f766e] shadow-2xs font-bold border border-[#cbd5e1]"
+                            : "text-[#64748b] hover:text-[#0f172a]"
                         }`}
                         title="카드형 보기"
                       >
-                        <LayoutGrid className="w-4 h-4" />
+                        <LayoutGrid className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">카드형</span>
                       </button>
                     </div>
@@ -687,9 +687,9 @@ export default function App() {
 
                   {/* Post Stream */}
                   {filteredPosts.length > 0 ? (
-                    <div className="bg-white border border-[#e5e7eb] rounded-lg p-5 sm:p-7 shadow-2xs">
+                    <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-6 shadow-2xs">
                       {viewMode === "list" ? (
-                        <div className="divide-y divide-gray-100">
+                        <div className="divide-y divide-[#f1f5f9]">
                           {paginatedPosts.map((post, idx) => (
                             <div key={post.id}>
                               <PostCard
@@ -707,7 +707,7 @@ export default function App() {
                           ))}
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {paginatedPosts.map((post) => (
                             <PostCard
                               key={post.id}
@@ -719,15 +719,15 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Pagination (Classic Tistory Style) */}
+                      {/* Pagination */}
                       {totalPages > 1 && (
-                        <div className="mt-8 pt-6 border-t border-[#e5e7eb] flex items-center justify-center gap-1 text-[13px]">
+                        <div className="mt-8 pt-5 border-t border-[#e2e8f0] flex items-center justify-center gap-1 text-[13px]">
                           {/* First Page */}
                           <button
                             type="button"
                             onClick={() => handlePageChange(1)}
                             disabled={feedPage === 1}
-                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            className="p-1.5 rounded text-[#64748b] hover:text-[#0f172a] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             title="첫 페이지"
                           >
                             <ChevronsLeft className="w-4 h-4" />
@@ -738,7 +738,7 @@ export default function App() {
                             type="button"
                             onClick={() => handlePageChange(feedPage - 1)}
                             disabled={feedPage === 1}
-                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            className="p-1.5 rounded text-[#64748b] hover:text-[#0f172a] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             title="이전 페이지"
                           >
                             <ChevronLeft className="w-4 h-4" />
@@ -746,7 +746,6 @@ export default function App() {
 
                           {/* Page Numbers */}
                           {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                            // Show window around current page
                             if (
                               pageNum === 1 ||
                               pageNum === totalPages ||
@@ -758,10 +757,10 @@ export default function App() {
                                   key={pageNum}
                                   type="button"
                                   onClick={() => handlePageChange(pageNum)}
-                                  className={`min-w-[34px] h-[34px] rounded-md font-bold transition-colors cursor-pointer ${
+                                  className={`min-w-[32px] h-[32px] rounded text-[13px] font-bold transition-colors cursor-pointer ${
                                     isActive
-                                      ? "bg-rose-600 text-white"
-                                      : "text-gray-700 hover:bg-gray-100"
+                                      ? "bg-[#0f766e] text-white"
+                                      : "text-[#334155] hover:bg-[#f1f5f9]"
                                   }`}
                                 >
                                   {pageNum}
