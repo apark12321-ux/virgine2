@@ -551,7 +551,7 @@ export default function App() {
 
                 <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">1. 개인정보 수집 항목 및 목적</h2>
                 <p className="text-[14px] text-gray-700 leading-relaxed">
-                  본 블로그는 별도의 회원가입 없이 모든 정보와 콘텐츠를 100% 무료로 이용하실 수 있습니다. 이용자가 댓글 작성 시 입력하는 닉네임과 내용은 건전한 블로그 커뮤니티 운영 목적으로만 사용되며, 외부에 무단 제공되지 않습니다.
+                  본 블로그는 별도의 회원가입이나 개인정보 입력 없이 모든 정보와 가이드를 100% 무료로 자유롭게 열람하실 수 있으며, 이용자의 어떠한 개인정보도 수집하거나 저장하지 않습니다.
                 </p>
 
                 <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 구글 애드센스 및 제3자 광고 쿠키(Cookie) 고지</h2>

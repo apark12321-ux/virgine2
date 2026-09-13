@@ -10,10 +10,6 @@ import {
   CheckCircle2,
   List,
   Heart,
-  MessageSquare,
-  Send,
-  User,
-  CornerDownRight,
   Copy,
   Calendar,
   Eye,
@@ -29,18 +25,6 @@ export interface TocItem {
   id: string;
   text: string;
   level: 2 | 3;
-}
-
-interface ReaderComment {
-  id: string;
-  author: string;
-  date: string;
-  content: string;
-  reply?: {
-    author: string;
-    date: string;
-    content: string;
-  };
 }
 
 interface GuideReaderProps {
@@ -201,42 +185,6 @@ export function GuideReader({
     return allPosts.filter((p) => p.category === post.category).slice(0, 5);
   }, [allPosts, post.category]);
 
-  // Reader Comments (Loaded from localStorage, no fake mock comments)
-  const [comments, setComments] = useState<ReaderComment[]>(() => {
-    try {
-      const stored = localStorage.getItem(`virginroad_comments_${post.id}`);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [newAuthor, setNewAuthor] = useState("");
-  const [newContent, setNewContent] = useState("");
-
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAuthor.trim() || !newContent.trim()) {
-      showToast("닉네임과 댓글 내용을 모두 입력해주세요.", "error");
-      return;
-    }
-    const today = new Date().toISOString().split("T")[0].replace(/-/g, ".");
-    const newComment: ReaderComment = {
-      id: `c_${Date.now()}`,
-      author: newAuthor.trim(),
-      date: today,
-      content: newContent.trim()
-    };
-    const updated = [...comments, newComment];
-    setComments(updated);
-    try {
-      localStorage.setItem(`virginroad_comments_${post.id}`, JSON.stringify(updated));
-    } catch {}
-    setNewAuthor("");
-    setNewContent("");
-    showToast("댓글이 성공적으로 등록되었습니다.", "success");
-  };
-
   return (
     <div className="w-full bg-white border border-[#e2e8f0] rounded p-5 sm:p-8 lg:p-10 shadow-2xs font-sans text-left">
       {/* 1. Breadcrumb (홈 > 카테고리 > 질문 제목) */}
@@ -289,12 +237,6 @@ export function GuideReader({
               <Clock className="w-3.5 h-3.5" />
               <span>{readTime}분 읽기</span>
             </span>
-            {comments.length > 0 && (
-              <>
-                <span className="text-[#cbd5e1]">·</span>
-                <span>댓글 {comments.length}</span>
-              </>
-            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -606,81 +548,6 @@ export function GuideReader({
       <div className="my-6">
         <AdSenseUnit slot="article-bottom-01" label="광고 / Sponsored" format="fluid" />
       </div>
-
-      {/* 10. Comments Section */}
-      <section className="pt-6 border-t border-[#e2e8f0]" id="comments">
-        <h3 className="text-[16px] font-bold text-[#0f172a] mb-5 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-[#0f766e]" />
-          <span>의견 및 댓글 ({comments.length})</span>
-        </h3>
-
-        {/* Existing Comments List */}
-        <div className="space-y-4 mb-8">
-          {comments.length === 0 ? (
-            <div className="p-6 text-center text-[13px] text-gray-500 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg">
-              등록된 댓글이 없습니다. 첫 번째 댓글을 남겨보세요.
-            </div>
-          ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg text-left">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-[13.5px] text-[#111827]">{comment.author}</span>
-                  <span className="text-[11.5px] text-gray-400">{comment.date}</span>
-                </div>
-                <p className="text-[13.5px] text-gray-700 leading-relaxed break-keep">{comment.content}</p>
-
-                {/* Author Reply */}
-                {comment.reply && (
-                  <div className="mt-3.5 pt-3.5 border-t border-gray-200 pl-4 border-l-2 border-rose-500 bg-white p-3 rounded">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-bold text-[12.5px] text-rose-600 flex items-center gap-1">
-                        <CornerDownRight className="w-3.5 h-3.5" />
-                        <span>{comment.reply.author}</span>
-                      </span>
-                      <span className="text-[11px] text-gray-400">{comment.reply.date}</span>
-                    </div>
-                    <p className="text-[13px] text-gray-600 leading-relaxed break-keep">
-                      {comment.reply.content}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Comment Input Form */}
-        <form onSubmit={handleAddComment} className="bg-[#fafafa] border border-[#e5e7eb] rounded-lg p-4 sm:p-5">
-          <h4 className="font-bold text-[14px] text-[#111827] mb-3">댓글 작성</h4>
-          <div className="mb-3">
-            <input
-              type="text"
-              placeholder="작성자 닉네임"
-              value={newAuthor}
-              onChange={(e) => setNewAuthor(e.target.value)}
-              className="w-full sm:w-[200px] h-9 px-3 bg-white border border-[#cbd5e1] focus:border-[#0f766e] text-[13px] rounded outline-none"
-            />
-          </div>
-          <div className="mb-3">
-            <textarea
-              placeholder="궁금하신 점이나 추가 정보가 있으시면 편하게 의견을 남겨주세요."
-              value={newContent}
-              onChange={(e) => setNewContent(e.target.value)}
-              rows={3}
-              className="w-full p-3 bg-white border border-[#cbd5e1] focus:border-[#0f766e] text-[13px] rounded outline-none resize-y"
-            />
-          </div>
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#0f766e] hover:bg-[#115e59] text-white font-bold text-[13px] rounded transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>의견 등록</span>
-            </button>
-          </div>
-        </form>
-      </section>
     </div>
   );
 }
