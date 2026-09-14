@@ -37,40 +37,7 @@ export function Navbar({ onSearch, onNavigate, searchQuery = "", currentPage = "
 
   return (
     <header className="w-full bg-white border-b border-[#e2e8f0] font-sans sticky top-0 z-40">
-      {/* 1. Ultra-clean Top Utility Bar */}
-      <div className="border-b border-[#f1f5f9] bg-[#f8fafc] text-[12px] text-[#64748b]">
-        <div className="max-w-[1140px] mx-auto px-4 sm:px-6 h-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-[#0f172a]">버진로드 (Virginroad)</span>
-            <span className="text-[#cbd5e1]">|</span>
-            <span className="hidden sm:inline text-[#64748b]">신혼생활 질문과 답변 백서 · 2026 개정판</span>
-          </div>
-          <div className="flex items-center gap-3 text-[11.5px]">
-            <button
-              onClick={() => onNavigate("about")}
-              className="hover:text-[#0f172a] transition-colors cursor-pointer"
-            >
-              에디터 소개
-            </button>
-            <span className="text-[#cbd5e1]">|</span>
-            <button
-              onClick={() => onNavigate("announcement")}
-              className="hover:text-[#0f172a] transition-colors cursor-pointer"
-            >
-              공지사항
-            </button>
-            <span className="text-[#cbd5e1]">|</span>
-            <button
-              onClick={() => onNavigate("policy")}
-              className="hover:text-[#0f172a] transition-colors cursor-pointer"
-            >
-              정책 허브
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Main Logo & Search Header */}
+      {/* Main Logo & Search Header */}
       <div className="max-w-[1140px] mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4">
         <div className="cursor-pointer flex items-center gap-3" onClick={goHome}>
           <div className="w-10 h-10 rounded bg-[#0f766e] text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
