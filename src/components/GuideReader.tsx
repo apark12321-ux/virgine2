@@ -7,16 +7,12 @@ import {
   Printer,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
   List,
   Heart,
   Copy,
   Calendar,
   Eye,
   FolderOpen,
-  ThumbsUp,
-  ThumbsDown,
-  Info,
   HelpCircle
 } from "lucide-react";
 
@@ -81,50 +77,6 @@ export function GuideReader({
 }: GuideReaderProps) {
   const [isTocOpen, setIsTocOpen] = useState(true);
   const formattedDate = formatPostDateTime(post.date, post.id);
-
-  // Benchmark: ko.phongnhaexplorer.com reader feedback system
-  const [feedbackGiven, setFeedbackGiven] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(`virginroad_feedback_${post.id}`);
-    } catch {
-      return null;
-    }
-  });
-  const [feedbackType, setFeedbackType] = useState<"useful" | "not-useful" | "improve" | null>(null);
-  const [feedbackReason, setFeedbackReason] = useState<string>("");
-  const [feedbackNote, setFeedbackNote] = useState<string>("");
-
-  const handleSelectFeedbackType = (type: "useful" | "not-useful" | "improve") => {
-    setFeedbackType(type);
-    if (type === "useful") {
-      try {
-        localStorage.setItem(`virginroad_feedback_${post.id}`, JSON.stringify({ type: "useful", date: new Date().toISOString() }));
-      } catch {}
-      setFeedbackGiven("useful");
-      showToast("의견을 주셔서 감사합니다! 가이드 품질 개선에 큰 힘이 됩니다.", "success");
-    }
-  };
-
-  const handleSubmitDetailedFeedback = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!feedbackReason && !feedbackNote.trim()) {
-      showToast("이유를 선택하시거나 의견을 입력해주세요.", "error");
-      return;
-    }
-    try {
-      localStorage.setItem(
-        `virginroad_feedback_${post.id}`,
-        JSON.stringify({
-          type: feedbackType,
-          reason: feedbackReason,
-          note: feedbackNote.trim(),
-          date: new Date().toISOString()
-        })
-      );
-    } catch {}
-    setFeedbackGiven(feedbackType);
-    showToast("소중한 의견이 등록되었습니다. 가이드 개선에 적극 반영하겠습니다!", "success");
-  };
 
   // Heart / Reaction State
   const [isLiked, setIsLiked] = useState<boolean>(() => {
@@ -324,113 +276,6 @@ export function GuideReader({
           ))}
         </div>
       )}
-
-      {/* 6. Benchmark: ko.phongnhaexplorer.com Feedback Box (답변에 대한 의견) */}
-      <div className="my-8 p-5 sm:p-6 bg-[#f8fafc] border border-[#cbd5e1] rounded text-left">
-        <h3 className="text-[15px] sm:text-[16px] font-bold text-[#0f172a] mb-1.5 flex items-center gap-2">
-          <span>답변(가이드)에 대한 의견:</span>
-        </h3>
-        <p className="text-[13px] text-[#475569] mb-4 leading-relaxed">
-          의견을 주셔서 감사합니다! 여러분의 의견은 향후 가이드 품질을 개선하는 데 매우 중요합니다.
-        </p>
-
-        {feedbackGiven ? (
-          <div className="p-3 bg-[#f0fdfa] border border-[#ccfbf1] text-[#0f766e] text-[13px] font-medium rounded flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>
-              소중한 의견이 정상적으로 등록되었습니다. 감사합니다!
-            </span>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* 3 Buttons */}
-            <div className="flex flex-wrap gap-2.5">
-              <button
-                type="button"
-                onClick={() => handleSelectFeedbackType("useful")}
-                className={`px-3.5 py-2 text-[13px] font-semibold rounded border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                  feedbackType === "useful"
-                    ? "bg-[#0f766e] text-white border-[#0f766e]"
-                    : "bg-white text-[#334155] border-[#cbd5e1] hover:bg-[#f1f5f9]"
-                }`}
-              >
-                <ThumbsUp className="w-3.5 h-3.5" />
-                <span>유용함</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectFeedbackType("not-useful")}
-                className={`px-3.5 py-2 text-[13px] font-semibold rounded border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                  feedbackType === "not-useful"
-                    ? "bg-[#e11d48] text-white border-[#e11d48]"
-                    : "bg-white text-[#334155] border-[#cbd5e1] hover:bg-[#f1f5f9]"
-                }`}
-              >
-                <ThumbsDown className="w-3.5 h-3.5" />
-                <span>유용하지 않음</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectFeedbackType("improve")}
-                className={`px-3.5 py-2 text-[13px] font-semibold rounded border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                  feedbackType === "improve"
-                    ? "bg-[#0284c7] text-white border-[#0284c7]"
-                    : "bg-white text-[#334155] border-[#cbd5e1] hover:bg-[#f1f5f9]"
-                }`}
-              >
-                <Info className="w-3.5 h-3.5" />
-                <span>개선 필요</span>
-              </button>
-            </div>
-
-            {/* Additional Options when "not-useful" or "improve" is selected */}
-            {(feedbackType === "not-useful" || feedbackType === "improve") && (
-              <form onSubmit={handleSubmitDetailedFeedback} className="mt-3 pt-3 border-t border-[#e2e8f0] space-y-3">
-                <p className="text-[12.5px] font-semibold text-[#0f172a]">이유를 알려주세요:</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[12.5px] text-[#475569]">
-                  {[
-                    "정보 부족",
-                    "정확하지 않음",
-                    "이해하기 어려움",
-                    "관련 없음"
-                  ].map((reason) => (
-                    <label key={reason} className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="feedback-reason"
-                        value={reason}
-                        checked={feedbackReason === reason}
-                        onChange={(e) => setFeedbackReason(e.target.value)}
-                        className="text-[#0f766e] focus:ring-[#0f766e]"
-                      />
-                      <span>{reason}</span>
-                    </label>
-                  ))}
-                </div>
-
-                <div>
-                  <textarea
-                    rows={2}
-                    value={feedbackNote}
-                    onChange={(e) => setFeedbackNote(e.target.value)}
-                    placeholder="추가 의견이 있으시면 적어주세요 (선택 사항)"
-                    className="w-full p-2.5 bg-white border border-[#cbd5e1] focus:border-[#0f766e] text-[12.5px] rounded outline-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#0f766e] hover:bg-[#115e59] text-white text-[12.5px] font-bold rounded transition-colors cursor-pointer"
-                >
-                  의견 제출하기
-                </button>
-              </form>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* 7. Author / Editorial Integrity Box */}
       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded p-4 my-6 flex items-start gap-3.5 text-left">
