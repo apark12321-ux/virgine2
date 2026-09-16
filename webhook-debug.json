@@ -1,50 +1,5 @@
 [
   {
-    "timestamp": "2026-08-16T17:17:02.589Z",
-    "method": "GET",
-    "url": "/api/posts",
-    "headers": {
-      "host": "localhost:3000",
-      "x-forwarded-host": "ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app",
-      "x-real-ip": "169.254.169.126",
-      "x-forwarded-for": "14.5.122.229, 169.254.169.126",
-      "x-forwarded-proto": "http",
-      "connection": "upgrade",
-      "sec-ch-ua-full-version-list": "\"Not=A?Brand\";v=\"99.0.0.0\", \"Google Chrome\";v=\"151.0.7922.138\", \"Chromium\";v=\"151.0.7922.138\"",
-      "sec-ch-ua-platform": "\"Windows\"",
-      "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
-      "sec-ch-ua-bitness": "\"64\"",
-      "sec-ch-ua-model": "\"\"",
-      "sec-ch-ua-mobile": "?0",
-      "sec-ch-ua-form-factors": "\"Desktop\"",
-      "sec-ch-ua-wow64": "?0",
-      "sec-ch-ua-arch": "\"x86\"",
-      "sec-ch-ua-full-version": "\"151.0.7922.138\"",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
-      "sec-ch-ua-platform-version": "\"19.0.0\"",
-      "accept": "*/*",
-      "sec-fetch-site": "same-origin",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-dest": "empty",
-      "sec-fetch-storage-access": "active",
-      "referer": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/",
-      "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-      "if-none-match": "W/\"8659f-SKyj7eaKD7wOuRUvYspn9v6YiLk\"",
-      "priority": "u=1, i",
-      "x-cloud-trace-context": "744eb14a50c23c70493732f5d2d8691e/17334707482374992034",
-      "x-client-data": "CgSDossB",
-      "cookie": "__SECURE-aistudio_auth_token=B66i5DyxtzbX6dq3EcFcX1LFGhBlr7WKlUNwj_GmKoM=; TESTCOOKIESENABLED=1",
-      "traceparent": "00-744eb14a50c23c70493732f5d2d8691e-f091409cac4470a2-00",
-      "forwarded": "for=\"14.5.122.229\";proto=https"
-    },
-    "query": {},
-    "body": {},
-    "error": null,
-    "responseSent": {
-      "count": 134
-    }
-  },
-  {
     "timestamp": "2026-08-16T17:18:11.012Z",
     "method": "GET",
     "url": "/api/posts",
@@ -1824,6 +1779,22 @@
     "error": null,
     "responseSent": {
       "count": 86
+    }
+  },
+  {
+    "timestamp": "2026-09-15T00:36:54.680Z",
+    "method": "GET",
+    "url": "/api/posts",
+    "headers": {
+      "host": "localhost:3000",
+      "user-agent": "curl/7.88.1",
+      "accept": "*/*"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 115
     }
   }
 ]

@@ -522,6 +522,14 @@ export function generateRichProceduralArticle(
 }
 
 // Generate an article: uses Gemini for live daily posts with graceful rate-limit handling, procedural engine otherwise
+function stripEmojis(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}\u{2B50}\u{2B55}\u{FE00}-\u{FE0F}]/gu, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
 async function generatePostContent(
   topic: typeof TOPIC_POOL[0],
   dateStr: string,
@@ -567,6 +575,9 @@ async function generatePostContent(
 5. 독자를 위한 실천 가이드 (Action Item):
 글의 마무리에는 뻔한 요약 대신, 독자가 당장 오늘 실행해 볼 수 있는 아주 작은 행동 지침(Action Item) 하나를 제안하고, 독자들의 의견을 묻는 질문으로 자연스럽게 끝맺으십시오.
 
+6. 이모지(그림문자) 전면 금지 및 특수문자 제한 사용:
+이모지(이모티콘, 유니코드 그림문자 등)는 일절 사용하지 마십시오. 꼭 필요한 경우에만 일반 특수문자 기호(※, -, ·, [ ], ★ 등)만을 정갈하게 사용하십시오.
+
 응답은 반드시 아래 JSON 형식으로만 반환하세요:
 {
   "title": "${topic.title}",
@@ -606,9 +617,9 @@ async function generatePostContent(
 
       return {
         id: generatedId,
-        title: parsed.title,
-        excerpt: parsed.excerpt || topic.excerpt,
-        content: parsed.content,
+        title: stripEmojis(parsed.title),
+        excerpt: stripEmojis(parsed.excerpt || topic.excerpt),
+        content: stripEmojis(parsed.content),
         category,
         author: "버진로드",
         date: exactDateTime,

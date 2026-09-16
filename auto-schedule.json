@@ -561,13 +561,19 @@
         "id": "sched-20260910-결혼준비-1",
         "category": "결혼준비",
         "targetTime": "09:40:26",
-        "published": false
+        "published": true,
+        "postId": "auto-wed-20260910-8146",
+        "postTitle": "2026년 웨딩드레스 스드메 견적 비교 및 추가금 없는 정찰제 숍 고르는 법",
+        "publishedAt": "2026-09-10 09:40:26"
       },
       {
         "id": "sched-20260910-신혼가전-2",
         "category": "신혼가전",
         "targetTime": "19:21:55",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260910-5534",
+        "postTitle": "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
+        "publishedAt": "2026-09-10 19:21:55"
       }
     ],
     "2026-09-11": [
@@ -575,15 +581,92 @@
         "id": "sched-20260911-신혼가전-1",
         "category": "신혼가전",
         "targetTime": "08:01:06",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260911-7139",
+        "postTitle": "20평대 vs 30평대 신혼집 평수별 냉장고 키친핏 vs 프리스탠딩 용량 선택 가이드",
+        "publishedAt": "2026-09-11 08:01:06"
       },
       {
         "id": "sched-20260911-신혼금융-2",
         "category": "신혼금융",
         "targetTime": "19:21:14",
+        "published": true,
+        "postId": "auto-fin-20260911-3588",
+        "postTitle": "신혼부부 공동명의 vs 단독명의 세금 시뮬레이션 — 취득세·종부세·양도세 완벽 비교",
+        "publishedAt": "2026-09-11 19:21:14"
+      }
+    ],
+    "2026-09-12": [
+      {
+        "id": "sched-20260912-신혼금융-fin-extra-07",
+        "category": "신혼금융",
+        "targetTime": "14:16",
+        "published": true,
+        "postId": "fin-extra-07"
+      }
+    ],
+    "2026-09-13": [
+      {
+        "id": "sched-20260913-결혼준비-wed-extra-07",
+        "category": "결혼준비",
+        "targetTime": "21:44",
+        "published": true,
+        "postId": "wed-extra-07"
+      }
+    ],
+    "2026-09-14": [
+      {
+        "id": "sched-20260914-신혼가전-app-extra-09",
+        "category": "신혼가전",
+        "targetTime": "21:16",
+        "published": true,
+        "postId": "app-extra-09"
+      },
+      {
+        "id": "sched-20260914-신혼금융-fin-extra-08",
+        "category": "신혼금융",
+        "targetTime": "08:46",
+        "published": true,
+        "postId": "fin-extra-08"
+      }
+    ],
+    "2026-09-15": [
+      {
+        "id": "sched-20260915-결혼준비-wed-extra-08",
+        "category": "결혼준비",
+        "targetTime": "08:49",
+        "published": true,
+        "postId": "wed-extra-08"
+      }
+    ],
+    "2026-09-16": [
+      {
+        "id": "sched-20260916-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "09:31:52",
+        "published": false
+      },
+      {
+        "id": "sched-20260916-결혼준비-2",
+        "category": "결혼준비",
+        "targetTime": "19:38:37",
+        "published": false
+      }
+    ],
+    "2026-09-17": [
+      {
+        "id": "sched-20260917-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "07:26:55",
+        "published": false
+      },
+      {
+        "id": "sched-20260917-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "18:36:09",
         "published": false
       }
     ]
   },
-  "lastCheck": "2026-09-09T20:29:50.070Z"
+  "lastCheck": "2026-09-15T09:34:53.198Z"
 }

@@ -17,7 +17,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   Info,
-  Clock,
   HelpCircle
 } from "lucide-react";
 
@@ -82,7 +81,6 @@ export function GuideReader({
 }: GuideReaderProps) {
   const [isTocOpen, setIsTocOpen] = useState(true);
   const formattedDate = formatPostDateTime(post.date, post.id);
-  const readTime = Math.max(3, Math.ceil(((post.content || "").length || 2200) / 450));
 
   // Benchmark: ko.phongnhaexplorer.com reader feedback system
   const [feedbackGiven, setFeedbackGiven] = useState<string | null>(() => {
@@ -232,11 +230,6 @@ export function GuideReader({
             <span className="font-semibold text-[#0f172a]">버진로드 편집부</span>
             <span className="text-[#cbd5e1]">·</span>
             <span>{formattedDate}</span>
-            <span className="text-[#cbd5e1]">·</span>
-            <span className="text-[#0f766e] font-medium flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              <span>{readTime}분 읽기</span>
-            </span>
           </div>
 
           <div className="flex items-center gap-2">

@@ -235,7 +235,7 @@
   font-weight: 500;
 }
 .article-body .summary-box li::before {
-  content: "✓";
+  content: "·";
   position: absolute;
   left: 0;
   top: 0;

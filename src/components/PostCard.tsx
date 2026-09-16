@@ -1,7 +1,7 @@
 import React from "react";
 import { Post } from "../types";
 import { formatPostDateTime } from "../lib/utils";
-import { Calendar, User, MessageSquare, Clock } from "lucide-react";
+import { Calendar, User, MessageSquare } from "lucide-react";
 
 interface PostCardProps {
   post: Post;
@@ -13,7 +13,6 @@ interface PostCardProps {
 
 export function PostCard({ post, onClick, featured = false, viewMode = "list" }: PostCardProps) {
   const formattedDateTime = formatPostDateTime(post.date, post.id);
-  const readTime = Math.max(3, Math.ceil(((post.content || "").length || 2200) / 450));
 
   // Benchmark: ko.phongnhaexplorer.com style list item (dwqa-question-item)
   if (viewMode === "list") {
@@ -48,14 +47,9 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
               {post.excerpt}
             </p>
 
-            {/* Stats: Read time and Author (ko.phongnhaexplorer dwqa-question-stats style) */}
-            <div className="flex items-center gap-3 text-[12px] text-[#94a3b8]">
+            {/* Stats: Author */}
+            <div className="flex items-center gap-2 text-[12px] text-[#94a3b8]">
               <span className="text-[#64748b]">작성자: 버진로드</span>
-              <span>·</span>
-              <span className="text-[#0f766e] font-semibold flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{readTime}분 읽기</span>
-              </span>
             </div>
           </div>
 
@@ -119,7 +113,7 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
 
         <div className="flex items-center justify-between text-[11.5px] text-[#94a3b8] pt-2.5 border-t border-[#f1f5f9]">
           <span>{formattedDateTime}</span>
-          <span className="text-[#0f766e] font-medium">{readTime}분 읽기</span>
+          <span className="text-[#64748b]">버진로드</span>
         </div>
       </div>
     </article>
