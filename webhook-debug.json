@@ -1,21 +1,5 @@
 [
   {
-    "timestamp": "2026-08-16T17:18:11.012Z",
-    "method": "GET",
-    "url": "/api/posts",
-    "headers": {
-      "host": "localhost:3000",
-      "user-agent": "curl/7.88.1",
-      "accept": "*/*"
-    },
-    "query": {},
-    "body": {},
-    "error": null,
-    "responseSent": {
-      "count": 134
-    }
-  },
-  {
     "timestamp": "2026-08-16T17:19:14.918Z",
     "method": "GET",
     "url": "/api/posts",
@@ -1795,6 +1779,23 @@
     "error": null,
     "responseSent": {
       "count": 115
+    }
+  },
+  {
+    "timestamp": "2026-09-16T07:41:11.022Z",
+    "method": "HEAD",
+    "url": "/rss.xml",
+    "headers": {
+      "host": "localhost:3000",
+      "user-agent": "curl/7.88.1",
+      "accept": "*/*"
+    },
+    "query": {},
+    "body": {},
+    "error": null,
+    "responseSent": {
+      "count": 115,
+      "format": "rss-xml"
     }
   }
 ]

@@ -6,7 +6,7 @@ import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
 import { runAutoPublisherService } from "./src/lib/autoPublisher";
 import { extractSeoKeywords } from "./src/lib/seoKeywords";
-import { generateRealisticPostDateTime, formatPostDateTime, parsePostTimestamp } from "./src/lib/utils";
+import { generateRealisticPostDateTime, formatPostDateTime, parsePostTimestamp, slugify, matchPostBySlugOrId, normalizeTitle } from "./src/lib/utils";
 import {
   submitUrlsToSearchConsole,
   getIndexingLogs,
@@ -55,20 +55,6 @@ function saveExposures(exposures: Record<string, number>) {
   } catch (e) {
     console.error("Failed to write exposures file:", e);
   }
-}
-
-// 25-char logic slugify to match src/lib/utils.ts perfectly
-function slugify(title: string): string {
-  if (!title) return "";
-  return title
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_]+/g, "-")
-    .replace(/[^\w\uAC00-\uD7A3\-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 25)
-    .replace(/-+$/g, "");
 }
 
 function stripHtml(html: string): string {
@@ -197,10 +183,6 @@ function extractFirstImage(content: string): string | null {
   const imgRegex = /<img[^>]+src=["']([^"']+)["']/i;
   const match = content.match(imgRegex);
   return match ? match[1] : null;
-}
-
-function normalizeTitle(str: string): string {
-  return (str || "").replace(/[^a-zA-Z0-9가-힣]/g, "").toLowerCase();
 }
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
@@ -411,90 +393,6 @@ async function startServer() {
       return res.sendStatus(200);
     }
     next();
-  });
-
-  // API Route: sitemap.xml (supports both manual, mock, and real-time Firestore database posts)
-  app.get("/sitemap.xml", async (req, res) => {
-    res.header("Content-Type", "application/xml; charset=utf-8");
-    try {
-      const baseUrl = "https://virginroad.kr";
-      
-      const staticPages = [
-        "",
-        "/about",
-        "/privacy",
-        "/announcement",
-        "/terms",
-        "/policy",
-        "/tools/didimdol",
-        "/tools/cheongyak",
-        "/category/신혼금융",
-        "/category/신혼가전",
-        "/category/결혼준비"
-      ];
-      
-      const postUrls: string[] = [];
-      const firestorePosts = await fetchMergedPosts();
-      
-      // 1. Add firestore raw dynamic posts
-      firestorePosts.forEach((post) => {
-        const slug = slugify(post.title) || post.id;
-        postUrls.push(`/post/${slug}`);
-      });
-      
-      // 2. Add static constant posts
-      MOCK_POSTS.forEach((post) => {
-        const slug = slugify(post.title) || post.id;
-        const path = `/post/${slug}`;
-        if (!postUrls.includes(path)) {
-          postUrls.push(path);
-        }
-      });
-      
-      const allPaths = [...staticPages, ...postUrls];
-      
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-      xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-      
-      const today = new Date().toISOString().split("T")[0];
-      
-      allPaths.forEach((p) => {
-        const fullUrl = `${baseUrl}${p}`;
-        const escapedUrl = fullUrl
-          .replace(/&/g, "&amp;")
-          .replace(/'/g, "&apos;")
-          .replace(/"/g, "&quot;")
-          .replace(/>/g, "&gt;")
-          .replace(/</g, "&lt;");
-          
-        let priority = "0.5";
-        let changefrequency = "weekly";
-        
-        if (p === "") {
-          priority = "1.0";
-          changefrequency = "daily";
-        } else if (p.startsWith("/tools/") || p.startsWith("/category/") || p === "/policy") {
-          priority = "0.8";
-          changefrequency = "daily";
-        } else if (p.startsWith("/post/")) {
-          priority = "0.7";
-          changefrequency = "weekly";
-        }
-        
-        xml += `  <url>\n`;
-        xml += `    <loc>${escapedUrl}</loc>\n`;
-        xml += `    <lastmod>${today}</lastmod>\n`;
-        xml += `    <changefreq>${changefrequency}</changefreq>\n`;
-        xml += `    <priority>${priority}</priority>\n`;
-        xml += `  </url>\n`;
-      });
-      
-      xml += `</urlset>`;
-      res.send(xml);
-    } catch (err) {
-      console.error("Failed to generate and serve dynamic sitemap:", err);
-      res.status(500).send("Internal Server Error");
-    }
   });
 
   // API Route: increment views
@@ -1332,6 +1230,7 @@ Sitemap: ${hostUrl}/sitemap.xml
       xml += `</urlset>`;
 
       res.type("application/xml");
+      res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
       res.send(xml);
     } catch (err: any) {
       console.error("Failed to generate sitemap.xml:", err);
@@ -1339,129 +1238,178 @@ Sitemap: ${hostUrl}/sitemap.xml
     }
   });
 
-  // Vite middleware for development vs routing configuration for production
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
+  // Dynamic RSS 2.0 / Feed route for syndication & news readers
+  app.get(["/rss.xml", "/feed.xml"], async (req, res) => {
+    try {
+      const posts = await fetchMergedPosts();
+      const baseUrl = "https://virginroad.kr";
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+      xml += `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n`;
+      xml += `  <channel>\n`;
+      xml += `    <title>버진로드 (Virginroad)</title>\n`;
+      xml += `    <link>${baseUrl}</link>\n`;
+      xml += `    <description>2026 신혼부부 금융·청약·가전 실전 가이드 블로그</description>\n`;
+      xml += `    <language>ko-kr</language>\n`;
+      xml += `    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />\n`;
+      
+      posts.slice(0, 50).forEach((post) => {
+        const slug = slugify(post.title) || post.id;
+        const pubDate = new Date(post.date || Date.now()).toUTCString();
+        xml += `    <item>\n`;
+        xml += `      <title>${escapeXml(post.title)}</title>\n`;
+        xml += `      <link>${baseUrl}/post/${slug}</link>\n`;
+        xml += `      <guid isPermaLink="true">${baseUrl}/post/${slug}</guid>\n`;
+        xml += `      <description>${escapeXml(post.excerpt || "")}</description>\n`;
+        xml += `      <pubDate>${pubDate}</pubDate>\n`;
+        xml += `      <category>${escapeXml(post.category || "신혼금융")}</category>\n`;
+        xml += `    </item>\n`;
+      });
+      xml += `  </channel>\n`;
+      xml += `</rss>`;
+      res.type("application/rss+xml; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
+      res.send(xml);
+    } catch (e) {
+      res.status(500).send("Error generating RSS");
+    }
+  });
+
+  // Vite middleware in dev vs static serving in production
+  let vite: any = null;
+  const isProduction = process.env.NODE_ENV === "production" && fs.existsSync(path.join(process.cwd(), "dist", "index.html"));
+
+  if (!isProduction) {
+    vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "custom",
     });
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    
-    // Serve static files (with index: false to prevent automatic, un-SEO-optimized index.html routing)
     app.use(express.static(distPath, { index: false }));
+  }
 
-    // Fast-preprocessor HTML routing for individual blog posts
-    app.get("/post/:slug", async (req, res) => {
-      const { slug } = req.params;
-      const htmlPath = path.join(distPath, "index.html");
+  async function getBaseHtml(url: string): Promise<string> {
+    if (isProduction) {
+      const distHtmlPath = path.join(process.cwd(), "dist", "index.html");
+      return fs.readFileSync(distHtmlPath, "utf-8");
+    } else {
+      const devHtmlPath = path.join(process.cwd(), "index.html");
+      let raw = fs.readFileSync(devHtmlPath, "utf-8");
+      if (vite) {
+        raw = await vite.transformIndexHtml(url, raw);
+      }
+      return raw;
+    }
+  }
 
-      try {
-        if (!fs.existsSync(htmlPath)) {
-          return res.status(404).send("Site is building. Please try again soon.");
-        }
+  function injectOrReplaceMetaInHtml(html: string, nameOrProperty: string, content: string, isProperty = false): string {
+    const attr = isProperty ? "property" : "name";
+    const regex = new RegExp(`<meta[^>]*(?:${attr}="${nameOrProperty}"|content="[^"]*"[^>]*${attr}="${nameOrProperty}")[^>]*>`, "i");
+    const newMetaTag = `<meta ${attr}="${nameOrProperty}" content="${content.replace(/"/g, "&quot;")}" />`;
+    if (html.match(regex)) {
+      return html.replace(regex, newMetaTag);
+    }
+    return html.replace("</head>", `  ${newMetaTag}\n</head>`);
+  }
 
-        let html = fs.readFileSync(htmlPath, "utf-8");
+  function setCanonicalInHtml(html: string, canonicalUrl: string): string {
+    const canonicalRegex = /<link[^>]*rel="canonical"[^>]*>/i;
+    const newCanonicalElement = `<link rel="canonical" href="${canonicalUrl}" />`;
+    if (html.match(canonicalRegex)) {
+      return html.replace(canonicalRegex, newCanonicalElement);
+    }
+    return html.replace("</head>", `  ${newCanonicalElement}\n</head>`);
+  }
 
-        // Gather list of both Mock posts and Firestore dynamic db posts
-        const firestorePosts = await fetchMergedPosts();
-        
-        const combined = [...firestorePosts, ...MOCK_POSTS];
-        const post = combined.find(
-          (p: any) => slugify(p.title) === slug || p.id === slug
-        );
+  // Fast-preprocessor HTML routing for individual blog posts (Runs in both dev & prod)
+  app.get("/post/:slug", async (req, res) => {
+    const { slug } = req.params;
 
-        if (post) {
-          const title = `${post.title} | 버진로드`;
-          const description = post.excerpt || "결혼 준비와 신혼부부를 위한 실용 정책, 대출, 특별공급 시뮬레이션을 가구 맞춤으로 쉽게 풀어드립니다.";
-          const canonical = `https://virginroad.kr/post/${slug}`;
-          const image = post.image || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
+    try {
+      const firestorePosts = await fetchMergedPosts();
+      const combined = [...firestorePosts, ...MOCK_POSTS];
+      const post = combined.find((p: any) => matchPostBySlugOrId(slug, p));
 
-          // Perform meta substitutions for direct crawling efficiency
-          html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+      if (!post) {
+        let notFoundHtml = await getBaseHtml(req.originalUrl);
+        notFoundHtml = notFoundHtml.replace(/<title>[^<]*<\/title>/, `<title>요청하신 글을 찾을 수 없습니다 | 버진로드</title>`);
+        notFoundHtml = notFoundHtml.replace('<div id="root"></div>', `<div id="root" style="padding: 48px 20px; text-align: center; font-family: sans-serif;"><h1>요청하신 글을 찾을 수 없습니다.</h1><p style="margin-top: 16px;"><a href="/" style="color: #0f766e; font-weight: bold; text-decoration: underline;">버진로드 홈으로 이동</a></p></div>`);
+        return res.status(404).send(notFoundHtml);
+      }
 
-          const injectOrReplaceMeta = (metaNameOrProperty: string, content: string, isProperty = false) => {
-            const attr = isProperty ? "property" : "name";
-            const regex = new RegExp(`<meta[^>]*(?:${attr}="${metaNameOrProperty}"|content="[^"]*"[^>]*${attr}="${metaNameOrProperty}")[^>]*>`, "i");
-            const newMetaTag = `<meta ${attr}="${metaNameOrProperty}" content="${content.replace(/"/g, "&quot;")}" />`;
-            
-            if (html.match(regex)) {
-              html = html.replace(regex, newMetaTag);
-            } else {
-              html = html.replace("</head>", `  ${newMetaTag}\n</head>`);
-            }
-          };
+      const canonicalSlug = slugify(post.title);
+      // If accessed via non-canonical slug (like ID or legacy truncated slug), 301 Permanent Redirect!
+      if (slug !== canonicalSlug && decodeURIComponent(slug) !== canonicalSlug) {
+        return res.redirect(301, `/post/${encodeURIComponent(canonicalSlug)}`);
+      }
 
-          // Primary standard and Social SEO OpenGraph optimization variables
-          injectOrReplaceMeta("description", description);
+      let html = await getBaseHtml(req.originalUrl);
+      const title = `${post.title} | 버진로드`;
+      const description = post.excerpt || "결혼 준비와 신혼부부를 위한 실용 정책, 대출, 특별공급 시뮬레이션을 가구 맞춤으로 쉽게 풀어드립니다.";
+      const canonical = `https://virginroad.kr/post/${encodeURIComponent(canonicalSlug)}`;
+      const image = post.image || "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
 
-          // Extract and inject top 10 dynamic SEO keywords
-          const dynamicKeywords = extractSeoKeywords({
-            title: post.title,
-            content: post.content,
-            category: post.category,
-            hashtags: post.hashtags
-          });
-          const keywordContent = dynamicKeywords.join(", ");
-          injectOrReplaceMeta("keywords", keywordContent);
-          injectOrReplaceMeta("news_keywords", keywordContent);
+      html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+      html = injectOrReplaceMetaInHtml(html, "description", description);
 
-          injectOrReplaceMeta("og:title", title, true);
-          injectOrReplaceMeta("og:description", description, true);
-          injectOrReplaceMeta("og:url", canonical, true);
-          injectOrReplaceMeta("og:image", image, true);
-          injectOrReplaceMeta("og:type", "article", true);
-          injectOrReplaceMeta("og:site_name", "버진로드", true);
-          injectOrReplaceMeta("og:locale", "ko_KR", true);
+      const dynamicKeywords = extractSeoKeywords({
+        title: post.title,
+        content: post.content,
+        category: post.category,
+        hashtags: post.hashtags
+      });
+      const keywordContent = dynamicKeywords.join(", ");
+      html = injectOrReplaceMetaInHtml(html, "keywords", keywordContent);
+      html = injectOrReplaceMetaInHtml(html, "news_keywords", keywordContent);
 
-          injectOrReplaceMeta("twitter:title", title);
-          injectOrReplaceMeta("twitter:description", description);
-          injectOrReplaceMeta("twitter:image", image);
-          injectOrReplaceMeta("twitter:card", "summary_large_image");
+      html = injectOrReplaceMetaInHtml(html, "og:title", title, true);
+      html = injectOrReplaceMetaInHtml(html, "og:description", description, true);
+      html = injectOrReplaceMetaInHtml(html, "og:url", canonical, true);
+      html = injectOrReplaceMetaInHtml(html, "og:image", image, true);
+      html = injectOrReplaceMetaInHtml(html, "og:type", "article", true);
+      html = injectOrReplaceMetaInHtml(html, "og:site_name", "버진로드", true);
+      html = injectOrReplaceMetaInHtml(html, "og:locale", "ko_KR", true);
 
-          // Canonical element
-          const canonicalRegex = /<link[^>]*rel="canonical"[^>]*>/i;
-          const newCanonicalElement = `<link rel="canonical" href="${canonical}" />`;
-          if (html.match(canonicalRegex)) {
-            html = html.replace(canonicalRegex, newCanonicalElement);
-          } else {
-            html = html.replace("</head>", `  ${newCanonicalElement}\n</head>`);
-          }
+      html = injectOrReplaceMetaInHtml(html, "twitter:title", title);
+      html = injectOrReplaceMetaInHtml(html, "twitter:description", description);
+      html = injectOrReplaceMetaInHtml(html, "twitter:image", image);
+      html = injectOrReplaceMetaInHtml(html, "twitter:card", "summary_large_image");
 
-          // Inject dynamic Article and Breadcrumb JSON-LD structured schemas on the server-side
-          const articleJson = {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": post.title,
-            "description": description,
-            "image": [image],
-            "datePublished": post.date,
-            "dateModified": post.updated || post.date,
-            "author": { "@type": "Person", "name": post.author || "버진로드" },
-            "publisher": {
-              "@type": "Organization",
-              "name": "버진로드",
-              "alternateName": "버진로드",
-              "url": "https://virginroad.kr",
-              "logo": { "@type": "ImageObject", "url": "https://virginroad.kr/icon.svg" }
-            },
-            "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
-            "articleSection": post.category,
-            "inLanguage": "ko-KR"
-          };
+      html = setCanonicalInHtml(html, canonical);
 
-          const breadcrumbJson = {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
-              { "@type": "ListItem", "position": 2, "name": post.category, "item": `https://virginroad.kr/category/${encodeURIComponent(post.category)}` },
-              { "@type": "ListItem", "position": 3, "name": post.title, "item": canonical }
-            ]
-          };
+      const articleJson = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "description": description,
+        "image": [image],
+        "datePublished": post.date,
+        "dateModified": post.updated || post.date,
+        "author": { "@type": "Person", "name": post.author || "버진로드" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "버진로드",
+          "alternateName": "버진로드",
+          "url": "https://virginroad.kr",
+          "logo": { "@type": "ImageObject", "url": "https://virginroad.kr/icon.svg" }
+        },
+        "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+        "articleSection": post.category,
+        "inLanguage": "ko-KR"
+      };
 
-          const jsonLdBlock = `
+      const breadcrumbJson = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+          { "@type": "ListItem", "position": 2, "name": post.category, "item": `https://virginroad.kr/category/${encodeURIComponent(post.category)}` },
+          { "@type": "ListItem", "position": 3, "name": post.title, "item": canonical }
+        ]
+      };
+
+      const jsonLdBlock = `
   <script type="application/ld+json">
   ${JSON.stringify(articleJson, null, 2)}
   </script>
@@ -1469,19 +1417,18 @@ Sitemap: ${hostUrl}/sitemap.xml
   ${JSON.stringify(breadcrumbJson, null, 2)}
   </script>
 `;
-          html = html.replace("</head>", `  ${jsonLdBlock}\n</head>`);
+      html = html.replace("</head>", `  ${jsonLdBlock}\n</head>`);
 
-          // Inject full pre-rendered semantic HTML body inside #root for search engines & AdSense crawlers
-          const postContent = expandContentIfNeeded(
-            post.title,
-            post.category,
-            post.hashtags || [],
-            post.content || "",
-            post.id,
-            post.image
-          );
+      const postContent = expandContentIfNeeded(
+        post.title,
+        post.category,
+        post.hashtags || [],
+        post.content || "",
+        post.id,
+        post.image
+      );
 
-          const ssrArticleMarkup = `
+      const ssrArticleMarkup = `
   <div id="ssr-container" style="max-width: 860px; margin: 0 auto; padding: 24px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;">
     <header style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
       <nav style="font-size: 13.5px; color: #64748b; margin-bottom: 16px;">
@@ -1510,163 +1457,134 @@ Sitemap: ${hostUrl}/sitemap.xml
     </footer>
   </div>
 `;
-          html = html.replace('<div id="root"></div>', `<div id="root">${ssrArticleMarkup}</div>`);
+      html = html.replace('<div id="root"></div>', `<div id="root">${ssrArticleMarkup}</div>`);
+      res.setHeader("Cache-Control", "public, max-age=300, s-maxage=600");
+      res.send(html);
+    } catch (err) {
+      console.error("Dynamic SEO metadata injection failure:", err);
+      const fallback = await getBaseHtml(req.originalUrl);
+      res.send(fallback);
+    }
+  });
+
+  // Dynamic Fallback HTML route with page-specific preprocessors for all standard pages
+  app.get("*", async (req, res) => {
+    try {
+      let html = await getBaseHtml(req.originalUrl);
+      const pathname = req.path;
+      
+      let title = "버진로드 - 2026 신혼부부 금융·청약·가전 실전 가이드 블로그";
+      let description = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
+      let canonical = `https://virginroad.kr${pathname === "/" ? "" : pathname}`;
+      let ogType = "website";
+      let image = "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
+      let jsonLd: any = null;
+
+      if (pathname === "/about") {
+        title = "소개 | 버진로드";
+        description = "버진로드는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.";
+      } else if (pathname === "/policy") {
+        title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
+        description = "2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.";
+      } else if (pathname === "/privacy") {
+        title = "개인정보 처리방침 | 버진로드";
+        description = "버진로드의 개인정보 수집 및 이용에 관한 안내입니다.";
+      } else if (pathname === "/announcement") {
+        title = "공지사항 | 버진로드";
+        description = "버진로드의 서비스 운영 관련 공지사항을 안내합니다.";
+      } else if (pathname === "/terms") {
+        title = "이용약관 | 버진로드";
+        description = "버진로드 서비스 이용에 관한 약관입니다.";
+      } else if (pathname === "/tools/didimdol") {
+        title = "디딤돌 우대금리 계산기 | 버진로드";
+        description = "한국주택금융공사 2026년 공시 기준으로 본인 가구의 디딤돌대출 우대금리와 월 상환액을 시뮬레이션해 드립니다. 자녀·청약통장·전자계약 우대를 단계별로 확인하세요.";
+      } else if (pathname === "/tools/cheongyak") {
+        title = "신혼부부 특별공급 가점 계산기 | 버진로드";
+        description = "「주택공급에 관한 규칙」 별표1 기준으로 신혼부부 특별공급 가점과 일반 청약가점제 점수를 동시에 계산해 드립니다. 자녀·혼인 기간·청약통장·신생아 가산까지 단계별 확인.";
+      } else if (pathname.startsWith("/category/")) {
+        const rawCat = pathname.replace("/category/", "");
+        const decodedCat = decodeURIComponent(rawCat);
+        if (decodedCat === "신혼금융") {
+          title = "신혼금융 | 버진로드";
+          description = "신혼·출산 가구의 주거 대출(디딤돌·보금자리·신생아특례), 청약 전략, 세제 혜택, 자산 형성까지. 가정의 재무 의사결정에 필요한 정책·금융 정보를 정리한 섹션입니다.";
+        } else if (decodedCat === "신혼가전") {
+          title = "신혼가전 | 버진로드";
+          description = "삼성·LG 신혼가전 패키지 비교, 평수별 적정 사이즈, 빌트인 가전 선택 기준, 가구 비교 등 신혼집 꾸리기 실용 가이드를 모았습니다.";
+        } else if (decodedCat === "결혼준비") {
+          title = "결혼준비 | 버진로드";
+          description = "스드메 견적의 실제, 웨딩홀 종류별 장단점, 결혼 준비 타임라인, 예단·예물 협상 기준 등 결혼을 앞둔 가구를 위한 풍성한 자료가 한가득 수록되어 있습니다.";
+        } else {
+          title = `${decodedCat} | 버진로드`;
+          description = `${decodedCat} 관련 가정경제·생활정책 정보를 한데 모아 제공합니다.`;
         }
-
-        res.send(html);
-      } catch (err) {
-        console.error("Dynamic SEO metadata injection failure:", err);
-        res.sendFile(htmlPath);
-      }
-    });
-
-    // Default Fallback SPA route with full dynamic HTML page-specific preprocessors
-    app.get("*", async (req, res) => {
-      const htmlPath = path.join(distPath, "index.html");
-      if (!fs.existsSync(htmlPath)) {
-        return res.status(404).send("Site is building. Please try again soon.");
-      }
-
-      try {
-        let html = fs.readFileSync(htmlPath, "utf-8");
-        const pathname = req.path;
-        
-        let title = "버진로드 - 2026 신혼부부 금융·청약·가전 실전 가이드 블로그";
-        let description = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
-        let canonical = `https://virginroad.kr${pathname === "/" ? "" : pathname}`;
-        let ogType = "website";
-        let image = "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
-        let jsonLd: any = null;
-
-        if (pathname === "/about") {
-          title = "소개 | 버진로드";
-          description = "버진로드는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.";
-        } else if (pathname === "/policy") {
-          title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
-          description = "2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.";
-        } else if (pathname === "/privacy") {
-          title = "개인정보 처리방침 | 버진로드";
-          description = "버진로드의 개인정보 수집 및 이용에 관한 안내입니다.";
-        } else if (pathname === "/announcement") {
-          title = "공지사항 | 버진로드";
-          description = "버진로드의 서비스 운영 관련 공지사항을 안내합니다.";
-        } else if (pathname === "/terms") {
-          title = "이용약관 | 버진로드";
-          description = "버진로드 서비스 이용에 관한 약관입니다.";
-        } else if (pathname === "/tools/didimdol") {
-          title = "디딤돌 우대금리 계산기 | 버진로드";
-          description = "한국주택금융공사 2026년 5월 1일 공시 기준으로 본인 가구의 디딤돌대출 우대금리와 월 상환액을 시뮬레이션해 드립니다. 자녀·청약통장·전자계약 우대를 단계별로 확인하세요.";
-        } else if (pathname === "/tools/cheongyak") {
-          title = "신혼부부 특별공급 가점 계산기 | 버진로드";
-          description = "「주택공급에 관한 규칙」 별표1 기준으로 신혼부부 특별공급 가점과 일반 청약가점제 점수를 동시에 계산해 드립니다. 자녀·혼인 기간·청약통장·신생아 가산까지 단계별 확인.";
-        } else if (pathname.startsWith("/category/")) {
-          const rawCat = pathname.replace("/category/", "");
-          const decodedCat = decodeURIComponent(rawCat);
-          if (decodedCat === "신혼금융") {
-            title = "신혼금융 | 버진로드";
-            description = "신혼·출산 가구의 주거 대출(디딤돌·보금자리·신생아특례), 청약 전략, 세제 혜택, 자산 형성까지. 가정의 재무 의사결정에 필요한 정책·금융 정보를 정리한 섹션입니다.";
-          } else if (decodedCat === "신혼가전") {
-            title = "신혼가전 | 버진로드";
-            description = "삼성·LG 신혼가전 패키지 비교, 평수별 적정 사이즈, 빌트인 가전 선택 기준, 한샘·이케아·리바트·일룸 가구 비교 등 신혼집 꾸리기 실용 가이드를 모았습니다.";
-          } else if (decodedCat === "결혼준비") {
-            title = "결혼준비 | 버진로드";
-            description = "스드메 견적의 실제, 웨딩홀 종류별 장단점, 결혼 준비 타임라인, 예단·예물 협상 기준 등 결혼을 앞둔 가구를 위한 풍성한 자료가 한가득 수록되어 있습니다.";
-          } else {
-            title = `${decodedCat} | 버진로드`;
-            description = `${decodedCat} 관련 가정경제·생활정책 정보를 한데 모아 제공합니다.`;
-          }
-        } else if (pathname === "/" || pathname === "") {
-          // Homepage gets standard Website JSON-LD
-          jsonLd = {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "버진로드",
-            "url": "https://virginroad.kr",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://virginroad.kr/?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            }
-          };
-        }
-
-        // Perform HTML substitutions
-        html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
-
-        const injectOrReplaceMeta = (metaNameOrProperty: string, content: string, isProperty = false) => {
-          const attr = isProperty ? "property" : "name";
-          const regex = new RegExp(`<meta[^>]*(?:${attr}="${metaNameOrProperty}"|content="[^"]*"[^>]*${attr}="${metaNameOrProperty}")[^>]*>`, "i");
-          const newMetaTag = `<meta ${attr}="${metaNameOrProperty}" content="${content.replace(/"/g, "&quot;")}" />`;
-          
-          if (html.match(regex)) {
-            html = html.replace(regex, newMetaTag);
-          } else {
-            html = html.replace("</head>", `  ${newMetaTag}\n</head>`);
+      } else if (pathname === "/" || pathname === "") {
+        jsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "버진로드",
+          "url": "https://virginroad.kr",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://virginroad.kr/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
           }
         };
+      }
 
-        injectOrReplaceMeta("description", description);
+      html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+      html = injectOrReplaceMetaInHtml(html, "description", description);
 
-        // Extract and inject top 10 dynamic SEO keywords
-        const dynamicKeywords = extractSeoKeywords({
-          title,
-          category: pathname.startsWith("/category/") ? decodeURIComponent(pathname.replace("/category/", "")) : "신혼금융"
-        });
-        const keywordContent = dynamicKeywords.join(", ");
-        injectOrReplaceMeta("keywords", keywordContent);
-        injectOrReplaceMeta("news_keywords", keywordContent);
+      const dynamicKeywords = extractSeoKeywords({
+        title,
+        category: pathname.startsWith("/category/") ? decodeURIComponent(pathname.replace("/category/", "")) : "신혼금융"
+      });
+      const keywordContent = dynamicKeywords.join(", ");
+      html = injectOrReplaceMetaInHtml(html, "keywords", keywordContent);
+      html = injectOrReplaceMetaInHtml(html, "news_keywords", keywordContent);
 
-        injectOrReplaceMeta("og:title", title, true);
-        injectOrReplaceMeta("og:description", description, true);
-        injectOrReplaceMeta("og:url", canonical, true);
-        injectOrReplaceMeta("og:image", image, true);
-        injectOrReplaceMeta("og:type", ogType, true);
-        injectOrReplaceMeta("og:site_name", "버진로드", true);
-        injectOrReplaceMeta("og:locale", "ko_KR", true);
+      html = injectOrReplaceMetaInHtml(html, "og:title", title, true);
+      html = injectOrReplaceMetaInHtml(html, "og:description", description, true);
+      html = injectOrReplaceMetaInHtml(html, "og:url", canonical, true);
+      html = injectOrReplaceMetaInHtml(html, "og:image", image, true);
+      html = injectOrReplaceMetaInHtml(html, "og:type", ogType, true);
+      html = injectOrReplaceMetaInHtml(html, "og:site_name", "버진로드", true);
+      html = injectOrReplaceMetaInHtml(html, "og:locale", "ko_KR", true);
 
-        injectOrReplaceMeta("twitter:title", title);
-        injectOrReplaceMeta("twitter:description", description);
-        injectOrReplaceMeta("twitter:image", image);
-        injectOrReplaceMeta("twitter:card", "summary_large_image");
+      html = injectOrReplaceMetaInHtml(html, "twitter:title", title);
+      html = injectOrReplaceMetaInHtml(html, "twitter:description", description);
+      html = injectOrReplaceMetaInHtml(html, "twitter:image", image);
+      html = injectOrReplaceMetaInHtml(html, "twitter:card", "summary_large_image");
 
-        // Canonical element
-        const canonicalRegex = /<link[^>]*rel="canonical"[^>]*>/i;
-        const newCanonicalElement = `<link rel="canonical" href="${canonical}" />`;
-        if (html.match(canonicalRegex)) {
-          html = html.replace(canonicalRegex, newCanonicalElement);
-        } else {
-          html = html.replace("</head>", `  ${newCanonicalElement}\n</head>`);
-        }
+      html = setCanonicalInHtml(html, canonical);
 
-        // If JSON-LD is available, inject it
-        if (jsonLd) {
-          const jsonLdString = `
+      if (jsonLd) {
+        const jsonLdString = `
   <script type="application/ld+json">
   ${JSON.stringify(jsonLd, null, 2)}
   </script>
 `;
-          html = html.replace("</head>", `  ${jsonLdString}\n</head>`);
-        }
+        html = html.replace("</head>", `  ${jsonLdString}\n</head>`);
+      }
 
-        // Inject Pre-rendered SSR Markup for Homepage, Category, and Info pages
-        try {
-          const allPosts = await fetchMergedPosts();
-          const combined = [...allPosts, ...MOCK_POSTS];
+      // Inject Pre-rendered SSR Markup
+      try {
+        const allPosts = await fetchMergedPosts();
+        const combined = [...allPosts, ...MOCK_POSTS];
 
-          if (pathname === "/" || pathname === "") {
-            const topPosts = combined.slice(0, 18);
-            const listItems = topPosts.map((p: any) => `
-              <li style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
-                <div style="font-size: 12px; font-weight: 700; color: #e11d48; margin-bottom: 4px;">${p.category}</div>
-                <a href="/post/${slugify(p.title)}" style="text-decoration: none; color: #0f172a; font-weight: 800; font-size: 17px; display: block; margin-bottom: 6px; line-height: 1.4;">${p.title}</a>
-                <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${p.excerpt || ""}</p>
-                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
-                  <span>작성자: ${p.author || "버진로드 에디터"}</span> &middot; <span>${p.date}</span> &middot; <span>2026 공시 검증</span>
-                </div>
-              </li>
-            `).join("");
+        if (pathname === "/" || pathname === "") {
+          const topPosts = combined.slice(0, 18);
+          const listItems = topPosts.map((p: any) => `
+            <li style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+              <div style="font-size: 12px; font-weight: 700; color: #e11d48; margin-bottom: 4px;">${p.category}</div>
+              <a href="/post/${slugify(p.title)}" style="text-decoration: none; color: #0f172a; font-weight: 800; font-size: 17px; display: block; margin-bottom: 6px; line-height: 1.4;">${p.title}</a>
+              <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${p.excerpt || ""}</p>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                <span>작성자: ${p.author || "버진로드 에디터"}</span> &middot; <span>${p.date}</span> &middot; <span>2026 공시 검증</span>
+              </div>
+            </li>
+          `).join("");
 
-            const ssrHomeMarkup = `
+          const ssrHomeMarkup = `
   <div id="ssr-home" style="max-width: 900px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
     <header style="margin-bottom: 32px; border-bottom: 2px solid #0f172a; padding-bottom: 20px;">
       <div style="display: inline-block; background: #fff1f2; color: #e11d48; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 700; margin-bottom: 12px;">2026 공식 검증 주거·금융 포털</div>
@@ -1695,22 +1613,22 @@ Sitemap: ${hostUrl}/sitemap.xml
     </footer>
   </div>
 `;
-            html = html.replace('<div id="root"></div>', `<div id="root">${ssrHomeMarkup}</div>`);
-          } else if (pathname.startsWith("/category/")) {
-            const rawCat = pathname.replace("/category/", "");
-            const decodedCat = decodeURIComponent(rawCat);
-            const catPosts = combined.filter((p: any) => p.category === decodedCat).slice(0, 25);
-            const catItems = catPosts.map((p: any) => `
-              <li style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
-                <a href="/post/${slugify(p.title)}" style="text-decoration: none; color: #0f172a; font-weight: 800; font-size: 17px; display: block; margin-bottom: 6px;">${p.title}</a>
-                <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${p.excerpt || ""}</p>
-                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
-                  <span>${p.date}</span> &middot; <span>작성자: ${p.author || "버진로드 에디터"}</span>
-                </div>
-              </li>
-            `).join("");
+          html = html.replace('<div id="root"></div>', `<div id="root">${ssrHomeMarkup}</div>`);
+        } else if (pathname.startsWith("/category/")) {
+          const rawCat = pathname.replace("/category/", "");
+          const decodedCat = decodeURIComponent(rawCat);
+          const catPosts = combined.filter((p: any) => p.category === decodedCat).slice(0, 25);
+          const catItems = catPosts.map((p: any) => `
+            <li style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+              <a href="/post/${slugify(p.title)}" style="text-decoration: none; color: #0f172a; font-weight: 800; font-size: 17px; display: block; margin-bottom: 6px;">${p.title}</a>
+              <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${p.excerpt || ""}</p>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                <span>${p.date}</span> &middot; <span>작성자: ${p.author || "버진로드 에디터"}</span>
+              </div>
+            </li>
+          `).join("");
 
-            const ssrCatMarkup = `
+          const ssrCatMarkup = `
   <div id="ssr-cat" style="max-width: 900px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
     <nav style="font-size: 13.5px; color: #64748b; margin-bottom: 16px;">
       <a href="/" style="color: #64748b; text-decoration: none;">홈</a> &gt; <span style="color: #0f172a; font-weight: 600;">${decodedCat}</span>
@@ -1726,9 +1644,9 @@ Sitemap: ${hostUrl}/sitemap.xml
     </main>
   </div>
 `;
-            html = html.replace('<div id="root"></div>', `<div id="root">${ssrCatMarkup}</div>`);
-          } else if (pathname === "/about") {
-            const ssrAboutMarkup = `
+          html = html.replace('<div id="root"></div>', `<div id="root">${ssrCatMarkup}</div>`);
+        } else if (pathname === "/about") {
+          const ssrAboutMarkup = `
   <div id="ssr-about" style="max-width: 860px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
     <header style="margin-bottom: 32px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
       <h1 style="font-size: 28px; font-weight: 900; color: #0f172a; margin-bottom: 12px;">버진로드(Virginroad) 소개 및 편집 원칙</h1>
@@ -1751,19 +1669,20 @@ Sitemap: ${hostUrl}/sitemap.xml
     </article>
   </div>
 `;
-            html = html.replace('<div id="root"></div>', `<div id="root">${ssrAboutMarkup}</div>`);
-          }
-        } catch (e) {
-          console.error("SSR static pre-render error in app.get(*):", e);
+          html = html.replace('<div id="root"></div>', `<div id="root">${ssrAboutMarkup}</div>`);
         }
-
-        res.send(html);
-      } catch (err) {
-        console.error("Dynamic page SEO metadata injection failure:", err);
-        res.sendFile(htmlPath);
+      } catch (e) {
+        console.error("SSR static pre-render error in app.get(*):", e);
       }
-    });
-  }
+
+      res.setHeader("Cache-Control", "public, max-age=300, s-maxage=600");
+      res.send(html);
+    } catch (err) {
+      console.error("Dynamic page SEO metadata injection failure:", err);
+      const fallback = await getBaseHtml(req.originalUrl);
+      res.send(fallback);
+    }
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);

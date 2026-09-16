@@ -27,7 +27,7 @@ import { auth, db } from "./lib/firebase";
 import { handleFirestoreError, OperationType } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { slugify, parsePostTimestamp, normalizeTitle } from "./lib/utils";
+import { slugify, parsePostTimestamp, normalizeTitle, matchPostBySlugOrId } from "./lib/utils";
 
 type Page = 
   | "home" 
@@ -74,7 +74,7 @@ function urlFromPage(page: Page, posts: Post[]): string {
   }
   if (page.startsWith("post-")) {
     const key = page.replace("post-", "");
-    const post = posts.find((p) => p.id === key || slugify(p.title) === key);
+    const post = posts.find((p) => matchPostBySlugOrId(key, p));
     if (post) {
       const slug = slugify(post.title) || post.id;
       return `/post/${slug}`;
@@ -413,7 +413,7 @@ export default function App() {
   const currentPost = useMemo(() => {
     if (!currentPage.startsWith("post-")) return null;
     const key = currentPage.replace("post-", "");
-    return allPosts.find((p) => p.id === key || slugify(p.title) === key) || null;
+    return allPosts.find((p) => matchPostBySlugOrId(key, p)) || null;
   }, [currentPage, allPosts]);
 
   const { prevPost, nextPost } = useMemo(() => {
@@ -847,7 +847,7 @@ export default function App() {
       </main>
 
       {/* 3. Footer */}
-      <Footer onNavigate={handleNavigate} />
+      <Footer onNavigate={handleNavigate} onOpenSearchConsole={() => setIsSearchConsoleModalOpen(true)} />
 
       {/* Google Search Console Modal (Admin only) */}
       <SearchConsoleModal

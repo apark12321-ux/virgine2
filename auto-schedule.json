@@ -542,8 +542,8 @@
         "category": "신혼금융",
         "targetTime": "09:44:53",
         "published": true,
-        "postId": "auto-fin-20260909-2110",
-        "postTitle": "2026년 신생아 특례 자녀수별 대출 우대금리 및 5년 연장 가이드",
+        "postId": "auto-fin-20260909-1581",
+        "postTitle": "2026년 신혼부부 맞벌이 합산소득 2억 원 완화에 따른 정책금융 상품 총정리",
         "publishedAt": "2026-09-09 09:44:53"
       },
       {
@@ -551,8 +551,8 @@
         "category": "신혼가전",
         "targetTime": "19:44:55",
         "published": true,
-        "postId": "auto-app-20260909-8919",
-        "postTitle": "2026년 맞벌이 신혼부부를 위한 로봇청소기 직수형 vs 집진형 완벽 스펙 비교",
+        "postId": "auto-app-20260909-9756",
+        "postTitle": "2026년 삼성 비스포크 AI 콤보 vs LG 트롬 워시콤보 올인원 세탁건조기 실사용 분석",
         "publishedAt": "2026-09-09 19:44:55"
       }
     ],
@@ -562,8 +562,8 @@
         "category": "결혼준비",
         "targetTime": "09:40:26",
         "published": true,
-        "postId": "auto-wed-20260910-8146",
-        "postTitle": "2026년 웨딩드레스 스드메 견적 비교 및 추가금 없는 정찰제 숍 고르는 법",
+        "postId": "auto-wed-20260910-8256",
+        "postTitle": "웨딩 밴드 반지 브랜드별(까르띠에·티파니·불가리·종로공방) 견적 및 디자인 비교",
         "publishedAt": "2026-09-10 09:40:26"
       },
       {
@@ -571,8 +571,8 @@
         "category": "신혼가전",
         "targetTime": "19:21:55",
         "published": true,
-        "postId": "auto-app-20260910-5534",
-        "postTitle": "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
+        "postId": "auto-app-20260910-2317",
+        "postTitle": "2026년 삼성 비스포크 AI 콤보 vs LG 트롬 워시콤보 올인원 세탁건조기 실사용 분석",
         "publishedAt": "2026-09-10 19:21:55"
       }
     ],
@@ -591,8 +591,8 @@
         "category": "신혼금융",
         "targetTime": "19:21:14",
         "published": true,
-        "postId": "auto-fin-20260911-3588",
-        "postTitle": "신혼부부 공동명의 vs 단독명의 세금 시뮬레이션 — 취득세·종부세·양도세 완벽 비교",
+        "postId": "auto-fin-20260911-3787",
+        "postTitle": "2026년 하반기 신혼부부 디딤돌대출 우대금리 항목별 극대화 전략",
         "publishedAt": "2026-09-11 19:21:14"
       }
     ],
@@ -644,7 +644,10 @@
         "id": "sched-20260916-신혼가전-1",
         "category": "신혼가전",
         "targetTime": "09:31:52",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260916-5650",
+        "postTitle": "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
+        "publishedAt": "2026-09-16 09:31:52"
       },
       {
         "id": "sched-20260916-결혼준비-2",
@@ -666,7 +669,21 @@
         "targetTime": "18:36:09",
         "published": false
       }
+    ],
+    "2026-09-18": [
+      {
+        "id": "sched-20260918-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "07:26:29",
+        "published": false
+      },
+      {
+        "id": "sched-20260918-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "18:40:21",
+        "published": false
+      }
     ]
   },
-  "lastCheck": "2026-09-15T09:34:53.198Z"
+  "lastCheck": "2026-09-16T16:36:05.504Z"
 }

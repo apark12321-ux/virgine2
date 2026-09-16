@@ -113,8 +113,28 @@ export function slugify(title: string): string {
     .replace(/[^\w\uAC00-\uD7A3\-]/g, "") // 영숫자, 한글, 하이픈만
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 25)
+    .slice(0, 60)
     .replace(/-+$/g, ""); // slice 후 끝에 하이픈 남으면 제거
+}
+
+/**
+ * URL slug, id, 이전 25자 단축 slug, 또는 제목으로 포스트 일치 여부 확인
+ */
+export function matchPostBySlugOrId(slugOrId: string, post: { id?: string; title: string }): boolean {
+  if (!slugOrId || !post) return false;
+  const decoded = decodeURIComponent(slugOrId).trim().toLowerCase();
+  if (post.id && post.id.toLowerCase() === decoded) return true;
+  
+  const currentSlug = slugify(post.title).toLowerCase();
+  if (currentSlug === decoded) return true;
+  
+  // Backward compatibility with legacy 25-character truncated slugs
+  const legacySlug25 = currentSlug.slice(0, 25).replace(/-+$/g, "");
+  if (legacySlug25 === decoded) return true;
+  
+  // Also match normalized raw title
+  if (normalizeTitle(post.title) === normalizeTitle(decoded)) return true;
+  return false;
 }
 
 /**

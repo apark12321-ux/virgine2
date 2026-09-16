@@ -1,12 +1,4 @@
-User-agent: Mediapartners-Google
-Allow: /
-
-User-agent: Googlebot
-Allow: /
-
 User-agent: *
 Allow: /
 
 Sitemap: https://virginroad.kr/sitemap.xml
-Sitemap: https://virginroad.kr/rss.xml
-Sitemap: https://virginroad.kr/feed.xml
