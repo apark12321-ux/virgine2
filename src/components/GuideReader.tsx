@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Post } from "../types";
 import { formatPostDateTime } from "../lib/utils";
-import { AdSenseUnit } from "./AdSenseUnit";
+import { AdSenseUnit, ADSENSE_ENABLED } from "./AdSenseUnit";
 import {
   Share2,
   Printer,
@@ -247,9 +247,11 @@ export function GuideReader({
       )}
 
       {/* Top In-Article AdSense Banner */}
-      <div className="my-6">
-        <AdSenseUnit slot="article-top-01" label="광고 / Sponsored" format="fluid" />
-      </div>
+      {ADSENSE_ENABLED && (
+        <div className="my-6">
+          <AdSenseUnit slot="article-top-01" label="광고 / Sponsored" format="fluid" />
+        </div>
+      )}
 
       {/* 4. Article Body (Tistory / Naver SmartEditor ONE Typography) */}
       <div
@@ -258,9 +260,11 @@ export function GuideReader({
       />
 
       {/* Mid In-Article AdSense Banner */}
-      <div className="my-8">
-        <AdSenseUnit slot="article-mid-01" label="광고 / Sponsored" format="fluid" />
-      </div>
+      {ADSENSE_ENABLED && (
+        <div className="my-8">
+          <AdSenseUnit slot="article-mid-01" label="광고 / Sponsored" format="fluid" />
+        </div>
+      )}
 
       {/* 5. Tag Cloud / Hashtags */}
       {post.hashtags && post.hashtags.length > 0 && (
@@ -383,9 +387,11 @@ export function GuideReader({
       </div>
 
       {/* Bottom In-Article AdSense Banner */}
-      <div className="my-6">
-        <AdSenseUnit slot="article-bottom-01" label="광고 / Sponsored" format="fluid" />
-      </div>
+      {ADSENSE_ENABLED && (
+        <div className="my-6">
+          <AdSenseUnit slot="article-bottom-01" label="광고 / Sponsored" format="fluid" />
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { MOCK_POSTS } from "./src/constants";
 import { expandContentIfNeeded } from "./src/lib/contentExpander";
 import { runAutoPublisherService } from "./src/lib/autoPublisher";
 import { extractSeoKeywords } from "./src/lib/seoKeywords";
-import { generateRealisticPostDateTime, formatPostDateTime, parsePostTimestamp, slugify, matchPostBySlugOrId, normalizeTitle } from "./src/lib/utils";
+import { generateRealisticPostDateTime, formatPostDateTime, parsePostTimestamp, slugify, matchPostBySlugOrId, normalizeTitle, toIso8601 } from "./src/lib/utils";
 import {
   submitUrlsToSearchConsole,
   getIndexingLogs,
@@ -1322,6 +1322,20 @@ Sitemap: ${hostUrl}/sitemap.xml
     return html.replace("</head>", `  ${newCanonicalElement}\n</head>`);
   }
 
+  function setJsonLdInHtml(html: string, id: string, data: object): string {
+    const scriptTag = `<script id="${id}" type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n</script>`;
+    const regex = new RegExp(`<script[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/script>`, "i");
+    if (html.match(regex)) {
+      return html.replace(regex, scriptTag);
+    }
+    return html.replace("</head>", `  ${scriptTag}\n</head>`);
+  }
+
+  function removeJsonLdFromHtml(html: string, id: string): string {
+    const regex = new RegExp(`\\s*<script[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/script>`, "gi");
+    return html.replace(regex, "");
+  }
+
   // Fast-preprocessor HTML routing for individual blog posts (Runs in both dev & prod)
   app.get("/post/:slug", async (req, res) => {
     const { slug } = req.params;
@@ -1361,7 +1375,6 @@ Sitemap: ${hostUrl}/sitemap.xml
       });
       const keywordContent = dynamicKeywords.join(", ");
       html = injectOrReplaceMetaInHtml(html, "keywords", keywordContent);
-      html = injectOrReplaceMetaInHtml(html, "news_keywords", keywordContent);
 
       html = injectOrReplaceMetaInHtml(html, "og:title", title, true);
       html = injectOrReplaceMetaInHtml(html, "og:description", description, true);
@@ -1380,21 +1393,30 @@ Sitemap: ${hostUrl}/sitemap.xml
 
       const articleJson = {
         "@context": "https://schema.org",
-        "@type": "Article",
+        "@type": "BlogPosting",
         "headline": post.title,
         "description": description,
         "image": [image],
-        "datePublished": post.date,
-        "dateModified": post.updated || post.date,
-        "author": { "@type": "Person", "name": post.author || "버진로드" },
+        "datePublished": toIso8601(post.date),
+        "dateModified": toIso8601(post.updated || post.date),
+        "author": {
+          "@type": "Person",
+          "name": post.author || "버진로드",
+          "url": "https://virginroad.kr/about"
+        },
         "publisher": {
           "@type": "Organization",
           "name": "버진로드",
-          "alternateName": "버진로드",
           "url": "https://virginroad.kr",
-          "logo": { "@type": "ImageObject", "url": "https://virginroad.kr/icon.svg" }
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://virginroad.kr/icon.svg"
+          }
         },
-        "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": canonical
+        },
         "articleSection": post.category,
         "inLanguage": "ko-KR"
       };
@@ -1403,21 +1425,29 @@ Sitemap: ${hostUrl}/sitemap.xml
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
-          { "@type": "ListItem", "position": 2, "name": post.category, "item": `https://virginroad.kr/category/${encodeURIComponent(post.category)}` },
-          { "@type": "ListItem", "position": 3, "name": post.title, "item": canonical }
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "홈",
+            "item": "https://virginroad.kr/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": post.category,
+            "item": `https://virginroad.kr/category/${encodeURIComponent(post.category)}`
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": post.title,
+            "item": canonical
+          }
         ]
       };
 
-      const jsonLdBlock = `
-  <script type="application/ld+json">
-  ${JSON.stringify(articleJson, null, 2)}
-  </script>
-  <script type="application/ld+json">
-  ${JSON.stringify(breadcrumbJson, null, 2)}
-  </script>
-`;
-      html = html.replace("</head>", `  ${jsonLdBlock}\n</head>`);
+      html = setJsonLdInHtml(html, "jsonld-primary", articleJson);
+      html = setJsonLdInHtml(html, "jsonld-breadcrumb", breadcrumbJson);
 
       const postContent = expandContentIfNeeded(
         post.title,
@@ -1478,29 +1508,155 @@ Sitemap: ${hostUrl}/sitemap.xml
       let canonical = `https://virginroad.kr${pathname === "/" ? "" : pathname}`;
       let ogType = "website";
       let image = "https://images.unsplash.com/photo-1554224128-3c7f3edcc69f?auto=format&fit=crop&q=80&w=800";
-      let jsonLd: any = null;
+      let primaryJsonLd: any = null;
+      let breadcrumbJsonLd: any = null;
 
       if (pathname === "/about") {
         title = "소개 | 버진로드";
         description = "버진로드는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "버진로드 소개 및 편집원칙",
+          "url": "https://virginroad.kr/about",
+          "description": description,
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "버진로드",
+            "url": "https://virginroad.kr",
+            "logo": { "@type": "ImageObject", "url": "https://virginroad.kr/icon.svg" }
+          }
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "소개", "item": "https://virginroad.kr/about" }
+          ]
+        };
       } else if (pathname === "/policy") {
         title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
         description = "2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": title,
+          "url": canonical,
+          "description": description
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "정책 정보", "item": canonical }
+          ]
+        };
       } else if (pathname === "/privacy") {
         title = "개인정보 처리방침 | 버진로드";
         description = "버진로드의 개인정보 수집 및 이용에 관한 안내입니다.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": title,
+          "url": canonical,
+          "description": description
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "개인정보 처리방침", "item": canonical }
+          ]
+        };
       } else if (pathname === "/announcement") {
         title = "공지사항 | 버진로드";
         description = "버진로드의 서비스 운영 관련 공지사항을 안내합니다.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": title,
+          "url": canonical,
+          "description": description
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "공지사항", "item": canonical }
+          ]
+        };
       } else if (pathname === "/terms") {
         title = "이용약관 | 버진로드";
         description = "버진로드 서비스 이용에 관한 약관입니다.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": title,
+          "url": canonical,
+          "description": description
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "이용약관", "item": canonical }
+          ]
+        };
       } else if (pathname === "/tools/didimdol") {
         title = "디딤돌 우대금리 계산기 | 버진로드";
         description = "한국주택금융공사 2026년 공시 기준으로 본인 가구의 디딤돌대출 우대금리와 월 상환액을 시뮬레이션해 드립니다. 자녀·청약통장·전자계약 우대를 단계별로 확인하세요.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "디딤돌 우대금리 계산기",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "All",
+          "url": "https://virginroad.kr/tools/didimdol",
+          "description": description,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "KRW"
+          }
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "디딤돌 우대금리 계산기", "item": "https://virginroad.kr/tools/didimdol" }
+          ]
+        };
       } else if (pathname === "/tools/cheongyak") {
         title = "신혼부부 특별공급 가점 계산기 | 버진로드";
         description = "「주택공급에 관한 규칙」 별표1 기준으로 신혼부부 특별공급 가점과 일반 청약가점제 점수를 동시에 계산해 드립니다. 자녀·혼인 기간·청약통장·신생아 가산까지 단계별 확인.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "신혼부부 특별공급 가점 계산기",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "All",
+          "url": "https://virginroad.kr/tools/cheongyak",
+          "description": description,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "KRW"
+          }
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "신혼특공 가점 계산기", "item": "https://virginroad.kr/tools/cheongyak" }
+          ]
+        };
       } else if (pathname.startsWith("/category/")) {
         const rawCat = pathname.replace("/category/", "");
         const decodedCat = decodeURIComponent(rawCat);
@@ -1517,15 +1673,44 @@ Sitemap: ${hostUrl}/sitemap.xml
           title = `${decodedCat} | 버진로드`;
           description = `${decodedCat} 관련 가정경제·생활정책 정보를 한데 모아 제공합니다.`;
         }
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": title,
+          "url": canonical,
+          "description": description
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": decodedCat, "item": canonical }
+          ]
+        };
       } else if (pathname === "/" || pathname === "") {
-        jsonLd = {
+        primaryJsonLd = {
           "@context": "https://schema.org",
           "@type": "WebSite",
           "name": "버진로드",
-          "url": "https://virginroad.kr",
+          "alternateName": ["Virginroad"],
+          "url": "https://virginroad.kr/",
+          "description": description,
+          "publisher": {
+            "@type": "Organization",
+            "name": "버진로드",
+            "url": "https://virginroad.kr/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://virginroad.kr/icon.svg"
+            }
+          },
           "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://virginroad.kr/?q={search_term_string}",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://virginroad.kr/?q={search_term_string}"
+            },
             "query-input": "required name=search_term_string"
           }
         };
@@ -1540,7 +1725,6 @@ Sitemap: ${hostUrl}/sitemap.xml
       });
       const keywordContent = dynamicKeywords.join(", ");
       html = injectOrReplaceMetaInHtml(html, "keywords", keywordContent);
-      html = injectOrReplaceMetaInHtml(html, "news_keywords", keywordContent);
 
       html = injectOrReplaceMetaInHtml(html, "og:title", title, true);
       html = injectOrReplaceMetaInHtml(html, "og:description", description, true);
@@ -1557,13 +1741,13 @@ Sitemap: ${hostUrl}/sitemap.xml
 
       html = setCanonicalInHtml(html, canonical);
 
-      if (jsonLd) {
-        const jsonLdString = `
-  <script type="application/ld+json">
-  ${JSON.stringify(jsonLd, null, 2)}
-  </script>
-`;
-        html = html.replace("</head>", `  ${jsonLdString}\n</head>`);
+      if (primaryJsonLd) {
+        html = setJsonLdInHtml(html, "jsonld-primary", primaryJsonLd);
+      }
+      if (breadcrumbJsonLd) {
+        html = setJsonLdInHtml(html, "jsonld-breadcrumb", breadcrumbJsonLd);
+      } else {
+        html = removeJsonLdFromHtml(html, "jsonld-breadcrumb");
       }
 
       // Inject Pre-rendered SSR Markup

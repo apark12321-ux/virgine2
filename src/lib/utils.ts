@@ -193,3 +193,32 @@ export function parsePostTimestamp(dateStr: string, id?: string): number {
   const fallback = new Date(dateStr).getTime();
   return isNaN(fallback) ? 0 : fallback;
 }
+
+/**
+ * Schema.org 및 검색엔진 표준 ISO 8601 (KST +09:00) 문자열로 변환
+ */
+export function toIso8601(dateStr?: string): string {
+  if (!dateStr) return new Date().toISOString();
+  const trimmed = String(dateStr).trim();
+  // If already full ISO with T and timezone (Z or + / -)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(trimmed)) {
+    return trimmed;
+  }
+  // If format is "YYYY-MM-DD HH:mm:ss" or "YYYY-MM-DD HH:mm"
+  if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(trimmed)) {
+    const parts = trimmed.split(" ");
+    const timePart = parts[1].length === 5 ? `${parts[1]}:00` : parts[1];
+    return `${parts[0]}T${timePart}+09:00`;
+  }
+  // If format is "YYYY-MM-DD"
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return `${trimmed}T00:00:00+09:00`;
+  }
+  // If format is "YYYY.MM.DD" or "YYYY. MM. DD"
+  const dotMatch = trimmed.replace(/\s+/g, "").match(/^(\d{4})\.(\d{2})\.(\d{2})$/);
+  if (dotMatch) {
+    return `${dotMatch[1]}-${dotMatch[2]}-${dotMatch[3]}T00:00:00+09:00`;
+  }
+  const parsed = new Date(trimmed);
+  return !isNaN(parsed.getTime()) ? parsed.toISOString() : new Date().toISOString();
+}

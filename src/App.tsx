@@ -4,7 +4,7 @@ import { Footer } from "./components/Footer";
 import { Sidebar } from "./components/Sidebar";
 import { PostCard } from "./components/PostCard";
 import { GuideReader } from "./components/GuideReader";
-import { AdSenseUnit } from "./components/AdSenseUnit";
+import { AdSenseUnit, ADSENSE_ENABLED } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
 import { AboutPage } from "./components/AboutPage";
 import { SearchConsoleModal } from "./components/SearchConsoleModal";
@@ -27,7 +27,7 @@ import { auth, db } from "./lib/firebase";
 import { handleFirestoreError, OperationType } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { slugify, parsePostTimestamp, normalizeTitle, matchPostBySlugOrId } from "./lib/utils";
+import { slugify, parsePostTimestamp, normalizeTitle, matchPostBySlugOrId, toIso8601 } from "./lib/utils";
 
 type Page = 
   | "home" 
@@ -104,71 +104,179 @@ function setCanonical(url: string) {
   el.setAttribute("href", url);
 }
 
-function setArticleJsonLd(post: Post | null) {
-  const id = "article-jsonld";
-  let el = document.getElementById(id) as HTMLScriptElement | null;
-  if (!post) {
-    if (el) el.remove();
-    return;
+function updateStructuredData(page: Page, post: Post | null) {
+  const primaryId = "jsonld-primary";
+  const breadcrumbId = "jsonld-breadcrumb";
+  let primaryEl = document.getElementById(primaryId) as HTMLScriptElement | null;
+  if (!primaryEl) {
+    primaryEl = document.createElement("script");
+    primaryEl.id = primaryId;
+    primaryEl.type = "application/ld+json";
+    document.head.appendChild(primaryEl);
   }
-  if (!el) {
-    el = document.createElement("script");
-    el.id = id;
-    el.type = "application/ld+json";
-    document.head.appendChild(el);
-  }
-  const slug = slugify(post.title) || post.id;
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.excerpt,
-    image: [post.image],
-    datePublished: post.date,
-    dateModified: post.updated || post.date,
-    author: {
-      "@type": "Organization",
-      name: "버진로드",
-      url: `${SITE_URL}/about`
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "상상아트",
-      alternateName: SITE_NAME,
-      url: SITE_URL,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
-    },
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/post/${slug}` },
-    articleSection: post.category,
-    inLanguage: "ko-KR"
-  };
-  el.textContent = JSON.stringify(data);
-}
 
-function setBreadcrumbJsonLd(post: Post | null) {
-  const id = "breadcrumb-jsonld";
-  let el = document.getElementById(id) as HTMLScriptElement | null;
-  if (!post) {
-    if (el) el.remove();
-    return;
+  let breadcrumbEl = document.getElementById(breadcrumbId) as HTMLScriptElement | null;
+
+  if (post) {
+    const slug = slugify(post.title) || post.id;
+    const canonical = `${SITE_URL}/post/${slug}`;
+    const articleData = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.excerpt,
+      image: [post.image],
+      datePublished: toIso8601(post.date),
+      dateModified: toIso8601(post.updated || post.date),
+      author: {
+        "@type": "Person",
+        name: post.author || "버진로드",
+        url: `${SITE_URL}/about`
+      },
+      publisher: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
+      },
+      mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+      articleSection: post.category,
+      inLanguage: "ko-KR"
+    };
+    primaryEl.textContent = JSON.stringify(articleData, null, 2);
+
+    if (!breadcrumbEl) {
+      breadcrumbEl = document.createElement("script");
+      breadcrumbEl.id = breadcrumbId;
+      breadcrumbEl.type = "application/ld+json";
+      document.head.appendChild(breadcrumbEl);
+    }
+    const breadcrumbData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+        { "@type": "ListItem", position: 2, name: post.category, item: `${SITE_URL}/category/${encodeURIComponent(post.category)}` },
+        { "@type": "ListItem", position: 3, name: post.title, item: canonical }
+      ]
+    };
+    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
+  } else if (page === "home") {
+    const websiteData = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      alternateName: ["Virginroad"],
+      url: `${SITE_URL}/`,
+      description: DEFAULT_DESCRIPTION,
+      publisher: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        url: `${SITE_URL}/`,
+        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/?q={search_term_string}`
+        },
+        "query-input": "required name=search_term_string"
+      }
+    };
+    primaryEl.textContent = JSON.stringify(websiteData, null, 2);
+    if (breadcrumbEl) breadcrumbEl.remove();
+  } else if (page.startsWith("category-")) {
+    const category = page.replace("category-", "");
+    const canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
+    const collectionData = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: `${category} | 버진로드`,
+      url: canonical,
+      description: `${category}에 관한 실전 팁과 최신 정책 가이드를 모아둔 공간입니다.`
+    };
+    primaryEl.textContent = JSON.stringify(collectionData, null, 2);
+
+    if (!breadcrumbEl) {
+      breadcrumbEl = document.createElement("script");
+      breadcrumbEl.id = breadcrumbId;
+      breadcrumbEl.type = "application/ld+json";
+      document.head.appendChild(breadcrumbEl);
+    }
+    const breadcrumbData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+        { "@type": "ListItem", position: 2, name: category, item: canonical }
+      ]
+    };
+    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
+  } else if (page === "about") {
+    const aboutData = {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "버진로드 소개 및 편집원칙",
+      url: `${SITE_URL}/about`,
+      description: "버진로드는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.",
+      mainEntity: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
+      }
+    };
+    primaryEl.textContent = JSON.stringify(aboutData, null, 2);
+
+    if (!breadcrumbEl) {
+      breadcrumbEl = document.createElement("script");
+      breadcrumbEl.id = breadcrumbId;
+      breadcrumbEl.type = "application/ld+json";
+      document.head.appendChild(breadcrumbEl);
+    }
+    const breadcrumbData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+        { "@type": "ListItem", position: 2, name: "소개", item: `${SITE_URL}/about` }
+      ]
+    };
+    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
+  } else {
+    const titleMap: Record<string, string> = {
+      privacy: "개인정보 처리방침",
+      terms: "이용약관 및 면책고지",
+      announcement: "공지사항",
+      policy: "2026 가정경제·생활정책 핵심 정보"
+    };
+    const pageTitle = titleMap[page] || "안내";
+    const canonical = `${SITE_URL}/${page}`;
+    const pageData = {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: `${pageTitle} | 버진로드`,
+      url: canonical
+    };
+    primaryEl.textContent = JSON.stringify(pageData, null, 2);
+
+    if (!breadcrumbEl) {
+      breadcrumbEl = document.createElement("script");
+      breadcrumbEl.id = breadcrumbId;
+      breadcrumbEl.type = "application/ld+json";
+      document.head.appendChild(breadcrumbEl);
+    }
+    const breadcrumbData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
+        { "@type": "ListItem", position: 2, name: pageTitle, item: canonical }
+      ]
+    };
+    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
   }
-  if (!el) {
-    el = document.createElement("script");
-    el.id = id;
-    el.type = "application/ld+json";
-    document.head.appendChild(el);
-  }
-  const slug = slugify(post.title) || post.id;
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "홈", item: SITE_URL + "/" },
-      { "@type": "ListItem", position: 2, name: post.category, item: `${SITE_URL}/category/${encodeURIComponent(post.category)}` },
-      { "@type": "ListItem", position: 3, name: post.title, item: `${SITE_URL}/post/${slug}` }
-    ]
-  };
-  el.textContent = JSON.stringify(data);
 }
 
 export default function App() {
@@ -440,27 +548,30 @@ export default function App() {
 
     if (currentPost) {
       const slug = slugify(currentPost.title) || currentPost.id;
-      title = `${currentPost.title} - 버진로드`;
+      title = `${currentPost.title} | 버진로드`;
       description = currentPost.excerpt;
       canonical = `${SITE_URL}/post/${slug}`;
       ogImage = currentPost.image || ogImage;
     } else if (currentPage.startsWith("category-")) {
       const category = currentPage.replace("category-", "");
-      title = `${category} 글 모음 - 버진로드 블로그`;
+      title = `${category} | 버진로드`;
       description = `${category}에 관한 실전 팁과 최신 정책 가이드를 모아둔 공간입니다.`;
       canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
     } else if (currentPage === "about") {
-      title = "블로그 소개 및 편집원칙 - 버진로드";
+      title = "소개 | 버진로드";
       canonical = `${SITE_URL}/about`;
     } else if (currentPage === "privacy") {
-      title = "개인정보 처리방침 - 버진로드";
+      title = "개인정보 처리방침 | 버진로드";
       canonical = `${SITE_URL}/privacy`;
     } else if (currentPage === "terms") {
-      title = "이용약관 및 면책고지 - 버진로드";
+      title = "이용약관 | 버진로드";
       canonical = `${SITE_URL}/terms`;
     } else if (currentPage === "announcement") {
-      title = "공지사항 - 버진로드";
+      title = "공지사항 | 버진로드";
       canonical = `${SITE_URL}/announcement`;
+    } else if (currentPage === "policy") {
+      title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
+      canonical = `${SITE_URL}/policy`;
     }
 
     document.title = title;
@@ -470,8 +581,7 @@ export default function App() {
     setMeta("og:description", description, "property");
     setMeta("og:image", ogImage, "property");
     setMeta("og:url", canonical, "property");
-    setArticleJsonLd(currentPost);
-    setBreadcrumbJsonLd(currentPost);
+    updateStructuredData(currentPage, currentPost);
   }, [currentPage, currentPost]);
 
   const handleNavigate = (page: string) => {
@@ -683,7 +793,9 @@ export default function App() {
                   </div>
 
                   {/* Feed In-Stream AdSense Slot (Top) */}
-                  <AdSenseUnit slot="home-feed-top" label="광고 / Sponsored" format="fluid" />
+                  {ADSENSE_ENABLED && (
+                    <AdSenseUnit slot="home-feed-top" label="광고 / Sponsored" format="fluid" />
+                  )}
 
                   {/* Post Stream */}
                   {filteredPosts.length > 0 ? (
@@ -698,7 +810,7 @@ export default function App() {
                                 viewMode="list"
                               />
                               {/* In-feed middle Ad after 4th post on page */}
-                              {idx === 3 && (
+                              {ADSENSE_ENABLED && idx === 3 && (
                                 <div className="py-4">
                                   <AdSenseUnit slot="home-feed-mid" label="광고 / Sponsored" format="fluid" />
                                 </div>
@@ -847,7 +959,7 @@ export default function App() {
       </main>
 
       {/* 3. Footer */}
-      <Footer onNavigate={handleNavigate} onOpenSearchConsole={() => setIsSearchConsoleModalOpen(true)} />
+      <Footer onNavigate={handleNavigate} />
 
       {/* Google Search Console Modal (Admin only) */}
       <SearchConsoleModal

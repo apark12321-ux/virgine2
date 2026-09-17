@@ -8,7 +8,7 @@ import {
   Tag, 
   CheckCircle2
 } from "lucide-react";
-import { AdSenseUnit } from "./AdSenseUnit";
+import { AdSenseUnit, ADSENSE_ENABLED } from "./AdSenseUnit";
 
 interface SidebarProps {
   posts: Post[];
@@ -192,9 +192,11 @@ export function Sidebar({
       </div>
 
       {/* 5. Clean Sidebar AdSense Unit */}
-      <div className="bg-white border border-[#e2e8f0] rounded p-3 shadow-2xs">
-        <AdSenseUnit slot="sidebar-ad-01" label="광고 / Sponsored" format="rectangle" />
-      </div>
+      {ADSENSE_ENABLED && (
+        <div className="bg-white border border-[#e2e8f0] rounded p-3 shadow-2xs">
+          <AdSenseUnit slot="sidebar-ad-01" label="광고 / Sponsored" format="rectangle" />
+        </div>
+      )}
 
       {/* 6. Tag Cloud */}
       <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs">
