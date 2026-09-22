@@ -1791,7 +1791,7 @@ Sitemap: ${hostUrl}/sitemap.xml
       </ul>
     </main>
     <footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #94a3b8; line-height: 1.7;">
-      <p><strong>버진로드 미디어</strong> | 발행·편집인: 박아람 (공인중개사·주거복지 금융 전문) | 문의: apark12321@gmail.com</p>
+      <p><strong>버진로드 미디어</strong> | 운영: 버진로드 편집팀 | 문의 및 제휴: apark12321@gmail.com</p>
       <p>본 사이트의 모든 저작물은 저작권법의 보호를 받습니다. 국토교통부, 주택도시기금, 한국주택금융공사 공시 기준 준수.</p>
       <p style="margin-top: 8px;"><a href="/privacy" style="color: #64748b;">개인정보 처리방침</a> | <a href="/terms" style="color: #64748b;">이용약관</a> | <a href="/about" style="color: #64748b;">편집국 소개</a> | <a href="/policy" style="color: #64748b;">주요 정책 안내</a></p>
     </footer>
@@ -1848,8 +1848,8 @@ Sitemap: ${hostUrl}/sitemap.xml
         <li><strong>독자 소통 및 오류 정정:</strong> 독자 피드백을 수렴하여 오류 발견 시 즉각 정정 공지합니다.</li>
       </ul>
 
-      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 24px;">3. 편집인 정보 및 연락처</h2>
-      <p>대표 에디터: 박아람 (공인중개사·주거복지 금융 전문)<br />문의 및 제휴: apark12321@gmail.com</p>
+      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 24px;">3. 편집국 안내 및 연락처</h2>
+      <p>버진로드 편집팀 (2026 신혼부부 주거금융·청약 연구)<br />문의 및 정정 요청: apark12321@gmail.com</p>
     </article>
   </div>
 `;

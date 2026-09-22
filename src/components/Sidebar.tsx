@@ -86,7 +86,7 @@ export function Sidebar({
       <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs">
         <h4 className="text-[14px] font-bold text-[#0f172a] pb-2.5 mb-3 border-b border-[#f1f5f9] flex items-center gap-2">
           <Trophy className="w-4 h-4 text-[#d97706]" />
-          <span>가장 많이 본 글 (인기 Q&amp;A)</span>
+          <span>가장 많이 본 글 (인기 실전 가이드)</span>
         </h4>
 
         <ul className="divide-y divide-gray-100 text-[13px]">

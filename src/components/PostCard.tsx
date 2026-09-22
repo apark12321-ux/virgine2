@@ -25,10 +25,10 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
         <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-4">
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 pr-0 sm:pr-4">
-            {/* Meta status & category (ko.phongnhaexplorer dwqa-question-meta style) */}
+            {/* Meta status & category */}
             <div className="flex items-center gap-2 mb-1.5 text-[12px]">
               <span className="inline-block px-1.5 py-0.5 text-[11px] font-bold bg-[#f0fdfa] text-[#0f766e] border border-[#ccfbf1] rounded">
-                답변 완료
+                실전 분석
               </span>
               <span className="font-semibold text-[#0284c7]">
                 {post.category}
@@ -97,7 +97,7 @@ export function PostCard({ post, onClick, featured = false, viewMode = "list" }:
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="px-1.5 py-0.2 text-[10.5px] font-bold bg-[#f0fdfa] text-[#0f766e] border border-[#ccfbf1] rounded">
-              답변
+              실전 가이드
             </span>
             <span className="text-[11.5px] font-semibold text-[#0284c7]">
               {post.category}

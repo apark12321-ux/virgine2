@@ -158,12 +158,9 @@ export function GuideReader({
         <span className="text-[#94a3b8] truncate max-w-[280px] sm:max-w-md">{post.title}</span>
       </nav>
 
-      {/* 2. Article Header (ko.phongnhaexplorer.com Q&A Style) */}
+      {/* 2. Article Header */}
       <header className="pb-5 border-b border-[#e2e8f0] mb-6">
         <div className="flex items-center gap-2 mb-2.5">
-          <span className="inline-block px-2 py-0.5 text-[11px] font-bold bg-[#f0fdfa] text-[#0f766e] border border-[#ccfbf1] rounded">
-            답변 완료
-          </span>
           <button
             type="button"
             onClick={() => onNavigate(`category-${post.category}`)}

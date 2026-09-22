@@ -676,7 +676,7 @@ export default function App() {
 
                 <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">3. 개인정보 보호책임자 및 문의처</h2>
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-700 space-y-1">
-                  <p><strong>운영자:</strong> 박아람 (버진로드 / 상상아트)</p>
+                  <p><strong>운영:</strong> 버진로드(Virginroad) 편집팀</p>
                   <p><strong>이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-rose-600 font-medium">apark12321@gmail.com</a></p>
                   <p><strong>시행일자:</strong> 2026년 1월 1일</p>
                 </div>

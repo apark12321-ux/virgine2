@@ -42,24 +42,23 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
                 "예비·신혼부부의 예산과 시간을 지켜주는<br className="hidden sm:inline" /> 실전 신혼 나침반"
               </h1>
               <p className="text-[15px] sm:text-[16px] text-[#475569] font-medium mt-2">
-                버진로드(Virginroad) 대표 에디터 &middot; 박아람 올림
+                버진로드(Virginroad) 편집팀
               </p>
             </div>
           </div>
 
           <div className="p-5 sm:p-6 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[14.5px] leading-relaxed text-[#334155] space-y-3">
             <p>
-              안녕하세요, 버진로드를 찾아주신 예비·신혼부부 여러분 반갑습니다.
+              안녕하세요, 버진로드(Virginroad)를 찾아주신 예비·신혼부부 여러분 반갑습니다.
             </p>
             <p>
-              저 역시 몇 해 전 결혼을 준비하며 매일 밤 한숨을 쉬던 평범한 신혼부부였습니다. 
-              포털을 검색하면 온통 광고와 홍보성 스드메 후기뿐이었고, 정부 정책 대출(디딤돌·버팀목)은 은행 창구마다 담당 직원마다 말이 달라 혼란스러웠습니다.
+              결혼 준비와 첫 내 집 마련 과정에서는 방대한 정보 속에서 정작 필요한 정부 정책 대출(디딤돌·버팀목), 청약 제도, 합리적인 가전 구성 정보를 한눈에 파악하기 어렵습니다.
             </p>
             <p className="font-semibold text-[#1E1B2E]">
-              실제로 자산 심사 서류 하나를 잘못 챙겨 디딤돌 대출이 반려될 뻔했고, 하마터면 피 같은 전세계약금 수천만 원을 날릴 뻔했던 아찔한 순간도 겪었습니다.
+              버진로드는 복잡한 정부 행정 지침과 금융 용어를 누구나 쉽게 이해하고 바로 적용할 수 있도록 돕는 실전 정보 플랫폼입니다.
             </p>
             <p>
-              버진로드는 바로 그 <strong>'시행착오와 실제 현장 경험'</strong> 속에서 탄생했습니다. 기계적인 복사-붙여넣기 글이나 영혼 없는 정보 나열 대신, <strong>공식 고시 기준과 실제 계약·시공·금융 실무 노하우</strong>를 체계적으로 정리하여 전달합니다.
+              국토교통부, 주택도시기금, 청약홈 등의 <strong>공식 고시 기준과 최신 개정 지침을 철저히 교차 검증</strong>하여, 독자 여러분이 불필요한 비용과 시간을 낭비하지 않도록 정확하고 실용적인 가이드를 제공합니다.
             </p>
           </div>
         </div>
@@ -130,7 +129,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
               </h3>
             </div>
             <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              운영사 정보(상상아트)와 담당자 연락처를 전면에 공개하며, 독자 여러분이 남겨주신 질문이나 보완 요청을 확인하여 신속하게 포스팅에 반영합니다.
+              편집팀 공식 문의처(이메일)를 투명하게 공개하며, 독자 여러분이 남겨주신 질문이나 보완 요청을 확인하여 신속하게 포스팅에 반영합니다.
             </p>
           </div>
         </div>
@@ -223,12 +222,12 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
         </div>
       </div>
 
-      {/* 4. Verified Business & Contact Information */}
+      {/* 4. Editorial Transparency & Contact Information */}
       <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
         <div className="border-b border-[#F1F5F9] pb-4">
           <div className="flex items-center gap-2 text-[#475569] text-[13px] font-bold uppercase tracking-wider">
             <FileText className="w-4 h-4" />
-            <span>운영자 및 사업자 등록 정보</span>
+            <span>블로그 운영 및 편집팀 안내</span>
           </div>
           <h2 className="text-[20px] sm:text-[24px] font-extrabold text-[#111827] mt-1">
             신뢰할 수 있는 공식 정보
@@ -241,27 +240,19 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             <span>버진로드 (Virginroad)</span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">운영사:</span>
-            <span>상상아트 (Sangsang Art)</span>
+            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">운영 주체:</span>
+            <span>버진로드 편집팀 (독립 정보 연구 블로그)</span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">대표자 / 에디터:</span>
-            <span>박아람</span>
+            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">콘텐츠 분야:</span>
+            <span>2026 신혼부부 주거금융·청약·가전 실전 정보</span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">사업자등록번호:</span>
-            <span>272-14-01256</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">통신판매업 신고:</span>
-            <span>제2023-화성동탄-1098호</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">사업장 소재지:</span>
-            <span>경기도 화성시 동탄대로</span>
+            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">데이터 출처:</span>
+            <span>국토교통부, 주택도시기금, 청약홈 공식 고시</span>
           </div>
           <div className="flex items-start gap-2 sm:col-span-2 pt-2 border-t border-[#F1F5F9]">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">공식 이메일:</span>
+            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">공식 문의/제휴:</span>
             <a
               href="mailto:apark12321@gmail.com"
               className="text-[#E8745F] font-semibold hover:underline flex items-center gap-1"
@@ -273,7 +264,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
         </div>
 
         <div className="p-4 bg-[#F8FAFC] rounded-xl text-[12.5px] text-[#64748B] leading-relaxed">
-          * 버진로드의 모든 글은 금융소비자 보호 및 정보 제공을 목적으로 작성되었으며, 특정 금융상품의 가입을 강요하지 않습니다. 정부 정책 및 금융기관의 상품 조건은 변동될 수 있으므로 대출 신청 시 반드시 해당 수탁은행 및 공공기관의 공식 지침을 재확인하시기 바랍니다.
+          * 버진로드의 모든 글은 금융소비자 정보 제공 및 합리적인 선택을 돕기 위한 목적으로 작성되었으며, 특정 금융상품의 가입을 권유하지 않습니다. 정부 정책 및 금융기관의 상품 조건은 변동될 수 있으므로 대출 신청 시 반드시 해당 수탁은행 및 공공기관의 공식 지침을 재확인하시기 바랍니다.
         </div>
       </div>
     </div>

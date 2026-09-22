@@ -21,8 +21,8 @@ export function Footer({ onNavigate }: FooterProps) {
               2026년 신혼부부의 주거 독립과 금융·가전·결혼준비를 체계적으로 연구하고 기록하는 실전 정보 블로그입니다.
             </p>
             <div className="text-[12px] text-[#64748b] pt-2 space-y-1">
-              <p>운영사: 상상아트 | 대표자: 박아람 | 사업자등록번호: 272-14-01256</p>
-              <p>통신판매업신고: 제2023-화성동탄-1098호 | 이메일: <a href="mailto:apark12321@gmail.com" className="text-[#0f766e] hover:underline">apark12321@gmail.com</a></p>
+              <p>운영: 버진로드(Virginroad) 편집팀 | 주거·금융·청약 실전 정보 블로그</p>
+              <p>문의 및 오류 정정: <a href="mailto:apark12321@gmail.com" className="text-[#0f766e] hover:underline">apark12321@gmail.com</a></p>
             </div>
           </div>
 
