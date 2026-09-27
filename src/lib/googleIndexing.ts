@@ -36,6 +36,7 @@ export interface IndexingConfig {
   indexNowApiKey?: string;
   lastPingTime?: string;
   totalSubmissions: number;
+  googleSiteVerification?: string;
 }
 
 // 1. Helper: Read & Write Logs
@@ -98,13 +99,15 @@ export function getIndexingConfig(): IndexingConfig {
   }
 
   const saKey = fileConfig.serviceAccountKey || envKey;
+  const siteVerification = process.env.GOOGLE_SITE_VERIFICATION || fileConfig.googleSiteVerification || "f08c47fec0942fa0-virginroad-kr";
   return {
     serviceAccountKey: saKey,
     keyConfigured: Boolean(saKey && saKey.client_email && saKey.private_key),
     autoIndexOnPublish: fileConfig.autoIndexOnPublish !== false,
     indexNowApiKey: fileConfig.indexNowApiKey || "virginroad-indexnow-key",
     lastPingTime: fileConfig.lastPingTime,
-    totalSubmissions: fileConfig.totalSubmissions || 0
+    totalSubmissions: fileConfig.totalSubmissions || 0,
+    googleSiteVerification: siteVerification
   };
 }
 

@@ -1,0 +1,162 @@
+[
+  {
+    "id": "idx-1790504911968-sna4z",
+    "url": "25개 URL",
+    "type": "INDEXNOW",
+    "timestamp": "2026-09-27T10:28:31.968Z",
+    "status": "success",
+    "message": "IndexNow 색인 제출 완료 (Status: 200, 대상: 25건)",
+    "details": {
+      "status": 200,
+      "urlCount": 25
+    }
+  },
+  {
+    "id": "idx-1790504911447-w4yag",
+    "url": "https://virginroad.kr/sitemap.xml",
+    "type": "SITEMAP_PING",
+    "timestamp": "2026-09-27T10:28:31.446Z",
+    "status": "warning",
+    "message": "Google & Bing Sitemap Ping 완료 (Sitemap: https://virginroad.kr/sitemap.xml)",
+    "details": [
+      {
+        "endpoint": "https://www.google.com/ping?sitemap=https%3A%2F%2Fvirginroad.kr%2Fsitemap.xml",
+        "status": 404,
+        "ok": false
+      },
+      {
+        "endpoint": "https://www.bing.com/ping?sitemap=https%3A%2F%2Fvirginroad.kr%2Fsitemap.xml",
+        "status": 410,
+        "ok": false
+      }
+    ]
+  },
+  {
+    "id": "idx-1790504711037-93oad",
+    "url": "25개 URL",
+    "type": "INDEXNOW",
+    "timestamp": "2026-09-27T10:25:11.037Z",
+    "status": "success",
+    "message": "IndexNow 색인 제출 완료 (Status: 202, 대상: 25건)",
+    "details": {
+      "status": 202,
+      "urlCount": 25
+    }
+  },
+  {
+    "id": "idx-1790504710482-fsax9",
+    "url": "https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/sitemap.xml",
+    "type": "SITEMAP_PING",
+    "timestamp": "2026-09-27T10:25:10.482Z",
+    "status": "warning",
+    "message": "Google & Bing Sitemap Ping 완료 (Sitemap: https://ais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app/sitemap.xml)",
+    "details": [
+      {
+        "endpoint": "https://www.google.com/ping?sitemap=https%3A%2F%2Fais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app%2Fsitemap.xml",
+        "status": 404,
+        "ok": false
+      },
+      {
+        "endpoint": "https://www.bing.com/ping?sitemap=https%3A%2F%2Fais-dev-uihueir6ht6w75qya3uppd-342329263953.asia-northeast1.run.app%2Fsitemap.xml",
+        "status": 410,
+        "ok": false
+      }
+    ]
+  },
+  {
+    "id": "idx-1790504583928-x3ggj",
+    "url": "10개 URL",
+    "type": "INDEXNOW",
+    "timestamp": "2026-09-27T10:23:03.928Z",
+    "status": "success",
+    "message": "IndexNow 색인 제출 완료 (Status: 200, 대상: 10건)",
+    "details": {
+      "status": 200,
+      "urlCount": 10
+    }
+  },
+  {
+    "id": "idx-1790504583436-mr217",
+    "url": "https://virginroad.kr/sitemap.xml",
+    "type": "SITEMAP_PING",
+    "timestamp": "2026-09-27T10:23:03.435Z",
+    "status": "warning",
+    "message": "Google & Bing Sitemap Ping 완료 (Sitemap: https://virginroad.kr/sitemap.xml)",
+    "details": [
+      {
+        "endpoint": "https://www.google.com/ping?sitemap=https%3A%2F%2Fvirginroad.kr%2Fsitemap.xml",
+        "status": 404,
+        "ok": false
+      },
+      {
+        "endpoint": "https://www.bing.com/ping?sitemap=https%3A%2F%2Fvirginroad.kr%2Fsitemap.xml",
+        "status": 410,
+        "ok": false
+      }
+    ]
+  },
+  {
+    "id": "idx-1790504571208-losvv",
+    "url": "25개 URL",
+    "type": "INDEXNOW",
+    "timestamp": "2026-09-27T10:22:51.208Z",
+    "status": "warning",
+    "message": "IndexNow 색인 제출 완료 (Status: 429, 대상: 25건)",
+    "details": {
+      "status": 429,
+      "urlCount": 25
+    }
+  },
+  {
+    "id": "idx-1790504571010-v8edp",
+    "url": "http://localhost:3000/sitemap.xml",
+    "type": "SITEMAP_PING",
+    "timestamp": "2026-09-27T10:22:51.010Z",
+    "status": "warning",
+    "message": "Google & Bing Sitemap Ping 완료 (Sitemap: http://localhost:3000/sitemap.xml)",
+    "details": [
+      {
+        "endpoint": "https://www.google.com/ping?sitemap=http%3A%2F%2Flocalhost%3A3000%2Fsitemap.xml",
+        "status": 404,
+        "ok": false
+      },
+      {
+        "endpoint": "https://www.bing.com/ping?sitemap=http%3A%2F%2Flocalhost%3A3000%2Fsitemap.xml",
+        "status": 410,
+        "ok": false
+      }
+    ]
+  },
+  {
+    "id": "idx-1790504554684-jrmfx",
+    "url": "10개 URL",
+    "type": "INDEXNOW",
+    "timestamp": "2026-09-27T10:22:34.684Z",
+    "status": "success",
+    "message": "IndexNow 색인 제출 완료 (Status: 200, 대상: 10건)",
+    "details": {
+      "status": 200,
+      "urlCount": 10
+    }
+  },
+  {
+    "id": "idx-1790504553964-zdy4g",
+    "url": "https://virginroad.kr/sitemap.xml",
+    "type": "SITEMAP_PING",
+    "timestamp": "2026-09-27T10:22:33.963Z",
+    "status": "warning",
+    "message": "Google & Bing Sitemap Ping 완료 (Sitemap: https://virginroad.kr/sitemap.xml)",
+    "details": [
+      {
+        "endpoint": "https://www.google.com/ping?sitemap=https%3A%2F%2Fvirginroad.kr%2Fsitemap.xml",
+        "status": 404,
+        "ok": false
+      },
+      {
+        "endpoint": "https://www.bing.com/ping?sitemap=https%3A%2F%2Fvirginroad.kr%2Fsitemap.xml",
+        "status": 410,
+        "ok": false
+      }
+    ]
+  }
+]

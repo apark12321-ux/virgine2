@@ -395,6 +395,12 @@ async function startServer() {
     next();
   });
 
+  // Google Search Console & Search Engine Crawler Support Header
+  app.use((req, res, next) => {
+    res.setHeader("X-Robots-Tag", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+    next();
+  });
+
   // API Route: increment views
   app.post("/api/views", (req, res) => {
     const { id } = req.body;
@@ -697,6 +703,40 @@ async function startServer() {
       res.json({ success: true, logs });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to get indexing logs", details: err.message });
+    }
+  });
+
+  // ALL /api/indexing/auto-trigger: Silent background auto-sync for Google Search Console & IndexNow
+  app.all("/api/indexing/auto-trigger", async (req, res) => {
+    try {
+      const hostUrl = getRequestBaseUrl(req);
+      const posts = await fetchMergedPosts();
+      const topUrls = [
+        "",
+        "/about",
+        "/policy",
+        "/privacy",
+        "/terms",
+        "/tools/didimdol",
+        "/tools/cheongyak",
+        "/category/신혼금융",
+        "/category/신혼가전",
+        "/category/결혼준비",
+        ...posts.slice(0, 15).map(p => `/post/${slugify(p.title) || p.id}`)
+      ];
+
+      // Execute asynchronously in background so response returns instantaneously
+      submitUrlsToSearchConsole(topUrls, hostUrl)
+        .then(result => {
+          console.log(`[Google Search Console Auto-Engine] Silent auto-trigger complete (${result.submittedCount} URLs synced)`);
+        })
+        .catch(err => {
+          console.warn("[Google Search Console Auto-Engine Warning]:", err.message);
+        });
+
+      res.json({ success: true, message: "Search Console silent auto-sync scheduled" });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   });
 
@@ -1128,6 +1168,15 @@ ${xmlItems}
     res.send("google.com, pub-9552509372228899, DIRECT, f08c47fec0942fa0");
   });
 
+  // Google Search Console Automated HTML File Verification Endpoint
+  // Supports any verification token pattern: /google[a-zA-Z0-9_-]+.html (e.g., /google1234567890abcdef.html)
+  app.get(/^\/google([a-zA-Z0-9_-]+)\.html$/, (req, res) => {
+    const filename = req.path.replace(/^\//, "");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(`google-site-verification: ${filename}`);
+  });
+
   // Dynamic Robots.txt generator pointing to the sitemap.xml
   app.get("/robots.txt", (req, res) => {
     const hostUrl = getRequestBaseUrl(req);
@@ -1290,17 +1339,24 @@ Sitemap: ${hostUrl}/sitemap.xml
   }
 
   async function getBaseHtml(url: string): Promise<string> {
+    let raw = "";
     if (isProduction) {
       const distHtmlPath = path.join(process.cwd(), "dist", "index.html");
-      return fs.readFileSync(distHtmlPath, "utf-8");
+      raw = fs.readFileSync(distHtmlPath, "utf-8");
     } else {
       const devHtmlPath = path.join(process.cwd(), "index.html");
-      let raw = fs.readFileSync(devHtmlPath, "utf-8");
+      raw = fs.readFileSync(devHtmlPath, "utf-8");
       if (vite) {
         raw = await vite.transformIndexHtml(url, raw);
       }
-      return raw;
     }
+
+    // Google Search Console Dynamic Verification Tag Injection
+    const indexingConfig = getIndexingConfig();
+    const verificationCode = process.env.GOOGLE_SITE_VERIFICATION || indexingConfig.googleSiteVerification || "f08c47fec0942fa0-virginroad-kr";
+    raw = injectOrReplaceMetaInHtml(raw, "google-site-verification", verificationCode);
+
+    return raw;
   }
 
   function injectOrReplaceMetaInHtml(html: string, nameOrProperty: string, content: string, isProperty = false): string {
@@ -1880,6 +1936,43 @@ Sitemap: ${hostUrl}/sitemap.xml
     setInterval(() => {
       runAutoPublisherService().catch(err => console.error("[AutoPublisher Periodic Error]:", err));
     }, 60000);
+
+    // Google Search Console Invisible Auto-Engine
+    // 1. Initial automated sitemap ping & IndexNow submission (5 seconds after boot)
+    setTimeout(() => {
+      submitUrlsToSearchConsole([
+        "",
+        "/about",
+        "/policy",
+        "/privacy",
+        "/terms",
+        "/tools/didimdol",
+        "/tools/cheongyak",
+        "/category/신혼금융",
+        "/category/신혼가전",
+        "/category/결혼준비"
+      ])
+        .then(res => console.log(`[Google Search Console Auto-Engine] Initial background sync complete (${res.submittedCount} URLs synced)`))
+        .catch(err => console.warn("[Google Search Console Auto-Engine Warning]:", err.message));
+    }, 5000);
+
+    // 2. Periodic Google Search Console & IndexNow automated background ping (every 6 hours)
+    setInterval(() => {
+      fetchMergedPosts().then(posts => {
+        const topUrls = [
+          "",
+          "/tools/didimdol",
+          "/tools/cheongyak",
+          "/category/신혼금융",
+          "/category/신혼가전",
+          "/category/결혼준비",
+          ...posts.slice(0, 15).map(p => `/post/${slugify(p.title) || p.id}`)
+        ];
+        submitUrlsToSearchConsole(topUrls)
+          .then(res => console.log(`[Google Search Console Auto-Engine] Periodic sync complete (${res.submittedCount} URLs synced)`))
+          .catch(err => console.warn("[Google Search Console Auto-Engine Periodic Warning]:", err.message));
+      }).catch(err => console.error("Failed to fetch posts for auto-indexing:", err));
+    }, 6 * 60 * 60 * 1000);
   });
 }
 

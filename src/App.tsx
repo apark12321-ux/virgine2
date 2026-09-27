@@ -295,6 +295,19 @@ export default function App() {
   const [isSearchConsoleModalOpen, setIsSearchConsoleModalOpen] = useState(false);
   const [selectedPostForIndexing, setSelectedPostForIndexing] = useState<{ slug?: string; title?: string }>({});
 
+  // Invisible background Google Search Console auto-engine trigger (Runs 100% silently, no UI)
+  useEffect(() => {
+    try {
+      const pinged = sessionStorage.getItem("gsc_auto_synced");
+      if (!pinged) {
+        sessionStorage.setItem("gsc_auto_synced", "true");
+        fetch("/api/indexing/auto-trigger").catch(() => {});
+      }
+    } catch {
+      // Ignore in restricted environments
+    }
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "s") {
