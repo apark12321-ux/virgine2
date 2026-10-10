@@ -795,8 +795,8 @@
         "category": "신혼가전",
         "targetTime": "08:59:05",
         "published": true,
-        "postId": "auto-app-20260923-6706",
-        "postTitle": "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드",
+        "postId": "auto-app-20260923-3726",
+        "postTitle": "신혼집 시스템에어컨 4대 다배관 vs 단배관 시공 비용 및 감가상각 전세 계약서 원상복구 특약 (2026년 9월 최신 개정판)",
         "publishedAt": "2026-09-23 08:59:05"
       },
       {
@@ -824,8 +824,8 @@
         "category": "신혼금융",
         "targetTime": "08:21:24",
         "published": true,
-        "postId": "auto-fin-20260924-5020",
-        "postTitle": "2026년 신생아 특례 자녀수별 대출 우대금리 및 5년 연장 가이드",
+        "postId": "auto-fin-20260924-8878",
+        "postTitle": "2026년 하반기 신혼부부 주택구입자금 대출 자산심사 기준 및 분양권 포함 여부 완벽 해설 (2026년 9월 최신 개정판)",
         "publishedAt": "2026-09-24 08:21:24"
       },
       {
@@ -882,8 +882,8 @@
         "category": "신혼가전",
         "targetTime": "19:25:30",
         "published": true,
-        "postId": "auto-app-20260926-9979",
-        "postTitle": "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드",
+        "postId": "auto-app-20260926-5915",
+        "postTitle": "백화점 vs 오픈점 vs 하이마트 신혼가전 패키지 견적 1,000만 원 체감가 할인 받는 법 (2026년 9월 최신 개정판)",
         "publishedAt": "2026-09-26 19:25:30"
       },
       {
@@ -921,13 +921,19 @@
         "id": "sched-20260928-신혼금융-1",
         "category": "신혼금융",
         "targetTime": "07:32:06",
-        "published": false
+        "published": true,
+        "postId": "auto-fin-20260928-6783",
+        "postTitle": "2026년 9월 최신 고시 신생아 특례대출 금리 1.6% 적용 조건 및 주택도시기금 기금e든든 적격 심사 팁 (2026년 9월 최신 개정판)",
+        "publishedAt": "2026-09-28 07:32:06"
       },
       {
         "id": "sched-20260928-신혼가전-2",
         "category": "신혼가전",
         "targetTime": "20:48:28",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260928-2073",
+        "postTitle": "2026년형 냉장고 키친핏(600L) vs 프리스탠딩(850L) 맞벌이 2인 가구 실사용 공간 및 냉장고장 리폼 (2026년 9월 최신 개정판)",
+        "publishedAt": "2026-09-28 20:48:28"
       }
     ],
     "2026-09-29": [
@@ -935,13 +941,19 @@
         "id": "sched-20260929-신혼가전-1",
         "category": "신혼가전",
         "targetTime": "09:13:00",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20260929-6398",
+        "postTitle": "2026년 맞벌이 신혼부부를 위한 로봇청소기 직수형 vs 집진형 완벽 스펙 비교 (2026년 9월 최신 개정판)",
+        "publishedAt": "2026-09-29 09:13:00"
       },
       {
         "id": "sched-20260929-신혼금융-2",
         "category": "신혼금융",
         "targetTime": "20:32:09",
-        "published": false
+        "published": true,
+        "postId": "auto-fin-20260929-5881",
+        "postTitle": "신혼부부 전세보증금 반환보증보험(HUG·SGI) 가입 절차 및 보증료 30만 원 전액 지원 환급 (2026년 9월 최신 개정판)",
+        "publishedAt": "2026-09-29 20:32:09"
       }
     ],
     "2026-09-19": [
@@ -963,7 +975,275 @@
         "postTitle": "올인원 세탁건조기 일체형 vs 타워형 비교 — 2026년형 히트펌프 저온제습 및 세탁실 공간 실측",
         "publishedAt": "2026-09-19 19:30:18"
       }
+    ],
+    "2026-09-30": [
+      {
+        "id": "sched-20260930-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:19:09",
+        "published": true,
+        "postId": "auto-wed-20260930-4473",
+        "postTitle": "스드메 계약서 추가금 방어 완벽 가이드 — 드레스 라벨투어·헬퍼비·원본데이터 정찰제 체크 (2026년 9월 최신 개정판)",
+        "publishedAt": "2026-09-30 09:19:09"
+      },
+      {
+        "id": "sched-20260930-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "20:12:29",
+        "published": true,
+        "postId": "auto-app-20260930-3192",
+        "postTitle": "신혼집 거실 공기청정기 & 제습기 용량 선택 공식 — 실평수 대비 1.5배 마력 계산법 (2026년 9월 최신 개정판)",
+        "publishedAt": "2026-09-30 20:12:29"
+      }
+    ],
+    "2026-10-01": [
+      {
+        "id": "sched-20261001-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:10:50",
+        "published": true,
+        "postId": "auto-wed-20261001-7833",
+        "postTitle": "웨딩밴드(결혼반지) 백화점 명품 vs 청담 예물샵 vs 종로 귀금속거리 견적 비교 및 다이아몬드 감정서 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-01 09:10:50"
+      },
+      {
+        "id": "sched-20261001-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "21:23:58",
+        "published": true,
+        "postId": "auto-app-20261001-4809",
+        "postTitle": "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-01 21:23:58"
+      }
+    ],
+    "2026-10-02": [
+      {
+        "id": "sched-20261002-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "07:50:13",
+        "published": true,
+        "postId": "auto-app-20261002-8416",
+        "postTitle": "2026 신혼집 거실 TV 인치수별 최적 시청거리 및 OLED vs Neo QLED 번인 방지 비교 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-02 07:50:13"
+      },
+      {
+        "id": "sched-20261002-결혼준비-2",
+        "category": "결혼준비",
+        "targetTime": "19:42:55",
+        "published": true,
+        "postId": "auto-wed-20261002-4345",
+        "postTitle": "신혼여행(허니문) 발리 vs 하와이 vs 몰디브 2026 최신 견적 비교 및 조기예약 얼리버드 프로모션 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-02 19:42:55"
+      }
+    ],
+    "2026-10-03": [
+      {
+        "id": "sched-20261003-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:02:44",
+        "published": true,
+        "postId": "auto-wed-20261003-8488",
+        "postTitle": "2026년 웨딩드레스 스드메 견적 비교 및 추가금 없는 정찰제 숍 고르는 법 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-03 09:02:44"
+      },
+      {
+        "id": "sched-20261003-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:50:04",
+        "published": true,
+        "postId": "auto-app-20261003-2949",
+        "postTitle": "올인원 세탁건조기 일체형 vs 타워형 비교 — 2026년형 히트펌프 저온제습 및 세탁실 공간 실측 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-03 19:50:04"
+      }
+    ],
+    "2026-10-04": [
+      {
+        "id": "sched-20261004-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:10:14",
+        "published": true,
+        "postId": "auto-fin-20261004-4833",
+        "postTitle": "2026년 신혼부부 ISA 계좌와 연금저축펀드 절세 혜택 극대화 포트폴리오 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-04 08:10:14"
+      },
+      {
+        "id": "sched-20261004-결혼준비-2",
+        "category": "결혼준비",
+        "targetTime": "19:11:58",
+        "published": true,
+        "postId": "auto-wed-20261004-3535",
+        "postTitle": "2026년 웨딩홀 견적 비교 시 필수 체크리스트 7가지 — 보증인원 할인율 및 식대 네고 실전 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-04 19:11:58"
+      }
+    ],
+    "2026-10-05": [
+      {
+        "id": "sched-20261005-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "07:40:58",
+        "published": true,
+        "postId": "auto-fin-20261005-9026",
+        "postTitle": "2026년 9월 최신 고시 신생아 특례대출 금리 1.6% 적용 조건 및 주택도시기금 기금e든든 적격 심사 팁 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-05 07:40:58"
+      },
+      {
+        "id": "sched-20261005-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:53:30",
+        "published": true,
+        "postId": "auto-app-20261005-1468",
+        "postTitle": "2026 가을 웨딩시즌 백화점 웨딩마일리지 더블적립 vs 삼성·LG 플래그십 신혼가전 패키지 견적 비교 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-05 19:53:30"
+      }
+    ],
+    "2026-10-06": [
+      {
+        "id": "sched-20261006-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "07:24:36",
+        "published": true,
+        "postId": "auto-wed-20261006-3583",
+        "postTitle": "결혼식 본식 스냅 & DVD 영상 1인 2캠 vs 2인 3캠 가격 차이 및 위약금 특약 작성 요령 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-06 07:24:36"
+      },
+      {
+        "id": "sched-20261006-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "20:21:25",
+        "published": true,
+        "postId": "auto-app-20261006-5864",
+        "postTitle": "신혼집 인덕션 3구 올프리 vs 하이브리드 화력 비교 및 전용 배선 차단기 20A 단독공사 요건 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-06 20:21:25"
+      }
+    ],
+    "2026-10-07": [
+      {
+        "id": "sched-20261007-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:35:20",
+        "published": true,
+        "postId": "auto-wed-20261007-1561",
+        "postTitle": "2026년 예단·예물 절차와 비용 간소화 가이드 — 현물 예단 대신 가전·가구 실속 대체 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-07 09:35:20"
+      },
+      {
+        "id": "sched-20261007-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "21:19:02",
+        "published": true,
+        "postId": "auto-app-20261007-8667",
+        "postTitle": "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-07 21:19:02"
+      }
+    ],
+    "2026-10-08": [
+      {
+        "id": "sched-20261008-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:25:02",
+        "published": true,
+        "postId": "auto-fin-20261008-5960",
+        "postTitle": "신생아 특례 전세대출 보증금 상한 5억 상향 적용 요건 및 대환대출 신청 프로세스 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-08 09:25:02"
+      },
+      {
+        "id": "sched-20261008-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:02:32",
+        "published": true,
+        "postId": "auto-app-20261008-9143",
+        "postTitle": "2026년 맞벌이 신혼부부를 위한 로봇청소기 직수형 vs 집진형 완벽 스펙 비교 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-08 19:02:32"
+      }
+    ],
+    "2026-10-09": [
+      {
+        "id": "sched-20261009-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:23:43",
+        "published": true,
+        "postId": "auto-fin-20261009-2972",
+        "postTitle": "버팀목 전세자금대출 HUG vs HF 보증기관 차이점 분석 및 무소득 배우자 전세보증금 대출 한도 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-09 08:23:43"
+      },
+      {
+        "id": "sched-20261009-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:01:04",
+        "published": true,
+        "postId": "auto-app-20261009-3249",
+        "postTitle": "2026년형 냉장고 키친핏(600L) vs 프리스탠딩(850L) 맞벌이 2인 가구 실사용 공간 및 냉장고장 리폼 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-09 19:01:04"
+      }
+    ],
+    "2026-10-10": [
+      {
+        "id": "sched-20261010-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "07:56:03",
+        "published": true,
+        "postId": "auto-wed-20261010-3846",
+        "postTitle": "스드메 계약서 추가금 방어 완벽 가이드 — 드레스 라벨투어·헬퍼비·원본데이터 정찰제 체크 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-10 07:56:03"
+      },
+      {
+        "id": "sched-20261010-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:47:18",
+        "published": true,
+        "postId": "auto-app-20261010-6329",
+        "postTitle": "신혼 침대 매트리스 브랜드별(에이스·시몬스·템퍼·씰리) 경도 및 프레임 선택 요령 (2026년 10월 최신 개정판)",
+        "publishedAt": "2026-10-10 19:47:18"
+      }
+    ],
+    "2026-10-11": [
+      {
+        "id": "sched-20261011-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "00:35:12",
+        "published": true,
+        "postId": "auto-fin-20261011-9333",
+        "postTitle": "2026년 청년 주택드림 청약통장 신혼부부 전환 요건 및 연 2.2% 전용 주택담보대출 연계 전략",
+        "publishedAt": "2026-10-11 00:35:12"
+      },
+      {
+        "id": "sched-20261011-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "09:25:56",
+        "published": true,
+        "postId": "auto-app-20261011-7245",
+        "postTitle": "2026 신혼집 거실 스마트 조명 IoT 자동화 루틴 구축 — 기상·시네마·취침 모드 완벽 세팅",
+        "publishedAt": "2026-10-11 09:25:56"
+      }
+    ],
+    "2026-10-12": [
+      {
+        "id": "sched-20261012-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "08:40:34",
+        "published": false
+      },
+      {
+        "id": "sched-20261012-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "19:14:38",
+        "published": false
+      }
+    ],
+    "2026-10-13": [
+      {
+        "id": "sched-20261013-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "07:59:25",
+        "published": false
+      },
+      {
+        "id": "sched-20261013-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "19:11:13",
+        "published": false
+      }
     ]
   },
-  "lastCheck": "2026-09-27T19:27:57.878Z"
+  "lastCheck": "2026-10-11T00:57:51.430Z"
 }
