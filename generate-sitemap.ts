@@ -82,12 +82,9 @@ async function generate() {
     { path: "/", priority: "1.0", changefreq: "daily" },
     { path: "/about", priority: "0.5", changefreq: "weekly" },
     { path: "/privacy", priority: "0.5", changefreq: "monthly" },
-    { path: "/partnership", priority: "0.6", changefreq: "weekly" },
     { path: "/announcement", priority: "0.6", changefreq: "weekly" },
     { path: "/terms", priority: "0.3", changefreq: "monthly" },
     { path: "/policy", priority: "0.8", changefreq: "daily" },
-    { path: "/tools/didimdol", priority: "0.9", changefreq: "weekly" },
-    { path: "/tools/cheongyak", priority: "0.9", changefreq: "weekly" },
   ];
 
   const categories = ["신혼금융", "신혼가전", "결혼준비"];
@@ -147,8 +144,12 @@ async function generate() {
   });
 
   // 3. Blog Posts
+  const seenPostSlugs = new Set<string>();
   posts.forEach((post) => {
     const slug = slugify(post.title) || post.id;
+    // 제목 앞 60자가 같은 글은 주소가 같아진다. 같은 주소를 사이트맵에 두 번 넣지 않는다 (최신 글만 남김).
+    if (seenPostSlugs.has(slug)) return;
+    seenPostSlugs.add(slug);
     let lastModDate = currentDate;
     if (post.updated || post.date) {
       try {

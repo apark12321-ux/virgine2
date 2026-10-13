@@ -397,11 +397,19 @@ export default function App() {
 
   // Fetch API posts & Firestore
   useEffect(() => {
-    fetch("/api/posts")
+    // 정적 호스팅(Vercel)에는 /api 서버가 없으므로 빌드 시 만들어 둔 /data/posts.json 을 먼저 읽고,
+    // 없으면(AI Studio 개발 서버 등) /api/posts 로 대체한다.
+    fetch("/data/posts.json")
       .then((res) => {
-        if (!res.ok) throw new Error("API response error");
+        if (!res.ok || !(res.headers.get("content-type") || "").includes("json")) throw new Error("no static posts");
         return res.json();
       })
+      .catch(() =>
+        fetch("/api/posts").then((res) => {
+          if (!res.ok) throw new Error("API response error");
+          return res.json();
+        })
+      )
       .then((data) => {
         if (data && Array.isArray(data)) {
           setRealPosts(data);
