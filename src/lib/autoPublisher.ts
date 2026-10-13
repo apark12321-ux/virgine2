@@ -1106,18 +1106,13 @@ export async function runAutoPublisherService(): Promise<{
         ]);
         const categoryPool = TOPIC_POOL.filter(t => t.category === category);
         const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
-        let selectedTopic = availableTopics.length > 0
-          ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
-          : categoryPool[Math.floor(Math.random() * categoryPool.length)];
-
-        if (usedTitles.has(normalizeTitle(selectedTopic.title))) {
-          const year = dateStr.slice(0, 4);
-          const month = parseInt(dateStr.slice(5, 7), 10);
-          selectedTopic = {
-            ...selectedTopic,
-            title: `${selectedTopic.title} (${year}년 ${month}월 최신 개정판)`
-          };
+        // 새 주제가 남아 있지 않으면 발행하지 않는다.
+        // (예전에는 이미 쓴 주제를 "(N월 최신 개정판)"만 붙여 다시 발행해 거의 같은 글이 쌓였다.)
+        if (availableTopics.length === 0) {
+          console.log(`[AutoPublisher Backfill] ${category}: 새 주제가 없어 ${dateStr} 발행을 건너뜁니다.`);
+          continue;
         }
+        const selectedTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
 
         if (!store.schedules[dateStr]) {
           store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
@@ -1188,18 +1183,12 @@ export async function runAutoPublisherService(): Promise<{
       ]);
       const categoryPool = TOPIC_POOL.filter(t => t.category === item.category);
       const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
-      let selectedTopic = availableTopics.length > 0
-        ? availableTopics[Math.floor(Math.random() * availableTopics.length)]
-        : categoryPool[Math.floor(Math.random() * categoryPool.length)];
-
-      if (usedTitles.has(normalizeTitle(selectedTopic.title))) {
-        const year = todayStr.slice(0, 4);
-        const month = parseInt(todayStr.slice(5, 7), 10);
-        selectedTopic = {
-          ...selectedTopic,
-          title: `${selectedTopic.title} (${year}년 ${month}월 최신판)`
-        };
+      // 새 주제가 남아 있지 않으면 발행하지 않는다 (같은 글을 "최신판"으로 다시 발행하지 않음).
+      if (availableTopics.length === 0) {
+        console.log(`[AutoPublisher Today] ${item.category}: 새 주제가 없어 오늘 발행을 건너뜁니다.`);
+        continue;
       }
+      const selectedTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
 
       const newPost = await generatePostContent(selectedTopic, todayStr, item.category, true, item.targetTime);
       if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
