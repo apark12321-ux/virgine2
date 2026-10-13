@@ -18,7 +18,7 @@ const log = (m) => console.log(`[prerender] ${m}`);
 function get(route) {
   return new Promise((resolve, reject) => {
     const req = http.request(
-      { host: '127.0.0.1', port: PORT, path: route, headers: { 'x-forwarded-host': SITE_HOST, 'x-forwarded-proto': 'https', 'user-agent': 'prerender-snapshot' } },
+      { host: '127.0.0.1', port: PORT, path: route, headers: { host: SITE_HOST, 'x-forwarded-host': SITE_HOST, 'x-forwarded-proto': 'https', 'user-agent': 'prerender-snapshot' } },
       (res) => {
         const chunks = [];
         res.on('data', (c) => chunks.push(c));
@@ -50,10 +50,6 @@ const routeOf = (loc) => {
 };
 
 async function main() {
-  const sitemap = fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8');
-  const routes = [...new Set([...[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => routeOf(m[1].replace(/&amp;/g, '&'))), ...EXTRA_ROUTES])];
-  if (routes.length < 5) throw new Error(`사이트맵 주소가 너무 적습니다 (${routes.length}개).`);
-
   const server = spawn(process.execPath, ['dist/server.cjs'], {
     env: { ...process.env, NODE_ENV: 'production', PORT: String(PORT), PRERENDER_SNAPSHOT: '1' },
     stdio: ['ignore', 'ignore', 'inherit'],
@@ -69,6 +65,12 @@ async function main() {
       if (r.status !== 200) throw new Error(`${route} 응답 ${r.status}`);
       files.set(out, r.body);
     }
+
+    // 사이트맵에 실린 주소가 곧 만들 페이지 목록이다.
+    // (EXTRA_FILES 에 sitemap.xml 이 있으면 서버가 방금 만든 최신 사이트맵을, 없으면 빌드가 만들어 둔 파일을 쓴다.)
+    const sitemap = files.get('sitemap.xml') ?? fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8');
+    const routes = [...new Set([...[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => routeOf(m[1].replace(/&amp;/g, '&'))), ...EXTRA_ROUTES])];
+    if (routes.length < 5) throw new Error(`사이트맵 주소가 너무 적습니다 (${routes.length}개).`);
 
     for (const route of routes) {
       const r = await get(route);
