@@ -91,36 +91,40 @@
   ],
   "rewrites": [
     {
-      "source": "/ads.txt",
-      "destination": "/ads.txt"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
-    },
-    {
-      "source": "/rss.xml",
-      "destination": "/rss.xml"
-    },
-    {
       "source": "/rss",
       "destination": "/rss.xml"
-    },
-    {
-      "source": "/feed.xml",
-      "destination": "/feed.xml"
     },
     {
       "source": "/feed",
       "destination": "/feed.xml"
     },
     {
-      "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml|rss\\.xml|rss|feed\\.xml|feed).*)",
-      "destination": "/index.html"
+      "source": "/post/:slug",
+      "destination": "/post/:slug/index.html"
+    },
+    {
+      "source": "/category/:slug",
+      "destination": "/category/:slug/index.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/policy",
+      "destination": "/policy/index.html"
+    },
+    {
+      "source": "/announcement",
+      "destination": "/announcement/index.html"
     }
   ]
 }

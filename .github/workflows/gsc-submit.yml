@@ -1,0 +1,30 @@
+name: 서치 콘솔 사이트맵 자동 제출
+
+# Vercel 프로덕션 배포가 성공으로 끝나면(= 새 글이 실제 사이트에 올라간 직후) 실행된다.
+# Actions 탭에서 "Run workflow"로 직접 실행해 볼 수도 있다.
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit-sitemap:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       startsWith(github.event.deployment.environment, 'Production'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 서치 콘솔에 사이트맵 제출
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE: "sc-domain:virginroad.kr"
+          SITEMAP_URL: https://virginroad.kr/sitemap.xml
+        run: node scripts/gsc-submit.mjs

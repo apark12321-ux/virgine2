@@ -379,7 +379,10 @@ async function fetchMergedPosts(): Promise<any[]> {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
+  // 빌드 시 사전 렌더링(scripts/prerender-snapshot.mjs)용으로 띄울 때는 페이지 응답만 필요하므로
+  // 자동 발행·색인 핑 같은 백그라운드 작업을 켜지 않는다.
+  const isPrerenderSnapshot = process.env.PRERENDER_SNAPSHOT === "1";
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -741,7 +744,8 @@ async function startServer() {
   });
 
   // GET /api/posts: Serving merged dynamic posts (Local file + Firestore database posts with channelId tracking)
-  app.get("/api/posts", async (req, res) => {
+  // "/data/posts.json" 은 Vercel(정적 호스팅)에서 빌드 시 만들어 둔 파일로 서빙되는 주소다.
+  app.get(["/api/posts", "/data/posts.json"], async (req, res) => {
     try {
       const posts = await fetchMergedPosts();
       const reqChannelId = extractChannelId(req);
@@ -1834,8 +1838,6 @@ Sitemap: ${hostUrl}/sitemap.xml
         <a href="/category/신혼금융" style="color: #e11d48; text-decoration: none;">신혼금융 (디딤돌·버팀목)</a>
         <a href="/category/신혼가전" style="color: #2563eb; text-decoration: none;">신혼가전 (패키지 견적)</a>
         <a href="/category/결혼준비" style="color: #d97706; text-decoration: none;">결혼준비 (웨딩홀·스드메)</a>
-        <a href="/tools/didimdol" style="color: #475569; text-decoration: none;">디딤돌 우대금리 계산기</a>
-        <a href="/tools/cheongyak" style="color: #475569; text-decoration: none;">신혼특공 가점 계산기</a>
         <a href="/about" style="color: #475569; text-decoration: none;">소개 & 편집 원칙</a>
         <a href="/policy" style="color: #475569; text-decoration: none;">2026 정부 정책 허브</a>
       </nav>
@@ -1926,6 +1928,7 @@ Sitemap: ${hostUrl}/sitemap.xml
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    if (isPrerenderSnapshot) return;
     
     // Trigger auto-publisher service on server startup
     runAutoPublisherService()
