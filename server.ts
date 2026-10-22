@@ -1220,6 +1220,7 @@ Sitemap: ${hostUrl}/sitemap.xml
       const staticPages = [
         { path: "/", priority: "1.0", changefreq: "daily" },
         { path: "/about", priority: "0.5", changefreq: "weekly" },
+        { path: "/contact", priority: "0.5", changefreq: "monthly" },
         { path: "/privacy", priority: "0.5", changefreq: "monthly" },
         { path: "/announcement", priority: "0.6", changefreq: "weekly" },
         { path: "/terms", priority: "0.3", changefreq: "monthly" },
@@ -1595,6 +1596,24 @@ Sitemap: ${hostUrl}/sitemap.xml
             { "@type": "ListItem", "position": 2, "name": "소개", "item": "https://virginroad.kr/about" }
           ]
         };
+      } else if (pathname === "/contact") {
+        title = "문의하기 및 정정보도 접수 | 버진로드 - 가전 관리 매뉴얼";
+        description = "버진로드 편집국 공식 연락처(apark12321@gmail.com). 가전 사용 매뉴얼 오류 정정 제보, 기술 지원 및 운영 제휴 접수 창구 안내.";
+        primaryJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": title,
+          "url": canonical,
+          "description": description
+        };
+        breadcrumbJsonLd = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://virginroad.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "문의하기", "item": canonical }
+          ]
+        };
       } else if (pathname === "/policy") {
         title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
         description = "2026년 신혼·출산·주거 대출 금리, 결혼세액공제, 신생아특례, 부모급여 등 가정에 영향을 주는 핵심 정책을 정부 공식 자료 기준으로 정리합니다. 정책 변경 시 신속 반영.";
@@ -1831,27 +1850,26 @@ Sitemap: ${hostUrl}/sitemap.xml
           const ssrHomeMarkup = `
   <div id="ssr-home" style="max-width: 900px; margin: 0 auto; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
     <header style="margin-bottom: 32px; border-bottom: 2px solid #0f172a; padding-bottom: 20px;">
-      <div style="display: inline-block; background: #fff1f2; color: #e11d48; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 700; margin-bottom: 12px;">2026 공식 검증 주거·금융 포털</div>
+      <div style="display: inline-block; background: #f0fdfa; color: #0f766e; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 700; margin-bottom: 12px; border: 1px solid #ccfbf1;">신혼가전 및 생활가전 사용 관리 매뉴얼 센터</div>
       <h1 style="font-size: 28px; font-weight: 900; color: #0f172a; margin-bottom: 8px;">버진로드 (Virginroad)</h1>
-      <p style="font-size: 15.5px; color: #475569; line-height: 1.65;">예비·신혼부부의 안전한 주거 독립과 합리적인 결혼 준비를 위한 정책금융·청약·가전 실전 백서</p>
+      <p style="font-size: 15.5px; color: #475569; line-height: 1.65;">식기세척기, 드럼세탁기, 건조기, 인덕션 등 생활가전 올바른 사용법 및 고장 예방 점검 매뉴얼</p>
       <nav style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; font-size: 14px; font-weight: 600;">
-        <a href="/category/신혼금융" style="color: #e11d48; text-decoration: none;">신혼금융 (디딤돌·버팀목)</a>
-        <a href="/category/신혼가전" style="color: #2563eb; text-decoration: none;">신혼가전 (패키지 견적)</a>
-        <a href="/category/결혼준비" style="color: #d97706; text-decoration: none;">결혼준비 (웨딩홀·스드메)</a>
-        <a href="/about" style="color: #475569; text-decoration: none;">소개 & 편집 원칙</a>
-        <a href="/policy" style="color: #475569; text-decoration: none;">2026 정부 정책 허브</a>
+        <a href="/" style="color: #0f766e; text-decoration: none; font-weight: 700;">홈 (전체 매뉴얼)</a>
+        <a href="/category/신혼가전" style="color: #475569; text-decoration: none;">가전 관리 매뉴얼</a>
+        <a href="/about" style="color: #475569; text-decoration: none;">소개 & 편집원칙</a>
+        <a href="/contact" style="color: #475569; text-decoration: none;">문의하기</a>
       </nav>
     </header>
     <main>
-      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 20px;">최신 실전 가이드 & 2026 정책 리포트</h2>
+      <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 20px;">공식 검증 가전 관리 매뉴얼</h2>
       <ul style="list-style: none; padding: 0; margin: 0;">
         ${listItems}
       </ul>
     </main>
     <footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #94a3b8; line-height: 1.7;">
-      <p><strong>버진로드 미디어</strong> | 운영: 버진로드 편집팀 | 문의 및 제휴: apark12321@gmail.com</p>
-      <p>본 사이트의 모든 저작물은 저작권법의 보호를 받습니다. 국토교통부, 주택도시기금, 한국주택금융공사 공시 기준 준수.</p>
-      <p style="margin-top: 8px;"><a href="/privacy" style="color: #64748b;">개인정보 처리방침</a> | <a href="/terms" style="color: #64748b;">이용약관</a> | <a href="/about" style="color: #64748b;">편집국 소개</a> | <a href="/policy" style="color: #64748b;">주요 정책 안내</a></p>
+      <p><strong>버진로드 기술편집팀</strong> | 운영: 버진로드 편집국 | 문의: apark12321@gmail.com</p>
+      <p>본 사이트의 모든 저작물은 저작권법의 보호를 받으며, 한국소비자원 및 제조사 공식 규격을 준수합니다.</p>
+      <p style="margin-top: 8px;"><a href="/about" style="color: #64748b; text-decoration: underline;">소개 및 편집원칙</a> | <a href="/contact" style="color: #64748b; text-decoration: underline;">문의하기</a> | <a href="/privacy" style="color: #64748b; text-decoration: underline;">개인정보 처리방침</a> | <a href="/terms" style="color: #64748b; text-decoration: underline;">이용약관</a></p>
     </footer>
   </div>
 `;

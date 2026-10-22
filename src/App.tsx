@@ -7,6 +7,7 @@ import { GuideReader } from "./components/GuideReader";
 import { AdSenseUnit, ADSENSE_ENABLED } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
 import { AboutPage } from "./components/AboutPage";
+import { ContactPage } from "./components/ContactPage";
 import { SearchConsoleModal } from "./components/SearchConsoleModal";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { Post } from "./types";
@@ -32,6 +33,7 @@ import { slugify, parsePostTimestamp, normalizeTitle, matchPostBySlugOrId, toIso
 type Page = 
   | "home" 
   | "about" 
+  | "contact"
   | "privacy" 
   | "announcement" 
   | "terms" 
@@ -41,8 +43,8 @@ type Page =
 
 const SITE_URL = "https://virginroad.kr";
 const SITE_NAME = "버진로드";
-const DEFAULT_TITLE = "버진로드 - 2026 신혼부부 금융·청약·가전 실전 가이드";
-const DEFAULT_DESCRIPTION = "디딤돌·버팀목 대출 우대금리, 신혼특공 청약 전략, 혼수가전 견적 노하우를 제공하는 신혼 라이프 전문 정보 블로그입니다.";
+const DEFAULT_TITLE = "버진로드 - 신혼가전 및 생활가전 사용 관리 매뉴얼";
+const DEFAULT_DESCRIPTION = "식기세척기, 드럼세탁기, 인덕션 상판, 건조기, 로봇청소기 등 신혼가전·생활가전의 올바른 사용법, 세척 주기, 고장 예방 점검 매뉴얼을 제공합니다.";
 
 const POSTS_PER_PAGE = 10;
 
@@ -51,6 +53,7 @@ function pageFromUrl(): Page {
   const path = window.location.pathname;
   if (path === "/" || path === "") return "home";
   if (path === "/about") return "about";
+  if (path === "/contact") return "contact";
   if (path === "/privacy") return "privacy";
   if (path === "/announcement") return "announcement";
   if (path === "/terms") return "terms";
@@ -65,6 +68,7 @@ function pageFromUrl(): Page {
 function urlFromPage(page: Page, posts: Post[]): string {
   if (page === "home") return "/";
   if (page === "about") return "/about";
+  if (page === "contact") return "/contact";
   if (page === "privacy") return "/privacy";
   if (page === "announcement") return "/announcement";
   if (page === "terms") return "/terms";
@@ -514,9 +518,17 @@ export default function App() {
     return sanitized.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
   }, [realPosts]);
 
-  // Filter Posts
+  // Filter Posts with Rule 3: Scheduled Publishing Logic
   const filteredPosts = useMemo(() => {
-    let posts = allPosts;
+    const now = Date.now();
+    // Rule 3: Scheduled publishing filter
+    let posts = allPosts.filter((p, idx) => {
+      // First 10 posts are permanently and immediately published
+      if (idx < 10) return true;
+      const timestamp = parsePostTimestamp(p.date, p.id);
+      return timestamp <= now;
+    });
+
     if (currentPage.startsWith("category-")) {
       const category = currentPage.replace("category-", "");
       posts = posts.filter((p) => p.category === category);
@@ -575,12 +587,16 @@ export default function App() {
       ogImage = currentPost.image || ogImage;
     } else if (currentPage.startsWith("category-")) {
       const category = currentPage.replace("category-", "");
-      title = `${category} | 버진로드`;
-      description = `${category}에 관한 실전 팁과 최신 정책 가이드를 모아둔 공간입니다.`;
+      title = `${category} 매뉴얼 | 버진로드`;
+      description = `${category}에 관한 올바른 사용법, 필터 세척 주기, 고장 예방 가이드를 모아둔 공간입니다.`;
       canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
     } else if (currentPage === "about") {
-      title = "소개 | 버진로드";
+      title = "소개 및 편집원칙 | 버진로드 - 가전 관리 매뉴얼";
       canonical = `${SITE_URL}/about`;
+    } else if (currentPage === "contact") {
+      title = "문의하기 및 오류 정정 접수 | 버진로드";
+      description = "버진로드 편집국 공식 연락처(apark12321@gmail.com) 및 콘텐츠 정정보도·기술 문의 접수 안내입니다.";
+      canonical = `${SITE_URL}/contact`;
     } else if (currentPage === "privacy") {
       title = "개인정보 처리방침 | 버진로드";
       canonical = `${SITE_URL}/privacy`;
@@ -665,41 +681,59 @@ export default function App() {
               <AboutPage onNavigate={handleNavigate} />
             )}
 
+            {/* VIEW 2-B: CONTACT PAGE (MANDATORY TRUST/COMMUNICATION ROUTE) */}
+            {currentPage === "contact" && (
+              <ContactPage onNavigate={handleNavigate} />
+            )}
+
             {/* VIEW 3: POLICY HUB */}
             {currentPage === "policy" && (
               <PolicyHub compact={false} onNavigate={handleNavigate} />
             )}
 
-            {/* VIEW 4: PRIVACY POLICY */}
+            {/* VIEW 4: PRIVACY POLICY (GOOGLE ADSENSE & DART COOKIE COMPLIANCE) */}
             {currentPage === "privacy" && (
               <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left article-body">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
                   개인정보 처리방침 (Privacy Policy)
                 </h1>
                 <p className="text-[14.5px] leading-relaxed text-gray-700 mb-6">
-                  버진로드(Virginroad, 이하 &lsquo;본 블로그&rsquo;)는 이용자의 개인정보를 소중하게 보호하며, 관련 법령 및 구글 애드센스(Google AdSense) 운영 정책을 철저히 준수합니다.
+                  버진로드(Virginroad, 이하 &lsquo;본 사이트&rsquo;)는 이용자의 개인정보를 소중하게 보호하며, 관련 법령 및 구글 애드센스(Google AdSense) 운영 정책을 철저히 준수합니다. 본 방침은 이용자가 사이트를 이용할 때 발생하는 정보 처리 방식과 이용자의 권리를 명확히 설명합니다.
                 </p>
 
                 <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">1. 개인정보 수집 항목 및 목적</h2>
-                <p className="text-[14px] text-gray-700 leading-relaxed">
-                  본 블로그는 별도의 회원가입이나 개인정보 입력 없이 모든 정보와 가이드를 100% 무료로 자유롭게 열람하실 수 있으며, 이용자의 어떠한 개인정보도 수집하거나 저장하지 않습니다.
+                <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
+                  본 사이트는 별도의 회원가입이나 로그인 절차 없이 모든 가전 관리 매뉴얼과 기술 가이드를 100% 무료로 자유롭게 열람하실 수 있으며, 이용자의 성명, 주민등록번호, 연락처 등 고유식별정보를 직접 수집하거나 데이터베이스에 저장하지 않습니다.
                 </p>
 
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 구글 애드센스 및 제3자 광고 쿠키(Cookie) 고지</h2>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 구글 애드센스 및 제3자 광고 쿠키(Cookie)·DART 쿠키 고지</h2>
                 <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
-                  본 블로그는 Google을 비롯한 제3자 광고 공급업체를 통해 광고를 게재합니다.
+                  본 사이트는 서비스 유지 및 품질 개선을 위해 Google을 비롯한 제3자 광고 공급업체를 통해 광고를 송출합니다.
                 </p>
-                <ul className="list-disc list-inside text-[13.5px] text-gray-600 space-y-1.5 pl-2 mb-4">
-                  <li>Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자가 본 웹사이트 또는 다른 웹사이트를 이전에 방문한 기록을 바탕으로 광고를 게재합니다.</li>
-                  <li>Google의 광고 쿠키 사용으로 Google 및 파트너는 사용자의 본 사이트 및 인터넷의 다른 사이트 방문 기록을 바탕으로 적절한 광고를 게재할 수 있습니다.</li>
-                  <li>사용자는 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-rose-600 font-semibold underline">Google 광고 설정</a>을 방문하여 맞춤설정 광고를 사용 중지할 수 있습니다.</li>
+                <ul className="list-disc list-inside text-[13.5px] text-gray-600 space-y-2 pl-2 mb-4">
+                  <li><strong>쿠키(Cookie) 사용 목적:</strong> Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자가 본 웹사이트 또는 다른 인터넷 사이트를 과거에 방문한 기록을 바탕으로 관련성 높은 맞춤형 광고를 게재합니다.</li>
+                  <li><strong>Google DART 쿠키:</strong> Google은 DART 쿠키를 사용하여 인터넷상의 방문 기록을 분석하고 최적화된 광고를 제공합니다.</li>
+                  <li><strong>맞춤 광고 및 DART 쿠키 수집 거부(Opt-Out):</strong> 사용자는 언제든지 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#0f766e] font-semibold underline">Google 광고 설정</a> 또는 <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-[#0f766e] font-semibold underline">Google 개인정보 보호 및 약관</a> 페이지를 방문하여 맞춤설정 광고 및 DART 쿠키 사용을 중지할 수 있습니다.</li>
+                  <li><strong>제3자 공급업체 쿠키 차단:</strong> 사용자는 <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener noreferrer" className="text-[#0f766e] font-semibold underline">Network Advertising Initiative (aboutads.info)</a> 웹사이트를 방문하여 제3자 광고 업체의 쿠키 사용을 일괄 거부할 수 있습니다.</li>
                 </ul>
 
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">3. 개인정보 보호책임자 및 문의처</h2>
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-700 space-y-1">
-                  <p><strong>운영:</strong> 버진로드(Virginroad) 편집팀</p>
-                  <p><strong>이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-rose-600 font-medium">apark12321@gmail.com</a></p>
-                  <p><strong>시행일자:</strong> 2026년 1월 1일</p>
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">3. 웹 브라우저를 통한 쿠키 차단 방법</h2>
+                <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
+                  이용자는 사용 중인 웹 브라우저의 옵션 설정을 변경하여 모든 쿠키의 저장을 허용하거나, 쿠키가 저장될 때마다 확인을 거치거나, 모든 쿠키의 저장을 거부할 수 있습니다. 단, 쿠키 설치를 거부할 경우 일부 웹 서비스 이용에 기술적 제한이 발생할 수 있습니다.
+                </p>
+                <div className="p-3.5 bg-gray-50 border border-gray-200 rounded text-[13px] text-gray-600 space-y-1 mb-4">
+                  <p>&bull; <strong>Chrome:</strong> 설정 &gt; 개인정보 보호 및 보안 &gt; 서드 파티 쿠키 &gt; 타사 쿠키 차단</p>
+                  <p>&bull; <strong>Safari:</strong> 환경설정 &gt; 개인정보 보호 &gt; 모든 쿠키 차단</p>
+                  <p>&bull; <strong>Edge:</strong> 설정 &gt; 쿠키 및 사이트 권한 &gt; 쿠키 및 사이트 데이터 관리 및 삭제</p>
+                </div>
+
+                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">4. 개인정보 보호책임자 및 의견 수렴 창구</h2>
+                <div className="p-4 bg-[#f8fafc] border border-[#cbd5e1] rounded-md text-[13px] text-gray-700 space-y-1">
+                  <p><strong>운영 주체:</strong> 버진로드(Virginroad) 기술편집팀</p>
+                  <p><strong>개인정보 보호 담당자:</strong> 박성진 (편집국 총괄)</p>
+                  <p><strong>공식 이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#0f766e] font-medium underline">apark12321@gmail.com</a></p>
+                  <p><strong>공식 문의 페이지:</strong> <button type="button" onClick={() => handleNavigate("contact")} className="text-[#0f766e] underline cursor-pointer">/contact 문의하기</button></p>
+                  <p><strong>시행일자:</strong> 2026년 1월 1일 (최신 개정: 2026년 10월 22일)</p>
                 </div>
               </div>
             )}

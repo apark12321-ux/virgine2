@@ -11,7 +11,7 @@ const SITE_HOST = process.env.PRERENDER_HOST || 'virginroad.kr';
 const PORT = 4173 + Math.floor(Math.random() * 500);
 const DIST = path.join(process.cwd(), 'dist');
 const EXTRA_FILES = [['/data/posts.json', 'data/posts.json']]; // [요청 경로, dist 안 저장 경로]
-const EXTRA_ROUTES = []; // 사이트맵에 없어도 만들어 둘 페이지
+const EXTRA_ROUTES = ['/contact']; // 사이트맵에 없어도 만들어 둘 페이지
 
 const log = (m) => console.log(`[prerender] ${m}`);
 
