@@ -44,8 +44,20 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.warn('Firestore Error (Handled): ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+
+  const errorString = errInfo.error.toLowerCase();
+  const isPermissionDenied =
+    (error && typeof error === 'object' && 'code' in error && (error as { code: string }).code === 'permission-denied') ||
+    errorString.includes('permission') ||
+    errorString.includes('missing or insufficient permissions');
+
+  if (isPermissionDenied) {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    throw new Error(JSON.stringify(errInfo));
+  }
+
+  // Gracefully handle transient network / offline errors while client functions offline
+  console.warn('Firestore Connection State Notice: ', JSON.stringify(errInfo));
 }
 
 /**

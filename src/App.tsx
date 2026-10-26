@@ -521,10 +521,16 @@ export default function App() {
   // Filter Posts with Rule 3: Scheduled Publishing Logic
   const filteredPosts = useMemo(() => {
     const now = Date.now();
-    // Rule 3: Scheduled publishing filter
-    let posts = allPosts.filter((p, idx) => {
-      // First 10 posts are permanently and immediately published
-      if (idx < 10) return true;
+    // Rule 3: Scheduled publishing filter (past/current posts visible, future posts reveal incrementally daily)
+    const baselineLiveIds = new Set([
+      "manual-01-drum-washer", "manual-02-heatpump-dryer", "manual-03-four-door-refrigerator",
+      "manual-04-dishwasher-maintenance", "manual-05-system-aircon-filter", "manual-06-robot-vacuum-lidar",
+      "manual-07-induction-cooktop", "manual-08-air-purifier-hepa", "manual-09-direct-water-purifier",
+      "manual-10-clothing-care-styler"
+    ]);
+
+    let posts = allPosts.filter((p) => {
+      if (baselineLiveIds.has(p.id)) return true;
       const timestamp = parsePostTimestamp(p.date, p.id);
       return timestamp <= now;
     });

@@ -81,6 +81,7 @@ async function generate() {
   const staticPages = [
     { path: "/", priority: "1.0", changefreq: "daily" },
     { path: "/about", priority: "0.5", changefreq: "weekly" },
+    { path: "/contact", priority: "0.5", changefreq: "monthly" },
     { path: "/privacy", priority: "0.5", changefreq: "monthly" },
     { path: "/announcement", priority: "0.6", changefreq: "weekly" },
     { path: "/terms", priority: "0.3", changefreq: "monthly" },

@@ -10,7 +10,7 @@ export const POST_TIMESTAMPS: string[] = GENERATED_TIMESTAMPS;
 
 export const buildPosts = (): Post[] => {
   return ALL_POST_DEFINITIONS.map((post, idx) => {
-    const postDate = POST_TIMESTAMPS[idx] || post.date;
+    const postDate = post.date || POST_TIMESTAMPS[idx];
     const expandedContent = expandContentIfNeeded(
       post.title,
       post.category,

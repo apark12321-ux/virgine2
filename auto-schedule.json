@@ -1221,13 +1221,19 @@
         "id": "sched-20261012-신혼가전-1",
         "category": "신혼가전",
         "targetTime": "08:40:34",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20261012-6552",
+        "postTitle": "신혼부부 식기건조대 및 싱크대 올스텐 304 물빠짐 거치대 녹 방지 연마제 제거 관리법",
+        "publishedAt": "2026-10-12 08:40:34"
       },
       {
         "id": "sched-20261012-신혼금융-2",
         "category": "신혼금융",
         "targetTime": "19:14:38",
-        "published": false
+        "published": true,
+        "postId": "auto-fin-20261012-6512",
+        "postTitle": "신혼부부 필수 실손보험 & 3대 질병(암·뇌·심장) 보험 리모델링 — 중복 가입 방지와 월 보험료 10만 원대 설계",
+        "publishedAt": "2026-10-12 19:14:38"
       }
     ],
     "2026-10-13": [
@@ -1235,15 +1241,203 @@
         "id": "sched-20261013-신혼가전-1",
         "category": "신혼가전",
         "targetTime": "07:59:25",
-        "published": false
+        "published": true,
+        "postId": "auto-app-20261013-4915",
+        "postTitle": "신혼부부 음식물처리기 건조분쇄형 vs 미생물발효형 2026 실사용 악취·소음·필터유지비 비교",
+        "publishedAt": "2026-10-13 07:59:25"
       },
       {
         "id": "sched-20261013-신혼금융-2",
         "category": "신혼금융",
         "targetTime": "19:11:13",
+        "published": true,
+        "postId": "auto-fin-20261013-7215",
+        "postTitle": "신혼부부 전세대출 대환(갈아타기) 은행별 금리 비교 및 중도상환수수료 면제 조건 실무 팁",
+        "publishedAt": "2026-10-13 19:11:13"
+      }
+    ],
+    "2026-10-14": [
+      {
+        "id": "sched-20261014-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "07:35:22",
+        "published": true,
+        "postId": "auto-wed-20261014-8576",
+        "postTitle": "신혼부부 건강검진(보건소 예비부부 무료 검진) 항목 및 풍진·A/B형 간염 항체 접종 최적 시기",
+        "publishedAt": "2026-10-14 07:35:22"
+      },
+      {
+        "id": "sched-20261014-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "18:34:01",
+        "published": true,
+        "postId": "auto-app-20261014-9713",
+        "postTitle": "신혼부부 스마트 도어락 푸시풀 지문인식 vs 얼굴인식 모델 보안성 및 배터리 방전 비상 대처",
+        "publishedAt": "2026-10-14 18:34:01"
+      }
+    ],
+    "2026-10-15": [
+      {
+        "id": "sched-20261015-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:33:05",
+        "published": true,
+        "postId": "auto-fin-20261015-6134",
+        "postTitle": "신혼부부 비상금 파킹통장(CMA·1금융권 파킹통장) 금리 비교 및 3개월 치 생활비 예치 원칙",
+        "publishedAt": "2026-10-15 09:33:05"
+      },
+      {
+        "id": "sched-20261015-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "21:07:46",
+        "published": true,
+        "postId": "auto-app-20261015-7184",
+        "postTitle": "2026 신혼집 주방 소형가전 삼총사(에어프라이어 오븐·전기포트·토스터) 감성 인테리어 조합 추천",
+        "publishedAt": "2026-10-15 21:07:46"
+      }
+    ],
+    "2026-10-16": [
+      {
+        "id": "sched-20261016-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "09:25:57",
+        "published": true,
+        "postId": "auto-wed-20261016-8861",
+        "postTitle": "신혼여행 유럽 자유여행(파리·이탈리아·스위스) vs 패키지 2026 경비 비교 및 소매치기 방지 팁",
+        "publishedAt": "2026-10-16 09:25:57"
+      },
+      {
+        "id": "sched-20261016-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "18:40:40",
+        "published": true,
+        "postId": "auto-app-20261016-5502",
+        "postTitle": "신혼 안방 암막 커튼 vs 우드 블라인드 암막률 비교 및 전동 커튼 모터 셀프 설치 가이드",
+        "publishedAt": "2026-10-16 18:40:40"
+      }
+    ],
+    "2026-10-17": [
+      {
+        "id": "sched-20261017-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "09:13:46",
+        "published": true,
+        "postId": "auto-app-20261017-6612",
+        "postTitle": "2026 폐가전 무상 방문수거 서비스 신청 요령 및 에너지소비효율 1등급 환급 실시간 서류 준비",
+        "publishedAt": "2026-10-17 09:13:46"
+      },
+      {
+        "id": "sched-20261017-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "20:26:54",
+        "published": true,
+        "postId": "auto-fin-20261017-3472",
+        "postTitle": "신혼부부 자동차 구매 vs 장기렌트·리스 비용 비교 — 취등록세·자동차세·보험료 절세 시뮬레이션",
+        "publishedAt": "2026-10-17 20:26:54"
+      }
+    ],
+    "2026-10-18": [
+      {
+        "id": "sched-20261018-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:28:35",
+        "published": true,
+        "postId": "auto-fin-20261018-8963",
+        "postTitle": "2026년 지자체별 신혼부부 결혼축하금 및 정착지원금 조례 총정리 — 최대 100만~300만 원 수령법",
+        "publishedAt": "2026-10-18 09:28:35"
+      },
+      {
+        "id": "sched-20261018-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "19:06:54",
+        "published": true,
+        "postId": "auto-app-20261018-5082",
+        "postTitle": "2026 신혼부부 정수기 렌탈 vs 직수형 자가관리 무전원 정수기 가성비 비교 — 3년 총소유비용 분석",
+        "publishedAt": "2026-10-18 19:06:54"
+      }
+    ],
+    "2026-10-19": [
+      {
+        "id": "sched-20261019-결혼준비-1",
+        "category": "결혼준비",
+        "targetTime": "07:57:40",
+        "published": true,
+        "postId": "auto-wed-20261019-6548",
+        "postTitle": "결혼식 당일 신랑신부 가방순이·부케순이 역할 체크리스트 및 헬퍼 이모님 봉투 전달 요령",
+        "publishedAt": "2026-10-19 07:57:40"
+      },
+      {
+        "id": "sched-20261019-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "18:42:08",
+        "published": true,
+        "postId": "auto-fin-20261019-5693",
+        "postTitle": "신혼집 아파트 매매 잔금일 당일 실전 타임라인 — 법무사 등기 이전·전세대출 상환·관리비 정산 순서",
+        "publishedAt": "2026-10-19 18:42:08"
+      }
+    ],
+    "2026-10-20": [
+      {
+        "id": "sched-20261020-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:03:51",
+        "published": true,
+        "postId": "auto-fin-20261020-2535",
+        "postTitle": "2026년 서울시 신혼부부 임차보증금 이자지원 사업 신청 자격 및 대출 한도 3억 원 확대 해설",
+        "publishedAt": "2026-10-20 08:03:51"
+      },
+      {
+        "id": "sched-20261020-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "20:12:35",
+        "published": true,
+        "postId": "auto-app-20261020-1684",
+        "postTitle": "신혼집 드레스룸 시스템 행거 셀프 조립 vs 맞춤 수납장 제작 비용 비교 및 곰팡이 방지 통풍 팁",
+        "publishedAt": "2026-10-20 20:12:35"
+      }
+    ],
+    "2026-10-25": [
+      {
+        "id": "sched-20261025-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "09:33:05",
+        "published": false
+      },
+      {
+        "id": "sched-20261025-결혼준비-2",
+        "category": "결혼준비",
+        "targetTime": "21:29:50",
+        "published": false
+      }
+    ],
+    "2026-10-26": [
+      {
+        "id": "sched-20261026-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "09:06:07",
+        "published": false
+      },
+      {
+        "id": "sched-20261026-신혼금융-2",
+        "category": "신혼금융",
+        "targetTime": "21:23:59",
+        "published": false
+      }
+    ],
+    "2026-10-27": [
+      {
+        "id": "sched-20261027-신혼금융-1",
+        "category": "신혼금융",
+        "targetTime": "08:22:33",
+        "published": false
+      },
+      {
+        "id": "sched-20261027-신혼가전-2",
+        "category": "신혼가전",
+        "targetTime": "20:46:09",
         "published": false
       }
     ]
   },
-  "lastCheck": "2026-10-11T00:57:51.430Z"
+  "lastCheck": "2026-10-25T22:15:24.971Z"
 }

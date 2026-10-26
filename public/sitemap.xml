@@ -2,57 +2,405 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://virginroad.kr/</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/about</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://virginroad.kr/contact</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://virginroad.kr/privacy</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/announcement</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/terms</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/policy</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/category/%EC%8B%A0%ED%98%BC%EA%B8%88%EC%9C%B5</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/category/%EC%8B%A0%ED%98%BC%EA%B0%80%EC%A0%84</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/category/%EA%B2%B0%ED%98%BC%EC%A4%80%EB%B9%84</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/욕실-연수기-이온교환수지-재생-전용-소금-투입-주기-및-자동-세척-밸브-점검-매뉴얼</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/팝업-토스터기-하단-부스러기-받침대-청소-및-니크롬-발열선-화재-예방-가이드</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/카본-탄소매트-및-전기-온열매트-접힘-열선-단선-방지-보관법-및-온도조절기-점검</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/무선-전기주전자전기포트-바닥-스테인리스-열판-백색-석회-스케일-구연산-고온-세척법</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/스마트-홈시어터-사운드바-hdmi-earc-연결-불량-및-립싱크-지연-보정-매뉴얼</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/싱크대-하부-디스포저음식물-분쇄기-칼날-끼임-방지-및-배수관-역류-청소-매뉴얼</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/반자동-가정용-에스프레소-머신-그룹헤드-백플러싱-화학-세척-및-실리콘-가스켓-분해-교체-매뉴얼</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/컴프레서-제습기-콘덴서-냉각핀-알루미늄-백화-및-물통-만수-플로트-스위치-접점-점검-매뉴얼</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/전자식-비데-스테인리스-노즐-스케일-자가-분해-및-세디먼트-정수-필터-교체-주기-매뉴얼</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/전기압력밥솥-고무패킹-밀폐력-복원-및-솔레노이드-압력추-증기-노즐-분해-청소-매뉴얼</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/시스템-천장형-에어컨-드레인-펌프-응축수-역류-방지-및-열교환기-곰팡이-고압-세척-매뉴얼</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/인덕션-쿡탑-세라믹-글라스-백화-스크래치-방지-및-조리-용기-접촉면-열-관리-매뉴얼</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/로봇청소기-물걸레-직결-자동세척-도크-급수관-석회-및-오수통-악취-방지-매뉴얼</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/에어프라이어-상부-열선-탄화-유증기-제거-및-테프론-코팅-바스켓-안전-관리-매뉴얼</loc>
+    <lastmod>2026-11-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/와인셀러-적정-보관-온도-설정-및-진동-방지-펠티어-소자-점검-기술-가이드</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/캡슐-커피머신-내부-보일러-디스케일링석회질-제거-주기-및-추출구-관리-매뉴얼</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/초음파가열식-복합-가습기-진동자-석회질-스케일-제거-및-구연산-세척-가이드</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/복합-오븐레인지광파오븐-스팀-청소-모드-활용-및-내부-기름때-세척-규격</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/음식물처리기미생물-발효식-미생물-생육-환경-유지-및-투입-불가-부산물-매뉴얼</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/무선-스틱-청소기-사이클론-먼지통-물세척-후-완전-건조-및-배터리-수명-연장-매뉴얼</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/의류관리기스타일러에어드레서-보풀필터-및-아로마시트-교체-관리-규격</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/직수형-정수기-코크-살균-및-유로-세척-주기별-자가-점검-매뉴얼</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/타워형-공기청정기-헤파hepa-필터-교체-주기-및-먼지센서-정밀-청소법</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/3구-인덕션-전기레인지-상판-탄-자국-제거-및-전용-조기도구-규격-가이드</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/흡입물걸레-겸용-로봇청소기-라이다-센서-유지보수-및-오수통-살균-매뉴얼</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼집-드레스룸-시스템-행거-셀프-조립-vs-맞춤-수납장-제작-비용-비교-및-곰팡이-방지-통풍-팁</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-양가-상견례-장소-선정-기준코스-한정식-vs-일식-룸-및-식사비-결제-타이밍대화-에티켓</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/천장형-시스템-에어컨-프리필터-분해-세척-및-송풍-건조-모드-운용-가이드</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026년-서울시-신혼부부-임차보증금-이자지원-사업-신청-자격-및-대출-한도-3억-원-확대-해설</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼집-아파트-매매-잔금일-당일-실전-타임라인-법무사-등기-이전전세대출-상환관리비-정산-순서</loc>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/12인용14인용-빌트인-식기세척기-린스-투입-주기와-거름망-위생-관리-규격</loc>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼집-2in1-스탠드벽걸이-에어컨-vs-창문형-에어컨-설치비-및-아파트-실외기실-앵글-규정</loc>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/결혼식-당일-신랑신부-가방순이부케순이-역할-체크리스트-및-헬퍼-이모님-봉투-전달-요령</loc>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026-신혼부부-정수기-렌탈-vs-직수형-자가관리-무전원-정수기-가성비-비교-3년-총소유비용-분석</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/4도어-냉장고-적정-냉장냉동-설정온도-및-성에-방지-순환-관리-매뉴얼</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026년-지자체별-신혼부부-결혼축하금-및-정착지원금-조례-총정리-최대-100만300만-원-수령법</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/웨딩홀-시식-예약-타이밍본식-12개월-전-및-양가-부모님-동행-시-체크해야-할-연회장-동선-5가지</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-자동차-구매-vs-장기렌트리스-비용-비교-취등록세자동차세보험료-절세-시뮬레이션</loc>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/인버터-히트펌프-의류건조기-콘덴서-및-2중-먼지필터-청소-기술-규격</loc>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼집-셀프-인테리어-도배장판-vs-강마루-시공-견적-비교-을지로-방산시장-실전-발품-팁</loc>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026-폐가전-무상-방문수거-서비스-신청-요령-및-에너지소비효율-1등급-환급-실시간-서류-준비</loc>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼-안방-암막-커튼-vs-우드-블라인드-암막률-비교-및-전동-커튼-모터-셀프-설치-가이드</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼여행-유럽-자유여행파리이탈리아스위스-vs-패키지-2026-경비-비교-및-소매치기-방지-팁</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026년-신혼부부-주택청약-부부-중복-청약-허용-규정-활용법-당첨-확률-2배-극대화-실전</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/드럼세탁기-고무패킹-곰팡이-방지-및-통살균-주기별-관리-매뉴얼</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026-신혼집-주방-소형가전-삼총사에어프라이어-오븐전기포트토스터-감성-인테리어-조합-추천</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-비상금-파킹통장cma1금융권-파킹통장-금리-비교-및-3개월-치-생활비-예치-원칙</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026년-결혼식-사회자축가축도-섭외-및-감사-사례비봉투-가이드라인-지인-vs-전문-사회자</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-스마트-도어락-푸시풀-지문인식-vs-얼굴인식-모델-보안성-및-배터리-방전-비상-대처</loc>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026년-공공지원-민간임대주택-신혼부부-특별공급-청약-조건-및-10년-거주-보증금-반환-안정성</loc>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-건강검진보건소-예비부부-무료-검진-항목-및-풍진ab형-간염-항체-접종-최적-시기</loc>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-전세대출-대환갈아타기-은행별-금리-비교-및-중도상환수수료-면제-조건-실무-팁</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/2026년-웨딩촬영-캐주얼룩한복-스냅-대여-vs-맞춤-견적-비교-야외-로드스냅-촬영-필수-준비물</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-음식물처리기-건조분쇄형-vs-미생물발효형-2026-실사용-악취소음필터유지비-비교</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-필수-실손보험-3대-질병암뇌심장-보험-리모델링-중복-가입-방지와-월-보험료-10만-원대-설계</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-혼인신고-시기예식-직후-vs-아파트-청약-후-vs-1년-유예-장단점-및-전입신고-확정일자-순서</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://virginroad.kr/post/신혼부부-식기건조대-및-싱크대-올스텐-304-물빠짐-거치대-녹-방지-연마제-제거-관리법</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026-신혼집-거실-스마트-조명-iot-자동화-루틴-구축-기상시네마취침-모드-완벽-세팅</loc>
@@ -61,8 +409,14 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://virginroad.kr/post/2026년-직장인-결혼-휴가경조사-휴가-규정-및-답례품호두과자쿠키더치커피-주문-수량과-전달-에티켓</loc>
+    <lastmod>2026-10-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://virginroad.kr/post/2026년-청년-주택드림-청약통장-신혼부부-전환-요건-및-연-22-전용-주택담보대출-연계-전략</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -74,7 +428,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026-가을-웨딩시즌-백화점-웨딩마일리지-더블적립-vs-삼성lg-플래그십-신혼가전-패키지-견적-비교</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-09-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -98,7 +452,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼부부-공동명의-아파트-취득세재산세종부세-절세-효과-및-지분율-55-설정-시-주의사항</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -110,7 +464,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼집-시스템에어컨-4대-다배관-vs-단배관-시공-비용-및-감가상각-전세-계약서-원상복구-특약</loc>
-    <lastmod>2026-09-23</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -134,7 +488,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/버팀목-전세자금대출-hug-vs-hf-보증기관-차이점-분석-및-무소득-배우자-전세보증금-대출-한도</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -146,7 +500,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026-신혼집-로봇청소기-직배수-키트-셀프-설치-vs-공식-기사-시공-비용-및-배수-역류-방지-팁</loc>
-    <lastmod>2026-09-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -170,7 +524,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-신혼부부-특별공급-다자녀신생아-우선배정-가점표-및-청약통장-인정-회차-계산법</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -194,7 +548,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-웨딩홀-견적-비교-시-필수-체크리스트-7가지-보증인원-할인율-및-식대-네고-실전</loc>
-    <lastmod>2026-09-16</lastmod>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -206,13 +560,13 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-하반기-신혼부부-주택구입자금-대출-자산심사-기준-및-분양권-포함-여부-완벽-해설</loc>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://virginroad.kr/post/결혼식-본식-당일-신랑신부-필수-챙겨야-할-가방-속-꿀템-12가지-빨대-단백질바-여분-봉투</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -224,7 +578,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/부부간-증여세-비과세-한도-6억-원-10년-주기-활용법-신혼집-공동명의-취득-시-자금출처-소명</loc>
-    <lastmod>2026-09-13</lastmod>
+    <lastmod>2026-09-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -260,7 +614,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼-욕실-비데-연속온수형-vs-순간온수형-방수-등급ipx5-이상-및-노즐-살균-기능-비교</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -278,7 +632,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/결혼식-직후-감사-인사-문자-및-카카오톡-답례-문구-모음-직장-상사친척친구-맞춤형</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -338,7 +692,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-결혼식-전문-사회자-vs-지인-사회자-장단점-및-실수-없는-대본-가이드</loc>
-    <lastmod>2026-08-26</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -392,7 +746,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-신혼부부-isa-계좌와-연금저축펀드-절세-혜택-극대화-포트폴리오</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-08-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -434,7 +788,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-신혼부부-주택청약-특별공급-가점-계산-및-우선공급-자격-체크리스트</loc>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -470,7 +824,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼부부-버팀목-전세자금대출-수도권-3억-원-한도-증액-및-보증금-조건-가이드</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -488,7 +842,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-예단예물-절차와-비용-간소화-가이드-현물-예단-대신-가전가구-실속-대체</loc>
-    <lastmod>2026-08-02</lastmod>
+    <lastmod>2026-08-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -506,7 +860,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼여행-허니문-휴양지-vs-휴양쇼핑-추천-코스-발리-칸쿤-하와이-2026-비교</loc>
-    <lastmod>2026-07-31</lastmod>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -614,7 +968,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/결혼식-당일-축의금-수불부-작성-및-관리-매너-봉투-금액-확인과-안전-이송-수칙-체크리스트</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -662,7 +1016,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026년-하반기-특례보금자리론-금리-전망-및-한국주택금융공사-특별-우대이율-산정-매뉴얼</loc>
-    <lastmod>2026-07-06</lastmod>
+    <lastmod>2026-07-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -740,7 +1094,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼집-스마트-홈-가전-100-활용하기-스마트싱스-vs-lg-씽큐-스마트-홈-iot-연동-자동화-시나리오</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -794,7 +1148,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/식기세척기-12인용-vs-14인용-용량-선택-가이드-및-신혼-필수-빌트인-공간-인테리어-공정</loc>
-    <lastmod>2026-06-15</lastmod>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -836,7 +1190,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026-최신-대출-우대금리-로드맵-청약-가점-연계-디딤돌-혜택-10단계-매뉴얼</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-06-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -854,7 +1208,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼가전-졸업-견적-수칙-백화점-vs-대리점-체감가-낮추는-방법</loc>
-    <lastmod>2026-06-06</lastmod>
+    <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -872,7 +1226,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/2026-신혼집-평형별-가전-적정-사이즈-18평-vs-24평-vs-32평</loc>
-    <lastmod>2026-06-03</lastmod>
+    <lastmod>2026-06-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -896,7 +1250,7 @@
   </url>
   <url>
     <loc>https://virginroad.kr/post/신혼부부-디딤돌대출-실제-후기-2026년-5월-공시-기준-우대금리-12까지-내린-과정</loc>
-    <lastmod>2026-05-31</lastmod>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

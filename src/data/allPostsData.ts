@@ -1,6 +1,18 @@
 // Automatically generated comprehensive post dataset
-// 115 fully curated Korean newlyweds expert guides covering 2026-06-01 through 2026-09-15 (1+ post/day)
 import { Post } from "../types";
+import { APPLIANCE_MANUAL_POSTS } from "./applianceManualData";
+
+const APPLIANCE_DEFINITIONS: Omit<Post, "content">[] = APPLIANCE_MANUAL_POSTS.map((p) => ({
+  id: p.id,
+  title: p.title,
+  excerpt: p.excerpt,
+  category: p.category,
+  author: p.author,
+  date: p.date,
+  image: p.image,
+  readTime: p.readTime,
+  hashtags: p.hashtags
+}));
 
 export const POST_TIMESTAMPS: string[] = [
   "2026-06-01 08:51:53",
@@ -121,6 +133,7 @@ export const POST_TIMESTAMPS: string[] = [
 ];
 
 export const ALL_POST_DEFINITIONS: Omit<Post, "content">[] = [
+  ...APPLIANCE_DEFINITIONS,
   {
     "id": "fin-39",
     "title": "신혼부부 디딤돌대출 실제 후기 — 2026년 5월 공시 기준, 우대금리 1.2%까지 내린 과정",
