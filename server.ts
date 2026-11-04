@@ -556,9 +556,9 @@ async function startServer() {
       res.json({
         success: true,
         rule: {
-          frequency: "카테고리별 1일 1포스팅 (총 3개/일)",
-          interval: "포스팅 간 최소 4시간(240분) 이상 간격 보장",
-          timing: "매일 랜덤 시간 자동 스케줄링 (KST 기준)"
+          frequency: "1일 1포스팅 (매일 1개 글 자동 발행)",
+          timing: "골든타임(08:15 ~ 21:45 KST) 중 랜덤 시간 자동 스케줄링",
+          categoryCycle: "신혼가전 · 신혼금융 · 결혼준비 카테고리 일자별 자동 순환"
         },
         todayStatus: result.todayStatus,
         lastLogs: result.messages

@@ -410,28 +410,39 @@ print("Assembling all 30 articles...")
 all_30 = ARTICLES_1_TO_8 + ARTICLES_9_TO_16 + ARTICLES_17_TO_24 + ADDITIONAL_ARTICLES
 print(f"Total compiled articles: {len(all_30)}")
 
-# Assign timestamps
-# 10 live immediately (Oct 16 - Oct 25, 2026)
-# 20 scheduled daily (Oct 26 - Nov 14, 2026)
-live_dates = [
-    "2026-10-16 09:15:00",
-    "2026-10-17 14:20:00",
-    "2026-10-18 10:45:00",
-    "2026-10-19 16:30:00",
-    "2026-10-20 09:10:00",
-    "2026-10-21 15:40:00",
-    "2026-10-22 11:25:00",
-    "2026-10-23 17:15:00",
-    "2026-10-24 10:30:00",
-    "2026-10-25 09:00:00",
+# Assign 30 realistic, randomized timestamps (1 post per day, varied natural peak hours, no duplicate times)
+dates_all = [
+    "2026-10-16 08:34:18",
+    "2026-10-17 14:22:45",
+    "2026-10-18 10:47:12",
+    "2026-10-19 16:35:29",
+    "2026-10-20 09:12:51",
+    "2026-10-21 15:43:08",
+    "2026-10-22 11:28:37",
+    "2026-10-23 17:19:54",
+    "2026-10-24 10:36:22",
+    "2026-10-25 08:48:09",
+    "2026-10-26 13:15:42",
+    "2026-10-27 19:24:16",
+    "2026-10-28 09:37:55",
+    "2026-10-29 15:51:30",
+    "2026-10-30 11:04:19",
+    "2026-10-31 18:42:07",
+    "2026-11-01 08:29:43",
+    "2026-11-02 14:18:36",
+    "2026-11-03 20:07:51",
+    "2026-11-04 10:53:24",
+    "2026-11-05 16:38:15",
+    "2026-11-06 09:21:49",
+    "2026-11-07 15:12:33",
+    "2026-11-08 21:04:58",
+    "2026-11-09 11:45:20",
+    "2026-11-10 17:31:44",
+    "2026-11-11 08:56:17",
+    "2026-11-12 13:40:29",
+    "2026-11-13 19:15:53",
+    "2026-11-14 10:22:38",
 ]
-
-scheduled_dates = [
-    f"2026-10-{26+i:02d} 09:00:00" if 26+i <= 31 else f"2026-11-{i-5:02d} 09:00:00"
-    for i in range(20)
-]
-
-dates_all = live_dates + scheduled_dates
 
 for i, art in enumerate(all_30):
     art["date"] = dates_all[i]
@@ -586,3 +597,30 @@ with open("scripts/compiled_30_appliance_manuals.json", "w", encoding="utf-8") a
     json.dump(all_30, f, ensure_ascii=False, indent=2)
 
 print("Saved scripts/compiled_30_appliance_manuals.json successfully!")
+
+# Format for TypeScript export in src/data/applianceManualData.ts
+ts_posts = []
+for art in all_30:
+    ts_posts.append({
+        "id": art["id"],
+        "title": art["title"],
+        "excerpt": art["excerpt"],
+        "content": art["html_content"],
+        "category": art["category"],
+        "author": art["author"],
+        "date": art["date"],
+        "image": art.get("image", ""),
+        "readTime": art.get("readTime", "8분"),
+        "hashtags": art.get("hashtags", [])
+    })
+
+ts_content = f"""// 30 Comprehensive Appliance Maintenance Manuals
+import {{ Post }} from "../types";
+
+export const APPLIANCE_MANUAL_POSTS: Post[] = {json.dumps(ts_posts, ensure_ascii=False, indent=2)};
+"""
+
+with open("src/data/applianceManualData.ts", "w", encoding="utf-8") as f:
+    f.write(ts_content)
+
+print("Saved src/data/applianceManualData.ts successfully!")

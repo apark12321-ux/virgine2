@@ -85,39 +85,37 @@ export function getKSTTimeString(d: Date = getKSTNow()): string {
 }
 
 /**
- * 1일 2포스팅 기준, 최소 8시간(28,800초) 이상 간격을 확보하며 랜덤 시·분·초를 생성하는 스케줄러:
- * 1. 카테고리 중 매일 2개를 무작위 순서로 선정
- * 2. 슬롯 1 (아침 07:15 ~ 09:45 사이 랜덤 시·분·초)
- * 3. 슬롯 2 (슬롯 1 대비 최소 8시간(28,800초) 이상 간격 확보 -> 저녁 18:30 ~ 21:45 사이 랜덤 시·분·초)
- * 4. 모든 연속 발행 간격은 최소 8시간(480분/28,800초) 이상 완전 보장
+ * 1일 1포스팅 자동화 스케줄러:
+ * - 매일 1개의 글을 골든타임(08:15 ~ 21:45 KST) 중 완전히 무작위(랜덤 시·분·초) 시간에 자동 발행
+ * - 카테고리는 신혼가전, 신혼금융, 결혼준비 순으로 일자별 균등 자동 순환
  */
-export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem[] {
-  // Shuffle categories so that 2 categories are selected each day in random order
-  const shuffledCategories = [...CATEGORIES].sort(() => Math.random() - 0.5).slice(0, 2);
-
-  // Slot 1: Morning random (07:15:00 ~ 09:45:00 KST -> 26,100s ~ 35,100s)
-  const slot1Sec = 26100 + Math.floor(Math.random() * 9000); // 07:15 ~ 09:45
-
-  // Slot 2: Evening random (최소 8시간 = 28,800초 이후 -> 18:30 ~ 21:45 KST)
-  const minSlot2 = slot1Sec + 28800; // Strict 8-hour minimum gap
-  const eveningBase = Math.max(66600, minSlot2); // at least 18:30 KST or 8 hours after slot 1
-  const eveningMax = 78300; // max 21:45:00 KST
-  const availableRange = Math.max(0, eveningMax - eveningBase);
-  const slot2Sec = eveningBase + Math.floor(Math.random() * Math.min(10800, availableRange + 1));
-
-  const timesInSeconds = [slot1Sec, slot2Sec];
-
-  // Enforce absolute strict minimum 28,800-second (8 hours) separation guarantee
-  if (timesInSeconds[1] - timesInSeconds[0] < 28800) {
-    timesInSeconds[1] = timesInSeconds[0] + 28800;
+export function getRandomPeakTime(seedStr?: string): string {
+  let rand = Math.random();
+  if (seedStr) {
+    let hash = 0;
+    for (let i = 0; i < seedStr.length; i++) {
+      hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+      hash |= 0;
+    }
+    rand = Math.abs(Math.sin(hash));
   }
+  // 08:15:00 ~ 21:45:00 (29,700s ~ 78,300s)
+  const totalSeconds = 29700 + Math.floor(rand * (78300 - 29700));
+  return secondsToTimeStr(totalSeconds);
+}
 
-  return shuffledCategories.map((category, idx) => ({
-    id: `sched-${dateStr.replace(/-/g, "")}-${category}-${idx + 1}`,
+export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem[] {
+  // 1일 1포스팅 기준 일자별 카테고리 순환
+  const dateNum = parseInt(dateStr.replace(/-/g, ""), 10) || 0;
+  const category = CATEGORIES[dateNum % CATEGORIES.length];
+  const targetTime = getRandomPeakTime(`${dateStr}-${category}`);
+
+  return [{
+    id: `sched-${dateStr.replace(/-/g, "")}-${category}-1`,
     category,
-    targetTime: secondsToTimeStr(timesInSeconds[idx]),
+    targetTime,
     published: false
-  }));
+  }];
 }
 
 export function loadLocalPosts(): Post[] {
@@ -1086,9 +1084,9 @@ export async function runAutoPublisherService(): Promise<{
   const messages: string[] = [];
   let publishedCount = 0;
 
-  // 1. Backfill past missing category posts (up to 14 days back)
+  // 1. Backfill past missing days (up to 7 days back) — 1일 1포스팅 원칙
   const pastDates: string[] = [];
-  for (let i = 14; i >= 1; i--) {
+  for (let i = 7; i >= 1; i--) {
     const d = new Date(kstNow.getTime() - i * 24 * 60 * 60 * 1000);
     pastDates.push(getKSTDateString(d));
   }
@@ -1096,52 +1094,49 @@ export async function runAutoPublisherService(): Promise<{
   for (const dateStr of pastDates) {
     const postsOnDate = localPosts.filter(p => p.date && p.date.startsWith(dateStr));
 
-    for (const category of CATEGORIES) {
-      const hasCategoryPost = postsOnDate.some(p => p.category === category);
-      if (!hasCategoryPost) {
-        console.log(`[AutoPublisher Backfill] Missing ${category} for ${dateStr}. Auto-generating...`);
-        const usedTitles = new Set([
-          ...localPosts.map(p => normalizeTitle(p.title)),
-          ...MOCK_POSTS.map(p => normalizeTitle(p.title))
-        ]);
-        const categoryPool = TOPIC_POOL.filter(t => t.category === category);
-        const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
-        // 새 주제가 남아 있지 않으면 발행하지 않는다.
-        // (예전에는 이미 쓴 주제를 "(N월 최신 개정판)"만 붙여 다시 발행해 거의 같은 글이 쌓였다.)
-        if (availableTopics.length === 0) {
-          console.log(`[AutoPublisher Backfill] ${category}: 새 주제가 없어 ${dateStr} 발행을 건너뜁니다.`);
-          continue;
-        }
-        const selectedTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
-
-        if (!store.schedules[dateStr]) {
-          store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
-        }
-        const schedItem = store.schedules[dateStr].find(s => s.category === category);
-        const targetTimeStr = schedItem ? schedItem.targetTime : "09:15:32";
-
-        const newPost = await generatePostContent(selectedTopic, dateStr, category, false, targetTimeStr);
-        if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
-          localPosts.unshift(newPost);
-          saveLocalPosts(localPosts);
-          syncToFirestore(newPost);
-        }
-
-        if (schedItem) {
-          schedItem.published = true;
-          schedItem.postId = newPost.id;
-          schedItem.postTitle = newPost.title;
-          schedItem.publishedAt = `${dateStr} ${schedItem.targetTime}`;
-        }
-
-        publishedCount++;
-        const msg = `[AutoPublisher Backfill] Backfilled ${category} for ${dateStr}: "${newPost.title}"`;
-        messages.push(msg);
+    // If day has 0 posts, backfill exactly 1 post with a randomized peak time
+    if (postsOnDate.length === 0) {
+      if (!store.schedules[dateStr] || store.schedules[dateStr].length === 0) {
+        store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
       }
+      const schedItem = store.schedules[dateStr][0];
+      const category = schedItem ? schedItem.category : CATEGORIES[0];
+      const targetTimeStr = schedItem ? schedItem.targetTime : getRandomPeakTime(`${dateStr}-${category}`);
+
+      console.log(`[AutoPublisher Backfill] Missing post for ${dateStr} (${category}). Auto-generating...`);
+      const usedTitles = new Set([
+        ...localPosts.map(p => normalizeTitle(p.title)),
+        ...MOCK_POSTS.map(p => normalizeTitle(p.title))
+      ]);
+      const categoryPool = TOPIC_POOL.filter(t => t.category === category);
+      const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
+      if (availableTopics.length === 0) {
+        console.log(`[AutoPublisher Backfill] ${category}: 새 주제가 없어 ${dateStr} 발행을 건너뜁니다.`);
+        continue;
+      }
+      const selectedTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
+
+      const newPost = await generatePostContent(selectedTopic, dateStr, category, false, targetTimeStr);
+      if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
+        localPosts.unshift(newPost);
+        saveLocalPosts(localPosts);
+        syncToFirestore(newPost);
+      }
+
+      if (schedItem) {
+        schedItem.published = true;
+        schedItem.postId = newPost.id;
+        schedItem.postTitle = newPost.title;
+        schedItem.publishedAt = `${dateStr} ${schedItem.targetTime}`;
+      }
+
+      publishedCount++;
+      const msg = `[AutoPublisher Backfill] Backfilled 1 post for ${dateStr} (${category}) at ${targetTimeStr}: "${newPost.title}"`;
+      messages.push(msg);
     }
   }
 
-  // 2. Ensure Schedule Exists for Today, Tomorrow, and Day After Tomorrow with strict 4h interval & random HH:mm:ss
+  // 2. Ensure Schedule Exists for Today, Tomorrow, and Day After Tomorrow (1 post per day, randomized time)
   const targetDates = [
     todayStr,
     getKSTDateString(new Date(kstNow.getTime() + 1 * 24 * 60 * 60 * 1000)),
@@ -1151,19 +1146,19 @@ export async function runAutoPublisherService(): Promise<{
   for (const dStr of targetDates) {
     if (!store.schedules[dStr] || store.schedules[dStr].length === 0) {
       store.schedules[dStr] = generateDailyCategorySchedules(dStr);
-      console.log(`[AutoPublisher Schedule] Created 3-category randomized schedule (>=4h gap) for ${dStr}:`, 
+      console.log(`[AutoPublisher Schedule] Created 1-post randomized schedule for ${dStr}:`, 
         store.schedules[dStr].map(s => `${s.category}@${s.targetTime}`).join(", "));
     }
   }
 
-  // 3. Process Today's Schedule
+  // 3. Process Today's Schedule (1 post per day)
   const todaySchedules = store.schedules[todayStr] || [];
   for (const item of todaySchedules) {
-    // Check if category already has a post published today
-    const alreadyPublishedToday = localPosts.some(p => p.date && p.date.startsWith(todayStr) && p.category === item.category);
+    // Check if post already published today
+    const alreadyPublishedToday = localPosts.some(p => p.date && p.date.startsWith(todayStr));
 
     if (alreadyPublishedToday && !item.published) {
-      const existing = localPosts.find(p => p.date && p.date.startsWith(todayStr) && p.category === item.category);
+      const existing = localPosts.find(p => p.date && p.date.startsWith(todayStr));
       item.published = true;
       item.postId = existing?.id;
       item.postTitle = existing?.title;
