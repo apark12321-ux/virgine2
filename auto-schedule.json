@@ -1506,26 +1506,35 @@
     ],
     "2026-11-04": [
       {
-        "id": "sched-20261104-신혼금융-1",
-        "category": "신혼금융",
-        "targetTime": "18:49:41",
-        "published": false
+        "id": "sched-20261104-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "10:53:24",
+        "published": true,
+        "postId": "manual-20-ceiling-air-conditioner",
+        "postTitle": "시스템 천장형 에어컨 드레인 펌프 응축수 역류 방지 및 열교환기 곰팡이 고압 세척 매뉴얼",
+        "publishedAt": "2026-11-04 10:53:24"
       }
     ],
     "2026-11-05": [
       {
-        "id": "sched-20261105-결혼준비-1",
-        "category": "결혼준비",
-        "targetTime": "08:50:59",
-        "published": false
+        "id": "sched-20261105-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "16:38:15",
+        "published": true,
+        "postId": "manual-21-electric-pressure-cooker",
+        "postTitle": "전기압력밥솥 고무패킹 밀폐력 복원 및 솔레노이드 압력추 증기 노즐 분해 청소 매뉴얼",
+        "publishedAt": "2026-11-05 16:38:15"
       }
     ],
     "2026-11-06": [
       {
         "id": "sched-20261106-신혼가전-1",
         "category": "신혼가전",
-        "targetTime": "15:29:14",
-        "published": false
+        "targetTime": "09:21:49",
+        "published": true,
+        "postId": "manual-22-bidet-nozzle-filter",
+        "postTitle": "전자식 비데 스테인리스 노즐 스케일 자가 분해 및 세디먼트 정수 필터 교체 주기 매뉴얼",
+        "publishedAt": "2026-11-06 09:21:49"
       }
     ],
     "2026-10-31": [
@@ -1556,10 +1565,97 @@
       {
         "id": "sched-20261103-신혼금융-1",
         "category": "신혼금융",
-        "targetTime": "19:21:45",
-        "published": false
+        "targetTime": "20:07:51",
+        "published": true,
+        "postId": "manual-19-induction-cooktop",
+        "postTitle": "인덕션 쿡탑 세라믹 글라스 백화 스크래치 방지 및 조리 용기 접촉면 열 관리 매뉴얼",
+        "publishedAt": "2026-11-03 20:07:51"
+      }
+    ],
+    "2026-11-07": [
+      {
+        "id": "sched-20261107-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "15:12:33",
+        "published": true,
+        "postId": "manual-23-dehumidifier-condenser",
+        "postTitle": "컴프레서 제습기 콘덴서 냉각핀 알루미늄 백화 및 물통 만수 플로트 스위치 접점 점검 매뉴얼",
+        "publishedAt": "2026-11-07 15:12:33"
+      }
+    ],
+    "2026-11-08": [
+      {
+        "id": "sched-20261108-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "21:04:58",
+        "published": true,
+        "postId": "manual-24-espresso-machine-backflush",
+        "postTitle": "반자동 가정용 에스프레소 머신 그룹헤드 백플러싱 화학 세척 및 실리콘 가스켓 분해 교체 매뉴얼",
+        "publishedAt": "2026-11-08 21:04:58"
+      }
+    ],
+    "2026-11-09": [
+      {
+        "id": "sched-20261109-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "11:45:20",
+        "published": true,
+        "postId": "manual-25-disposer-drain-clean",
+        "postTitle": "싱크대 하부 디스포저(음식물 분쇄기) 칼날 끼임 방지 및 배수관 역류 청소 매뉴얼",
+        "publishedAt": "2026-11-09 11:45:20"
+      }
+    ],
+    "2026-11-10": [
+      {
+        "id": "sched-20261110-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "10:24:18",
+        "published": true,
+        "postId": "manual-26-soundbar-earc-sync",
+        "postTitle": "스마트 홈시어터 사운드바 HDMI eARC 연결 불량 및 립싱크 지연 보정 매뉴얼",
+        "publishedAt": "2026-11-10 10:24:18"
+      }
+    ],
+    "2026-11-11": [
+      {
+        "id": "sched-20261111-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "08:56:17",
+        "published": false,
+        "postId": "manual-27-electric-kettle-scale",
+        "postTitle": "무선 전기주전자(전기포트) 바닥 스테인리스 열선 미네랄 스케일 제거 및 자동 전원 차단기 접점 수리 매뉴얼"
+      }
+    ],
+    "2026-11-12": [
+      {
+        "id": "sched-20261112-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "13:40:29",
+        "published": false,
+        "postId": "manual-28-carbon-mat-storage",
+        "postTitle": "카본 탄소매트 및 전기 온열매트 접힘 열선 단선 방지 보관법 및 컨트롤러 전자기파 차단 점검 매뉴얼"
+      }
+    ],
+    "2026-11-13": [
+      {
+        "id": "sched-20261113-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "19:15:53",
+        "published": false,
+        "postId": "manual-29-toaster-crumb-tray",
+        "postTitle": "팝업 토스터기 하단 부스러기 받침대 청소 및 내부 니크롬선 발열체 카본 찌꺼기 제거 기술 매뉴얼"
+      }
+    ],
+    "2026-11-14": [
+      {
+        "id": "sched-20261114-신혼가전-1",
+        "category": "신혼가전",
+        "targetTime": "10:22:38",
+        "published": false,
+        "postId": "manual-30-water-softener-salt",
+        "postTitle": "욕실 연수기 이온교환수지 재생 전용 소금 투입 주기 및 자동 재생 밸브 차압 점검 매뉴얼"
       }
     ]
   },
-  "lastCheck": "2026-11-04T23:41:07.575Z"
+  "lastCheck": "2026-11-10T15:19:09.623Z"
 }

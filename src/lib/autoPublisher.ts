@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { MOCK_POSTS } from "../constants";
-import { generateRealisticPostDateTime, slugify } from "./utils";
+import { generateRealisticPostDateTime, slugify, parsePostTimestamp } from "./utils";
 import { expandContentIfNeeded } from "./contentExpander";
 import { submitUrlsToSearchConsole } from "./googleIndexing";
 
@@ -1092,9 +1092,26 @@ export async function runAutoPublisherService(): Promise<{
   }
 
   for (const dateStr of pastDates) {
-    const postsOnDate = localPosts.filter(p => p.date && p.date.startsWith(dateStr));
+    const postsOnDate = [
+      ...localPosts.filter(p => p.date && p.date.startsWith(dateStr)),
+      ...MOCK_POSTS.filter(p => p.date && p.date.startsWith(dateStr))
+    ];
 
-    // If day has 0 posts, backfill exactly 1 post with a randomized peak time
+    if (postsOnDate.length > 0 && store.schedules[dateStr] && store.schedules[dateStr].length > 0) {
+      const firstPost = postsOnDate[0];
+      const schedItem = store.schedules[dateStr][0];
+      if (schedItem && !schedItem.published) {
+        schedItem.published = true;
+        schedItem.postId = firstPost.id;
+        schedItem.postTitle = firstPost.title;
+        schedItem.publishedAt = firstPost.date;
+        if (firstPost.date.includes(" ")) {
+          schedItem.targetTime = firstPost.date.split(" ")[1];
+        }
+      }
+    }
+
+    // If day has 0 posts across both local and mock posts, backfill exactly 1 post
     if (postsOnDate.length === 0) {
       if (!store.schedules[dateStr] || store.schedules[dateStr].length === 0) {
         store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
@@ -1154,15 +1171,18 @@ export async function runAutoPublisherService(): Promise<{
   // 3. Process Today's Schedule (1 post per day)
   const todaySchedules = store.schedules[todayStr] || [];
   for (const item of todaySchedules) {
-    // Check if post already published today
-    const alreadyPublishedToday = localPosts.some(p => p.date && p.date.startsWith(todayStr));
+    // Check if post already published today (either in localPosts or in MOCK_POSTS)
+    const existingToday = localPosts.find(p => p.date && p.date.startsWith(todayStr)) ||
+      MOCK_POSTS.find(p => p.date && p.date.startsWith(todayStr) && parsePostTimestamp(p.date, p.id) <= kstNow.getTime());
 
-    if (alreadyPublishedToday && !item.published) {
-      const existing = localPosts.find(p => p.date && p.date.startsWith(todayStr));
+    if (existingToday && !item.published) {
       item.published = true;
-      item.postId = existing?.id;
-      item.postTitle = existing?.title;
-      item.publishedAt = existing?.date || `${todayStr} ${item.targetTime}`;
+      item.postId = existingToday.id;
+      item.postTitle = existingToday.title;
+      item.publishedAt = existingToday.date;
+      if (existingToday.date.includes(" ")) {
+        item.targetTime = existingToday.date.split(" ")[1];
+      }
       continue;
     }
 

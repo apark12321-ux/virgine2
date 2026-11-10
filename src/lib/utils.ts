@@ -157,9 +157,10 @@ export function normalizeTitle(str: string): string {
 export function parsePostTimestamp(dateStr: string, id?: string): number {
   if (!dateStr) return 0;
 
-  // 1. ISO 또는 시:분 형식이 포함된 경우
+  // 1. ISO 또는 시:분 형식이 포함된 경우 (KST +09:00 타임존 엄격 보장)
   if (dateStr.includes("T") || dateStr.includes(":")) {
-    const d = new Date(dateStr.includes("T") ? dateStr : dateStr.replace(" ", "T"));
+    const isoStr = toIso8601(dateStr);
+    const d = new Date(isoStr);
     if (!isNaN(d.getTime())) {
       return d.getTime();
     }
