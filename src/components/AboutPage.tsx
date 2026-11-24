@@ -1,272 +1,189 @@
 import React from "react";
-import {
-  Heart,
-  ShieldCheck,
-  Award,
-  BookOpen,
-  Mail,
-  MapPin,
-  FileText,
-  HelpCircle,
-  TrendingUp,
-  Calculator,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-  UserCheck
-} from "lucide-react";
+import { Mail, ArrowRight } from "lucide-react";
 
 interface AboutPageProps {
   onNavigate: (page: string) => void;
 }
 
 export function AboutPage({ onNavigate }: AboutPageProps) {
+  const principles = [
+    {
+      num: "01",
+      title: "제조사 공식 규격 및 안전 기준 대조",
+      body: "삼성전자·LG전자 등 주요 제조사의 서비스 매뉴얼, 한국소비자원 가전 관리 지침, 한국전기안전공사 안전 수칙을 교차 검증하여 정확한 수치와 절차만 수록합니다.",
+    },
+    {
+      num: "02",
+      title: "고장 원인의 물리·화학적 구조 설명",
+      body: "단순한 청소 팁 나열을 지양하고, 열교환기 핀 막힘·고무패킹 경화·탄산칼슘 스케일 침착 등 부품이 손상되는 근본 원인과 예방 절차를 명확히 제시합니다.",
+    },
+    {
+      num: "03",
+      title: "금지 행위와 주의사항 우선 안내",
+      body: "락스 원액 접촉, 젖은 필터 장착, 열판 연마제 사용 등 기기 부식과 누전을 유발하는 위험 행위를 매뉴얼마다 별도로 명시합니다.",
+    },
+    {
+      num: "04",
+      title: "오류 정정 및 지속적 개정 투명화",
+      body: "공식 문의 창구를 상시 개방하며, 독자의 제보나 안전 기준 변경이 확인되면 매뉴얼 본문과 업데이트 이력을 신속하게 반영합니다.",
+    },
+  ];
+
   return (
-    <div className="max-w-[920px] mx-auto space-y-10 pb-16 animate-fade-in">
-      {/* 1. Hero Persona Card */}
-      <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-[#FFF1EE] via-[#F8FAFC] to-transparent rounded-full -mr-20 -mt-20 pointer-events-none opacity-80" />
+    <div className="max-w-[880px] mx-auto text-left font-sans pb-14 space-y-10">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[12.5px] text-[#64748B]">
+        <button
+          type="button"
+          onClick={() => onNavigate("home")}
+          className="hover:text-[#0F766E] transition-colors cursor-pointer"
+        >
+          홈
+        </button>
+        <span className="text-[#CBD5E1]">/</span>
+        <span className="text-[#0F172A] font-medium">사이트 소개 및 편집원칙</span>
+      </nav>
 
-        <div className="relative z-10 space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFF1EE] border border-[#FFDCD4] text-[#E8745F] text-[12.5px] font-extrabold rounded-full">
-            <Heart className="w-3.5 h-3.5 fill-[#E8745F]" />
-            <span>신혼부부를 위한 신뢰도 높은 전문 정보 블로그</span>
-          </div>
+      {/* Editorial Intro */}
+      <header className="pb-8 border-b border-[#E2E8F0] space-y-4">
+        <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#0F766E]">
+          About Virginroad
+        </p>
+        <h1 className="text-[26px] sm:text-[34px] font-extrabold text-[#0F172A] tracking-tight leading-snug break-keep">
+          생활가전의 수명과 효율을 지키는<br className="hidden sm:inline" /> 기술 관리 매뉴얼 아카이브
+        </h1>
+        <p className="text-[15.5px] leading-[1.8] text-[#334155] break-keep">
+          버진로드(virginroad.kr)는 신혼집과 일반 가정에서 매일 사용하는 30종의 핵심 생활가전을 대상으로, 주기별 필터·부품 세척 규격, 에러 코드 자가 진단, 전력 소비 최적화 방법을 체계적으로 정리하는 독립 기술 정보 플랫폼입니다.
+        </p>
+        <p className="text-[15px] leading-[1.8] text-[#475569] break-keep">
+          가전제품은 구매 순간보다 설치 이후 수년간의 유지관리가 성능과 전기요금, 실내 위생을 좌우합니다. 버진로드 기술편집팀은 흩어져 있는 제품별 사용설명서와 공공 안전 지침을 가정에서 바로 실행할 수 있는 표준 점검표 형태로 재구성하여 제공합니다.
+        </p>
+      </header>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pt-2">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#1E1B2E] via-[#2A243E] to-[#40375E] text-white flex items-center justify-center font-black text-[32px] sm:text-[38px] shadow-md shrink-0 border-2 border-white">
-              V
-            </div>
-            <div>
-              <h1 className="text-[26px] sm:text-[34px] font-black text-[#111827] tracking-tight leading-tight">
-                "예비·신혼부부의 예산과 시간을 지켜주는<br className="hidden sm:inline" /> 실전 신혼 나침반"
-              </h1>
-              <p className="text-[15px] sm:text-[16px] text-[#475569] font-medium mt-2">
-                버진로드(Virginroad) 편집팀
-              </p>
-            </div>
-          </div>
-
-          <div className="p-5 sm:p-6 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[14.5px] leading-relaxed text-[#334155] space-y-3">
-            <p>
-              안녕하세요, 버진로드(Virginroad)를 찾아주신 예비·신혼부부 여러분 반갑습니다.
-            </p>
-            <p>
-              결혼 준비와 첫 내 집 마련 과정에서는 방대한 정보 속에서 정작 필요한 정부 정책 대출(디딤돌·버팀목), 청약 제도, 합리적인 가전 구성 정보를 한눈에 파악하기 어렵습니다.
-            </p>
-            <p className="font-semibold text-[#1E1B2E]">
-              버진로드는 복잡한 정부 행정 지침과 금융 용어를 누구나 쉽게 이해하고 바로 적용할 수 있도록 돕는 실전 정보 플랫폼입니다.
-            </p>
-            <p>
-              국토교통부, 주택도시기금, 청약홈 등의 <strong>공식 고시 기준과 최신 개정 지침을 철저히 교차 검증</strong>하여, 독자 여러분이 불필요한 비용과 시간을 낭비하지 않도록 정확하고 실용적인 가이드를 제공합니다.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Editorial Philosophy */}
-      <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
-        <div className="border-b border-[#F1F5F9] pb-4">
-          <div className="flex items-center gap-2 text-[#E8745F] text-[13px] font-bold uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4" />
-            <span>버진로드 블로그 운영 철학</span>
-          </div>
-          <h2 className="text-[22px] sm:text-[26px] font-extrabold text-[#111827] mt-1">
-            독자 여러분과 약속하는 4가지 원칙
+      {/* 4 Editorial Principles */}
+      <section className="space-y-5">
+        <div>
+          <h2 className="text-[21px] font-extrabold text-[#0F172A] tracking-tight">
+            버진로드 4대 편집 원칙
           </h2>
+          <p className="text-[14px] text-[#64748B] mt-1">
+            모든 매뉴얼과 계산 도구는 아래 기준을 통과한 항목만 발행합니다.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-[#FAFAFC] border border-[#F1F5F9] space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#FFF1EE] text-[#E8745F] flex items-center justify-center font-bold text-[14px]">
-                01
+          {principles.map((p) => (
+            <div
+              key={p.num}
+              className="p-5 bg-white border border-[#E2E8F0] rounded-xl space-y-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[13px] font-extrabold text-[#0F766E] tabular-nums">
+                  {p.num}
+                </span>
+                <h3 className="text-[15.5px] font-bold text-[#0F172A]">{p.title}</h3>
               </div>
-              <h3 className="text-[16px] font-bold text-[#111827]">
-                검증된 실무 노하우
-              </h3>
+              <p className="text-[13.5px] leading-[1.7] text-[#475569] break-keep">
+                {p.body}
+              </p>
             </div>
-            <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              단순히 기사나 공고문을 요약하지 않습니다. 실제 은행 창구 상담 사례, 가전 오픈점 견적 비교 분석 등 현장에서 체득한 실전 가이드를 솔직하게 전달합니다.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#FAFAFC] border border-[#F1F5F9] space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold text-[14px]">
-                02
-              </div>
-              <h3 className="text-[16px] font-bold text-[#111827]">
-                공식 정책 및 기준 금리 교차 검증
-              </h3>
-            </div>
-            <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              국토교통부, 주택도시기금(기금e든든), 한국주택금융공사(HF), LH 청약플러스의 최신 고시 지침과 금리 개정안을 꼼꼼하게 대조하여 정확한 수치만 전달합니다.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#FAFAFC] border border-[#F1F5F9] space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center font-bold text-[14px]">
-                03
-              </div>
-              <h3 className="text-[16px] font-bold text-[#111827]">
-                숨김없는 실패담과 단점 공개
-              </h3>
-            </div>
-            <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              "무조건 좋다"는 식의 무책임한 추천을 하지 않습니다. "이 옵션은 돈 낭비였다", "이 특약은 반드시 넣어야 한다" 등 실제 겪은 실패와 단점까지 투명하게 공개합니다.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#FAFAFC] border border-[#F1F5F9] space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#ECFDF5] text-[#059669] flex items-center justify-center font-bold text-[14px]">
-                04
-              </div>
-              <h3 className="text-[16px] font-bold text-[#111827]">
-                투명한 정보 공유와 빠른 소통
-              </h3>
-            </div>
-            <p className="text-[13.5px] text-[#64748B] leading-relaxed">
-              편집팀 공식 문의처(이메일)를 투명하게 공개하며, 독자 여러분이 남겨주신 질문이나 보완 요청을 확인하여 신속하게 포스팅에 반영합니다.
-            </p>
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* 3. Core Categories & Interactive Tools */}
-      <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
-        <div className="border-b border-[#F1F5F9] pb-4">
-          <div className="flex items-center gap-2 text-[#5B21B6] text-[13px] font-bold uppercase tracking-wider">
-            <BookOpen className="w-4 h-4" />
-            <span>버진로드 주요 콘텐츠 & 무료 도구</span>
-          </div>
-          <h2 className="text-[22px] sm:text-[26px] font-extrabold text-[#111827] mt-1">
-            결혼 준비의 모든 과정을 한눈에
-          </h2>
-        </div>
+      {/* Core Coverage & Interactive Tools */}
+      <section className="space-y-5">
+        <h2 className="text-[21px] font-extrabold text-[#0F172A] tracking-tight">
+          제공 아카이브 및 무료 진단 도구
+        </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div
-            onClick={() => onNavigate("category-신혼금융")}
-            className="p-5 rounded-2xl bg-gradient-to-b from-[#F8FAFC] to-white border border-[#E2E8F0] hover:border-[#1E1B2E] transition-all cursor-pointer group"
-          >
-            <div className="w-9 h-9 rounded-xl bg-[#FFF1EE] text-[#E8745F] flex items-center justify-center font-bold text-[14px] mb-3">
-              [금융]
-            </div>
-            <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#E8745F] transition-colors">
-              신혼금융 & 정책대출
-            </h4>
-            <p className="text-[13px] text-[#64748B] mt-1.5 leading-relaxed">
-              디딤돌·버팀목·신생아특례 대출 조건, 부부합산 소득 계산법, 0.1%p 우대금리 영끌 노하우
-            </p>
-          </div>
-
-          <div
+          <button
+            type="button"
             onClick={() => onNavigate("category-신혼가전")}
-            className="p-5 rounded-2xl bg-gradient-to-b from-[#F8FAFC] to-white border border-[#E2E8F0] hover:border-[#1E1B2E] transition-all cursor-pointer group"
+            className="text-left p-5 bg-white border border-[#E2E8F0] hover:border-[#0F766E] rounded-xl transition-colors cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold text-[14px] mb-3">
-              [가전]
-            </div>
-            <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#E8745F] transition-colors">
-              혼수 & 가전 견적
-            </h4>
-            <p className="text-[13px] text-[#64748B] mt-1.5 leading-relaxed">
-              백화점 vs 로드샵 오픈점 체감가 비교, 다품목 패키지 할인 팁, 품목별 실사용 1년 솔직 후기
+            <p className="text-[12px] font-bold text-[#0F766E] mb-1.5">30종 기술 문서</p>
+            <h3 className="text-[16px] font-bold text-[#0F172A] group-hover:text-[#0F766E] mb-1.5">
+              생활가전 관리 매뉴얼
+            </h3>
+            <p className="text-[13px] text-[#475569] leading-relaxed mb-3 break-keep">
+              세탁·건조, 주방가전, 냉난방·공조, 청소·생활 4대 영역별 분해 세척 및 에러 코드 대응 가이드.
             </p>
-          </div>
+            <span className="text-[12.5px] font-semibold text-[#0F766E] inline-flex items-center gap-1">
+              아카이브 보기 <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </button>
 
-          <div
-            onClick={() => onNavigate("category-결혼준비")}
-            className="p-5 rounded-2xl bg-gradient-to-b from-[#F8FAFC] to-white border border-[#E2E8F0] hover:border-[#1E1B2E] transition-all cursor-pointer group"
+          <button
+            type="button"
+            onClick={() => onNavigate("tool-power-cost")}
+            className="text-left p-5 bg-white border border-[#E2E8F0] hover:border-[#0F766E] rounded-xl transition-colors cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-xl bg-[#FAF5FF] text-[#7C3AED] flex items-center justify-center font-bold text-[14px] mb-3">
-              [웨딩]
-            </div>
-            <h4 className="text-[16px] font-bold text-[#111827] group-hover:text-[#E8745F] transition-colors">
-              웨딩 & 청약 로드맵
-            </h4>
-            <p className="text-[13px] text-[#64748B] mt-1.5 leading-relaxed">
-              스드메 추가금 방어법, 웨딩홀 견적 네고 요령, 신혼부부 특별공급 가점 계산 및 전략
+            <p className="text-[12px] font-bold text-[#0F766E] mb-1.5">2026 한전 누진제</p>
+            <h3 className="text-[16px] font-bold text-[#0F172A] group-hover:text-[#0F766E] mb-1.5">
+              월간 전기요금 계산기
+            </h3>
+            <p className="text-[13px] text-[#475569] leading-relaxed mb-3 break-keep">
+              가전별 가동 시간을 입력해 하계·기타 계절 누진 단계와 예상 청구 요금을 산출합니다.
             </p>
-          </div>
-        </div>
+            <span className="text-[12.5px] font-semibold text-[#0F766E] inline-flex items-center gap-1">
+              계산기 열기 <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </button>
 
-        {/* Quick Tools Callout */}
-        <div className="p-5 sm:p-6 bg-[#FAF5FF] border border-[#E9D5FF] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-[#7C3AED]" />
-              <span className="text-[14px] font-bold text-[#5B21B6]">무료 금융 시뮬레이터</span>
-            </div>
-            <p className="text-[13px] text-[#6B21A8]">
-              복잡한 우대금리와 청약 가점을 직접 계산해 보세요. 별도 로그인 없이 100% 무료 제공됩니다.
+          <button
+            type="button"
+            onClick={() => onNavigate("tool-filter-cycle")}
+            className="text-left p-5 bg-white border border-[#E2E8F0] hover:border-[#0F766E] rounded-xl transition-colors cursor-pointer group"
+          >
+            <p className="text-[12px] font-bold text-[#0F766E] mb-1.5">자가 점검표</p>
+            <h3 className="text-[16px] font-bold text-[#0F172A] group-hover:text-[#0F766E] mb-1.5">
+              필터 교체 주기 진단기
+            </h3>
+            <p className="text-[13px] text-[#475569] leading-relaxed mb-3 break-keep">
+              마지막 세척일을 기준으로 10대 가전의 점검 D-Day와 연간 소모품 유지비를 자동 진단합니다.
             </p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <button
-              onClick={() => onNavigate("tools-didimdol")}
-              className="px-3.5 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-[12.5px] font-bold rounded-xl transition-colors cursor-pointer"
-            >
-              디딤돌 계산기
-            </button>
-            <button
-              onClick={() => onNavigate("tools-cheongyak")}
-              className="px-3.5 py-2 bg-white hover:bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] text-[12.5px] font-bold rounded-xl transition-colors cursor-pointer"
-            >
-              청약 가점 계산기
-            </button>
-          </div>
+            <span className="text-[12.5px] font-semibold text-[#0F766E] inline-flex items-center gap-1">
+              진단기 열기 <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </button>
         </div>
-      </div>
+      </section>
 
-      {/* 4. Editorial Transparency & Contact Information */}
-      <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
-        <div className="border-b border-[#F1F5F9] pb-4">
-          <div className="flex items-center gap-2 text-[#475569] text-[13px] font-bold uppercase tracking-wider">
-            <FileText className="w-4 h-4" />
-            <span>블로그 운영 및 편집팀 안내</span>
+      {/* Operating Entity & Disclaimer */}
+      <section className="p-6 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-4">
+        <h2 className="text-[17px] font-bold text-[#0F172A]">운영 주체 및 공식 연락처</h2>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-8 text-[13.5px] text-[#475569]">
+          <div className="flex gap-3">
+            <dt className="font-bold text-[#0F172A] w-24 shrink-0">사이트명</dt>
+            <dd>버진로드 (virginroad.kr)</dd>
           </div>
-          <h2 className="text-[20px] sm:text-[24px] font-extrabold text-[#111827] mt-1">
-            신뢰할 수 있는 공식 정보
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-[13.5px] text-[#475569]">
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">블로그 명칭:</span>
-            <span>버진로드 (Virginroad)</span>
+          <div className="flex gap-3">
+            <dt className="font-bold text-[#0F172A] w-24 shrink-0">운영 주체</dt>
+            <dd>버진로드 생활가전 기술편집팀</dd>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">운영 주체:</span>
-            <span>버진로드 편집팀 (독립 정보 연구 블로그)</span>
+          <div className="flex gap-3">
+            <dt className="font-bold text-[#0F172A] w-24 shrink-0">주요 근거</dt>
+            <dd>한국소비자원 · 한국전기안전공사 · 한국전력공사</dd>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">콘텐츠 분야:</span>
-            <span>2026 신혼부부 주거금융·청약·가전 실전 정보</span>
+          <div className="flex gap-3">
+            <dt className="font-bold text-[#0F172A] w-24 shrink-0">공식 이메일</dt>
+            <dd>
+              <a
+                href="mailto:apark12321@gmail.com"
+                className="text-[#0F766E] font-mono font-semibold hover:underline inline-flex items-center gap-1"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                apark12321@gmail.com
+              </a>
+            </dd>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">데이터 출처:</span>
-            <span>국토교통부, 주택도시기금, 청약홈 공식 고시</span>
-          </div>
-          <div className="flex items-start gap-2 sm:col-span-2 pt-2 border-t border-[#F1F5F9]">
-            <span className="font-bold text-[#1E1B2E] w-28 shrink-0">공식 문의/제휴:</span>
-            <a
-              href="mailto:apark12321@gmail.com"
-              className="text-[#E8745F] font-semibold hover:underline flex items-center gap-1"
-            >
-              <Mail className="w-3.5 h-3.5" />
-              <span>apark12321@gmail.com</span>
-            </a>
-          </div>
-        </div>
-
-        <div className="p-4 bg-[#F8FAFC] rounded-xl text-[12.5px] text-[#64748B] leading-relaxed">
-          * 버진로드의 모든 글은 금융소비자 정보 제공 및 합리적인 선택을 돕기 위한 목적으로 작성되었으며, 특정 금융상품의 가입을 권유하지 않습니다. 정부 정책 및 금융기관의 상품 조건은 변동될 수 있으므로 대출 신청 시 반드시 해당 수탁은행 및 공공기관의 공식 지침을 재확인하시기 바랍니다.
-        </div>
-      </div>
+        </dl>
+        <p className="text-[12.5px] leading-relaxed text-[#64748B] pt-3 border-t border-[#E2E8F0] break-keep">
+          면책 고지: 버진로드의 모든 기술 매뉴얼과 계산 결과는 소비자의 안전한 가전 관리를 돕기 위한 참고 자료입니다. 특정 제조사나 판매처의 후원을 받지 않으며, 내부 기판 분해나 냉매·고전압 수리가 필요한 경우에는 반드시 제조사 공식 서비스센터를 이용하시기 바랍니다.
+        </p>
+      </section>
     </div>
   );
 }

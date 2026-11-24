@@ -20,6 +20,23 @@
         {
           "key": "Content-Type",
           "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/icon.svg",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/svg+xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
         }
       ]
     },
@@ -105,6 +122,14 @@
     {
       "source": "/category/:slug",
       "destination": "/category/:slug/index.html"
+    },
+    {
+      "source": "/tools/power-cost",
+      "destination": "/tools/power-cost/index.html"
+    },
+    {
+      "source": "/tools/filter-cycle",
+      "destination": "/tools/filter-cycle/index.html"
     },
     {
       "source": "/about",

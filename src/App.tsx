@@ -8,61 +8,86 @@ import { AdSenseUnit, ADSENSE_ENABLED } from "./components/AdSenseUnit";
 import { PolicyHub } from "./components/PolicyHub";
 import { AboutPage } from "./components/AboutPage";
 import { ContactPage } from "./components/ContactPage";
+import { AppliancePowerCalculator } from "./components/AppliancePowerCalculator";
+import { FilterCycleTracker } from "./components/FilterCycleTracker";
 import { SearchConsoleModal } from "./components/SearchConsoleModal";
 import { MOCK_POSTS, CATEGORIES } from "./constants";
 import { Post } from "./types";
-import { expandContentIfNeeded } from "./lib/contentExpander";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronsLeft, 
-  ChevronsRight, 
-  Search, 
-  LayoutList, 
-  LayoutGrid, 
-  FolderOpen,
-  ArrowRight
+import {
+  APPLIANCE_GROUPS,
+  ApplianceGroup,
+  getApplianceGroup,
+  isVerifiedApplianceManualId,
+} from "./data/applianceGroups";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Search,
+  LayoutList,
+  LayoutGrid,
+  Zap,
+  Wrench,
+  ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db } from "./lib/firebase";
 import { handleFirestoreError, OperationType } from "./lib/views";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { slugify, parsePostTimestamp, normalizeTitle, matchPostBySlugOrId, toIso8601 } from "./lib/utils";
+import {
+  slugify,
+  parsePostTimestamp,
+  normalizeTitle,
+  matchPostBySlugOrId,
+  toIso8601,
+  formatPostDateTime,
+} from "./lib/utils";
 
-type Page = 
-  | "home" 
-  | "about" 
+type Page =
+  | "home"
+  | "about"
   | "contact"
-  | "privacy" 
-  | "announcement" 
-  | "terms" 
-  | "policy" 
-  | `category-${string}` 
+  | "privacy"
+  | "announcement"
+  | "terms"
+  | "policy"
+  | "tool-power-cost"
+  | "tool-filter-cycle"
+  | "not-found"
+  | `category-${string}`
   | `post-${string}`;
 
 const SITE_URL = "https://virginroad.kr";
 const SITE_NAME = "버진로드";
 const DEFAULT_TITLE = "버진로드 - 신혼가전 및 생활가전 사용 관리 매뉴얼";
-const DEFAULT_DESCRIPTION = "식기세척기, 드럼세탁기, 인덕션 상판, 건조기, 로봇청소기 등 신혼가전·생활가전의 올바른 사용법, 세척 주기, 고장 예방 점검 매뉴얼을 제공합니다.";
+const DEFAULT_DESCRIPTION =
+  "드럼세탁기, 히트펌프 건조기, 냉장고, 식기세척기, 시스템 에어컨, 로봇청소기 등 30종 생활가전의 공식 세척 주기, 고장 예방 매뉴얼과 전기요금·필터 교체 주기 진단 도구를 제공합니다.";
 
 const POSTS_PER_PAGE = 10;
 
 function pageFromUrl(): Page {
   if (typeof window === "undefined") return "home";
-  const path = window.location.pathname;
-  if (path === "/" || path === "") return "home";
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/") return "home";
   if (path === "/about") return "about";
   if (path === "/contact") return "contact";
   if (path === "/privacy") return "privacy";
   if (path === "/announcement") return "announcement";
   if (path === "/terms") return "terms";
   if (path === "/policy") return "policy";
+  if (path === "/tools/power-cost") return "tool-power-cost";
+  if (path === "/tools/filter-cycle") return "tool-filter-cycle";
   const catMatch = path.match(/^\/category\/(.+)$/);
-  if (catMatch) return `category-${decodeURIComponent(catMatch[1])}` as Page;
+  if (catMatch) {
+    const decoded = decodeURIComponent(catMatch[1]);
+    if (decoded === "신혼가전") return `category-${decoded}` as Page;
+    return "not-found";
+  }
   const postMatch = path.match(/^\/post\/(.+)$/);
   if (postMatch) return `post-${decodeURIComponent(postMatch[1])}` as Page;
-  return "home";
+  return "not-found";
 }
 
 function urlFromPage(page: Page, posts: Post[]): string {
@@ -73,6 +98,9 @@ function urlFromPage(page: Page, posts: Post[]): string {
   if (page === "announcement") return "/announcement";
   if (page === "terms") return "/terms";
   if (page === "policy") return "/policy";
+  if (page === "tool-power-cost") return "/tools/power-cost";
+  if (page === "tool-filter-cycle") return "/tools/filter-cycle";
+  if (page === "not-found") return "/404";
   if (page.startsWith("category-")) {
     return `/category/${encodeURIComponent(page.replace("category-", ""))}`;
   }
@@ -121,165 +149,201 @@ function updateStructuredData(page: Page, post: Post | null) {
 
   let breadcrumbEl = document.getElementById(breadcrumbId) as HTMLScriptElement | null;
 
-  if (post) {
-    const slug = slugify(post.title) || post.id;
-    const canonical = `${SITE_URL}/post/${slug}`;
-    const articleData = {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: post.title,
-      description: post.excerpt,
-      image: [post.image],
-      datePublished: toIso8601(post.date),
-      dateModified: toIso8601(post.updated || post.date),
-      author: {
-        "@type": "Person",
-        name: post.author || "버진로드",
-        url: `${SITE_URL}/about`
-      },
-      publisher: {
-        "@type": "Organization",
-        name: SITE_NAME,
-        url: SITE_URL,
-        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
-      },
-      mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
-      articleSection: post.category,
-      inLanguage: "ko-KR"
-    };
-    primaryEl.textContent = JSON.stringify(articleData, null, 2);
-
+  const setBreadcrumb = (items: Array<{ name: string; item: string }>) => {
     if (!breadcrumbEl) {
       breadcrumbEl = document.createElement("script");
       breadcrumbEl.id = breadcrumbId;
       breadcrumbEl.type = "application/ld+json";
       document.head.appendChild(breadcrumbEl);
     }
-    const breadcrumbData = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: post.category, item: `${SITE_URL}/category/${encodeURIComponent(post.category)}` },
-        { "@type": "ListItem", position: 3, name: post.title, item: canonical }
-      ]
-    };
-    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
-  } else if (page === "home") {
-    const websiteData = {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      alternateName: ["Virginroad"],
-      url: `${SITE_URL}/`,
-      description: DEFAULT_DESCRIPTION,
-      publisher: {
-        "@type": "Organization",
-        name: SITE_NAME,
-        url: `${SITE_URL}/`,
-        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
+    breadcrumbEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: items.map((entry, idx) => ({
+          "@type": "ListItem",
+          position: idx + 1,
+          name: entry.name,
+          item: entry.item,
+        })),
       },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate: `${SITE_URL}/?q={search_term_string}`
+      null,
+      2
+    );
+  };
+
+  if (post) {
+    const slug = slugify(post.title) || post.id;
+    const canonical = `${SITE_URL}/post/${slug}`;
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        headline: post.title,
+        description: post.excerpt,
+        datePublished: toIso8601(post.date),
+        dateModified: toIso8601(post.updated || post.date),
+        author: {
+          "@type": "Organization",
+          name: "버진로드 생활가전 기술편집팀",
+          url: `${SITE_URL}/about`,
         },
-        "query-input": "required name=search_term_string"
-      }
-    };
-    primaryEl.textContent = JSON.stringify(websiteData, null, 2);
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` },
+        },
+        mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+        articleSection: getApplianceGroup(post.id, post.title),
+        inLanguage: "ko-KR",
+      },
+      null,
+      2
+    );
+    setBreadcrumb([
+      { name: "홈", item: `${SITE_URL}/` },
+      {
+        name: "가전 관리 매뉴얼",
+        item: `${SITE_URL}/category/${encodeURIComponent("신혼가전")}`,
+      },
+      { name: post.title, item: canonical },
+    ]);
+  } else if (page === "tool-power-cost") {
+    const canonical = `${SITE_URL}/tools/power-cost`;
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "생활가전 월간 전기요금 누진제 계산기",
+        applicationCategory: "UtilitiesApplication",
+        operatingSystem: "All",
+        url: canonical,
+        description:
+          "2026년 한국전력공사 주택용(저압) 누진 단가 기준으로 가정 내 주요 생활가전의 월간 소비전력과 청구 요금을 시뮬레이션합니다.",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "KRW" },
+      },
+      null,
+      2
+    );
+    setBreadcrumb([
+      { name: "홈", item: `${SITE_URL}/` },
+      { name: "월간 전기요금 계산기", item: canonical },
+    ]);
+  } else if (page === "tool-filter-cycle") {
+    const canonical = `${SITE_URL}/tools/filter-cycle`;
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "가전 필터·소모품 교체 주기 진단기",
+        applicationCategory: "UtilitiesApplication",
+        operatingSystem: "All",
+        url: canonical,
+        description:
+          "세탁기, 건조기, 에어컨, 공기청정기, 식기세척기 등 10대 생활가전의 필터 세척·교체 D-Day와 연간 소모품 유지비를 자동 진단합니다.",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "KRW" },
+      },
+      null,
+      2
+    );
+    setBreadcrumb([
+      { name: "홈", item: `${SITE_URL}/` },
+      { name: "필터 교체 주기 진단기", item: canonical },
+    ]);
+  } else if (page === "home") {
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: SITE_NAME,
+        alternateName: ["Virginroad"],
+        url: `${SITE_URL}/`,
+        description: DEFAULT_DESCRIPTION,
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: `${SITE_URL}/`,
+          logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` },
+        },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+      null,
+      2
+    );
     if (breadcrumbEl) breadcrumbEl.remove();
   } else if (page.startsWith("category-")) {
     const category = page.replace("category-", "");
     const canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
-    const collectionData = {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      name: `${category} | 버진로드`,
-      url: canonical,
-      description: `${category}에 관한 실전 팁과 최신 정책 가이드를 모아둔 공간입니다.`
-    };
-    primaryEl.textContent = JSON.stringify(collectionData, null, 2);
-
-    if (!breadcrumbEl) {
-      breadcrumbEl = document.createElement("script");
-      breadcrumbEl.id = breadcrumbId;
-      breadcrumbEl.type = "application/ld+json";
-      document.head.appendChild(breadcrumbEl);
-    }
-    const breadcrumbData = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: category, item: canonical }
-      ]
-    };
-    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "생활가전 관리 매뉴얼 아카이브 | 버진로드",
+        url: canonical,
+        description: DEFAULT_DESCRIPTION,
+      },
+      null,
+      2
+    );
+    setBreadcrumb([
+      { name: "홈", item: `${SITE_URL}/` },
+      { name: "가전 관리 매뉴얼", item: canonical },
+    ]);
   } else if (page === "about") {
-    const aboutData = {
-      "@context": "https://schema.org",
-      "@type": "AboutPage",
-      name: "버진로드 소개 및 편집원칙",
-      url: `${SITE_URL}/about`,
-      description: "버진로드는 신혼·출산·주거·세금 정책부터 가전, 결혼준비까지 직접 분석하여 알기 쉽게 정리하는 신혼 전문 블로그입니다.",
-      mainEntity: {
-        "@type": "Organization",
-        name: SITE_NAME,
-        url: SITE_URL,
-        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` }
-      }
-    };
-    primaryEl.textContent = JSON.stringify(aboutData, null, 2);
-
-    if (!breadcrumbEl) {
-      breadcrumbEl = document.createElement("script");
-      breadcrumbEl.id = breadcrumbId;
-      breadcrumbEl.type = "application/ld+json";
-      document.head.appendChild(breadcrumbEl);
-    }
-    const breadcrumbData = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: "소개", item: `${SITE_URL}/about` }
-      ]
-    };
-    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        name: "사이트 소개 및 편집원칙 | 버진로드",
+        url: `${SITE_URL}/about`,
+        description:
+          "버진로드 생활가전 기술편집팀의 설립 취지, 4대 검증 원칙 및 공식 문의 창구를 안내합니다.",
+        mainEntity: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` },
+        },
+      },
+      null,
+      2
+    );
+    setBreadcrumb([
+      { name: "홈", item: `${SITE_URL}/` },
+      { name: "사이트 소개", item: `${SITE_URL}/about` },
+    ]);
   } else {
     const titleMap: Record<string, string> = {
+      contact: "문의하기 및 오류 정정 접수",
       privacy: "개인정보 처리방침",
       terms: "이용약관 및 면책고지",
-      announcement: "공지사항",
-      policy: "2026 가정경제·생활정책 핵심 정보"
+      announcement: "업데이트 이력 및 공지사항",
+      policy: "가전 안전·효율 기준 및 검증 정책",
     };
     const pageTitle = titleMap[page] || "안내";
     const canonical = `${SITE_URL}/${page}`;
-    const pageData = {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: `${pageTitle} | 버진로드`,
-      url: canonical
-    };
-    primaryEl.textContent = JSON.stringify(pageData, null, 2);
-
-    if (!breadcrumbEl) {
-      breadcrumbEl = document.createElement("script");
-      breadcrumbEl.id = breadcrumbId;
-      breadcrumbEl.type = "application/ld+json";
-      document.head.appendChild(breadcrumbEl);
-    }
-    const breadcrumbData = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "홈", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: pageTitle, item: canonical }
-      ]
-    };
-    breadcrumbEl.textContent = JSON.stringify(breadcrumbData, null, 2);
+    primaryEl.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": page === "contact" ? "ContactPage" : "WebPage",
+        name: `${pageTitle} | 버진로드`,
+        url: canonical,
+      },
+      null,
+      2
+    );
+    setBreadcrumb([
+      { name: "홈", item: `${SITE_URL}/` },
+      { name: pageTitle, item: canonical },
+    ]);
   }
 }
 
@@ -290,27 +354,14 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     return params.get("q") || "";
   });
+  const [activeGroup, setActiveGroup] = useState<ApplianceGroup | "전체">("전체");
   const [feedPage, setFeedPage] = useState<number>(1);
   const [viewMode, setViewMode] = useState<"list" | "card">("list");
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [, setUser] = useState<FirebaseUser | null>(null);
 
-  // Hidden admin shortcut for Google Search Console indexing
   const [isSearchConsoleModalOpen, setIsSearchConsoleModalOpen] = useState(false);
-  const [selectedPostForIndexing, setSelectedPostForIndexing] = useState<{ slug?: string; title?: string }>({});
-
-  // Invisible background Google Search Console auto-engine trigger (Runs 100% silently, no UI)
-  useEffect(() => {
-    try {
-      const pinged = sessionStorage.getItem("gsc_auto_synced");
-      if (!pinged) {
-        sessionStorage.setItem("gsc_auto_synced", "true");
-        fetch("/api/indexing/auto-trigger").catch(() => {});
-      }
-    } catch {
-      // Ignore in restricted environments
-    }
-  }, []);
+  const [selectedPostForIndexing] = useState<{ slug?: string; title?: string }>({});
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -329,7 +380,6 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Toast Notification
   const [toast, setToast] = useState<{
     id: string;
     message: string;
@@ -337,11 +387,7 @@ export default function App() {
   } | null>(null);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
-    setToast({
-      id: Math.random().toString(),
-      message,
-      type
-    });
+    setToast({ id: Math.random().toString(), message, type });
   };
 
   useEffect(() => {
@@ -350,7 +396,6 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // Browser History & Popstate
   useEffect(() => {
     const onPopState = () => {
       setCurrentPage(pageFromUrl());
@@ -363,7 +408,6 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  // Sync Search Query to URL
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -373,7 +417,8 @@ export default function App() {
     if (!searchQuery) {
       params.delete("q");
       const newSearch = params.toString();
-      const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : "") + window.location.hash;
+      const newUrl =
+        window.location.pathname + (newSearch ? `?${newSearch}` : "") + window.location.hash;
       window.history.replaceState({}, "", newUrl);
       return;
     }
@@ -381,15 +426,15 @@ export default function App() {
     const timer = setTimeout(() => {
       params.set("q", searchQuery);
       const newSearch = params.toString();
-      const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : "") + window.location.hash;
-      const wasSearching = !!currentQ;
-      if (wasSearching) {
+      const newUrl =
+        window.location.pathname + (newSearch ? `?${newSearch}` : "") + window.location.hash;
+      if (currentQ) {
         window.history.replaceState({}, "", newUrl);
       } else {
         window.history.pushState({}, "", newUrl);
       }
       setFeedPage(1);
-    }, 400);
+    }, 350);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -399,13 +444,13 @@ export default function App() {
     return () => unsubscribeAuth();
   }, []);
 
-  // Fetch API posts & Firestore
+  // Fetch verified manuals only (strictly excludes any legacy boilerplate Firestore docs)
   useEffect(() => {
-    // 정적 호스팅(Vercel)에는 /api 서버가 없으므로 빌드 시 만들어 둔 /data/posts.json 을 먼저 읽고,
-    // 없으면(AI Studio 개발 서버 등) /api/posts 로 대체한다.
     fetch("/data/posts.json")
       .then((res) => {
-        if (!res.ok || !(res.headers.get("content-type") || "").includes("json")) throw new Error("no static posts");
+        if (!res.ok || !(res.headers.get("content-type") || "").includes("json")) {
+          throw new Error("no static posts");
+        }
         return res.json();
       })
       .catch(() =>
@@ -415,23 +460,23 @@ export default function App() {
         })
       )
       .then((data) => {
-        if (data && Array.isArray(data)) {
-          setRealPosts(data);
+        if (Array.isArray(data)) {
+          setRealPosts(data.filter((p: Post) => isVerifiedApplianceManualId(p?.id)));
         }
       })
-      .catch((err) => console.error("Failed to fetch merged API posts:", err));
+      .catch(() => {});
 
     const q = query(collection(db, "posts"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const posts = snapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id
-        })) as Post[];
+        const verifiedDocs = snapshot.docs
+          .map((doc) => ({ ...doc.data(), id: doc.id }) as Post)
+          .filter((p) => isVerifiedApplianceManualId(p.id));
+        if (verifiedDocs.length === 0) return;
         setRealPosts((prev) => {
           const merged = [...prev];
-          posts.forEach((p) => {
+          verifiedDocs.forEach((p) => {
             if (!merged.some((m) => m.id === p.id)) {
               merged.push(p);
             }
@@ -450,170 +495,151 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Merge and Sanitize Posts
+  // Verified 30 Appliance Manuals Only
   const allPosts = useMemo(() => {
-    const seenTitles = new Set<string>();
     const seenIds = new Set<string>();
     const seenSlugs = new Set<string>();
+    const seenTitles = new Set<string>();
     const uniquePosts: Post[] = [];
 
-    const isRelevant = (p: { title?: string; id?: string }) => {
-      if (!p || !p.title) return false;
-      const title = (p.title || "").toLowerCase();
-      const id = (p.id || "").toLowerCase();
-      const blocked = [
-        "유튜브 쇼츠",
-        "시청 지속시간",
-        "쇼츠 알고리즘",
-        "유튜브 조회수",
-        "indexing api",
-        "[c안]",
-        "유튜브 수익화",
-        "인스타 릴스 알고리즘"
-      ];
-      return !blocked.some((b) => title.includes(b) || id.includes(b));
+    const appendVerified = (p: Post) => {
+      if (!p || !isVerifiedApplianceManualId(p.id) || !p.title) return;
+      const norm = normalizeTitle(p.title);
+      const slug = slugify(p.title);
+      if (seenIds.has(p.id) || seenTitles.has(norm) || seenSlugs.has(slug)) return;
+      seenIds.add(p.id);
+      seenTitles.add(norm);
+      seenSlugs.add(slug);
+      uniquePosts.push({
+        ...p,
+        author: "버진로드",
+        category: "신혼가전",
+      });
     };
 
-    realPosts.forEach((real) => {
-      if (real && real.id && real.title && isRelevant(real)) {
-        const norm = normalizeTitle(real.title);
-        const slug = slugify(real.title);
-        if (!seenTitles.has(norm) && !seenIds.has(real.id) && !seenSlugs.has(slug)) {
-          seenTitles.add(norm);
-          seenIds.add(real.id);
-          seenSlugs.add(slug);
-          uniquePosts.push(real as Post);
-        }
-      }
-    });
+    // Prioritize bundled verified MOCK_POSTS first so regenerated HTML always takes precedence
+    MOCK_POSTS.forEach(appendVerified);
+    realPosts.forEach(appendVerified);
 
-    MOCK_POSTS.forEach((mockPost) => {
-      if (!isRelevant(mockPost)) return;
-      const norm = normalizeTitle(mockPost.title);
-      const slug = slugify(mockPost.title);
-      if (!seenTitles.has(norm) && !seenIds.has(mockPost.id) && !seenSlugs.has(slug)) {
-        seenTitles.add(norm);
-        seenIds.add(mockPost.id);
-        seenSlugs.add(slug);
-        uniquePosts.push(mockPost);
-      }
-    });
-
-    const sanitized = uniquePosts.map((p) => {
-      const author = "버진로드";
-      const title = (p.title || "").replace(/홈코노미뉴스/g, "버진로드");
-      const excerpt = (p.excerpt || "").replace(/홈코노미뉴스/g, "버진로드");
-      let content = (p.content || "")
-        .replace(/홈코노미뉴스/g, "버진로드")
-        .replace(/버진로드 편집부의 정밀 취재에 따르면/g, "공식 고시 자료를 확인한 결과에 따르면")
-        .replace(/버진로드 편집부에서/g, "꼼꼼하게 정리한")
-        .replace(/버진로드 편집부/g, "버진로드");
-
-      if (!MOCK_POSTS.some((mp) => mp.id === p.id)) {
-        content = expandContentIfNeeded(title, p.category, p.hashtags || [], content, p.id, p.image);
-      }
-      return { ...p, author, title, excerpt, content };
-    });
-
-    return sanitized.sort((a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id));
+    return uniquePosts.sort(
+      (a, b) => parsePostTimestamp(b.date, b.id) - parsePostTimestamp(a.date, a.id)
+    );
   }, [realPosts]);
 
-  // Filter Posts with Rule 3: Scheduled Publishing Logic
-  const filteredPosts = useMemo(() => {
+  // Live published manuals
+  const livePosts = useMemo(() => {
     const now = Date.now();
-    // Rule 3: Scheduled publishing filter (past/current posts visible, future posts reveal incrementally daily)
-    const baselineLiveIds = new Set([
-      "manual-01-drum-washer", "manual-02-heatpump-dryer", "manual-03-four-door-refrigerator",
-      "manual-04-dishwasher-maintenance", "manual-05-system-aircon-filter", "manual-06-robot-vacuum-lidar",
-      "manual-07-induction-cooktop", "manual-08-air-purifier-hepa", "manual-09-direct-water-purifier",
-      "manual-10-clothing-care-styler"
-    ]);
+    return allPosts.filter((p) => parsePostTimestamp(p.date, p.id) <= now);
+  }, [allPosts]);
 
-    let posts = allPosts.filter((p) => {
-      if (baselineLiveIds.has(p.id)) return true;
-      const timestamp = parsePostTimestamp(p.date, p.id);
-      return timestamp <= now;
-    });
+  // Filtered list for feed view
+  const filteredPosts = useMemo(() => {
+    let posts = livePosts;
 
-    if (currentPage.startsWith("category-")) {
-      const category = currentPage.replace("category-", "");
-      posts = posts.filter((p) => p.category === category);
+    if (activeGroup !== "전체") {
+      posts = posts.filter((p) => getApplianceGroup(p.id, p.title) === activeGroup);
     }
-    if (searchQuery) {
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
       posts = posts.filter(
         (p) =>
-          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+          p.title.toLowerCase().includes(q) ||
+          p.excerpt.toLowerCase().includes(q) ||
+          (p.hashtags || []).some((t) => t.toLowerCase().includes(q))
       );
     }
     return posts;
-  }, [currentPage, searchQuery, allPosts]);
+  }, [livePosts, activeGroup, searchQuery]);
 
-  // Pagination Calculation
+  const groupCounts = useMemo(() => {
+    const counts: Record<string, number> = { 전체: livePosts.length };
+    for (const g of APPLIANCE_GROUPS) {
+      counts[g] = livePosts.filter((p) => getApplianceGroup(p.id, p.title) === g).length;
+    }
+    return counts;
+  }, [livePosts]);
+
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
   const paginatedPosts = useMemo(() => {
     const start = (feedPage - 1) * POSTS_PER_PAGE;
     return filteredPosts.slice(start, start + POSTS_PER_PAGE);
   }, [filteredPosts, feedPage]);
 
-  // Single Post Data
   const currentPost = useMemo(() => {
     if (!currentPage.startsWith("post-")) return null;
     const key = currentPage.replace("post-", "");
     return allPosts.find((p) => matchPostBySlugOrId(key, p)) || null;
   }, [currentPage, allPosts]);
 
+  const isPostNotFound = currentPage.startsWith("post-") && !currentPost;
+
   const { prevPost, nextPost } = useMemo(() => {
     if (!currentPost) return { prevPost: null, nextPost: null };
     const currentIndex = allPosts.findIndex((p) => p.id === currentPost.id);
-    const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
-    const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
-    return { prevPost: prev, nextPost: next };
+    return {
+      prevPost: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
+      nextPost: currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
+    };
   }, [currentPost, allPosts]);
 
   const relatedPosts = useMemo(() => {
     if (!currentPost) return [];
-    return allPosts
-      .filter((p) => p.category === currentPost.category && p.id !== currentPost.id)
-      .slice(0, 3);
+    return allPosts.filter((p) => p.id !== currentPost.id).slice(0, 5);
   }, [currentPost, allPosts]);
 
-  // Dynamic SEO & Title
+  // Dynamic Document Title, Meta & Structured Data
   useEffect(() => {
     let title = DEFAULT_TITLE;
     let description = DEFAULT_DESCRIPTION;
-    let canonical = SITE_URL + "/";
-    let ogImage = `${SITE_URL}/og-image.png`;
+    let canonical = `${SITE_URL}/`;
 
     if (currentPost) {
       const slug = slugify(currentPost.title) || currentPost.id;
       title = `${currentPost.title} | 버진로드`;
       description = currentPost.excerpt;
       canonical = `${SITE_URL}/post/${slug}`;
-      ogImage = currentPost.image || ogImage;
+    } else if (isPostNotFound || currentPage === "not-found") {
+      title = "페이지를 찾을 수 없습니다 | 버진로드";
+      description = "요청하신 페이지를 찾을 수 없습니다. 버진로드 생활가전 관리 매뉴얼 목록으로 이동해 주세요.";
+      canonical = `${SITE_URL}/404`;
+    } else if (currentPage === "tool-power-cost") {
+      title = "생활가전 월간 전기요금 누진제 계산기 | 버진로드";
+      description =
+        "2026년 한국전력공사 주택용(저압) 누진제 단가표 기준으로 12종 생활가전의 월간 소비전력(kWh)과 청구 전기요금을 계산합니다.";
+      canonical = `${SITE_URL}/tools/power-cost`;
+    } else if (currentPage === "tool-filter-cycle") {
+      title = "가전 필터·소모품 교체 주기 진단기 | 버진로드";
+      description =
+        "드럼세탁기, 건조기, 시스템 에어컨, 공기청정기, 식기세척기 등 10대 가전의 필터 세척·교체 D-Day와 연간 소모품 유지비를 진단합니다.";
+      canonical = `${SITE_URL}/tools/filter-cycle`;
     } else if (currentPage.startsWith("category-")) {
-      const category = currentPage.replace("category-", "");
-      title = `${category} 매뉴얼 | 버진로드`;
-      description = `${category}에 관한 올바른 사용법, 필터 세척 주기, 고장 예방 가이드를 모아둔 공간입니다.`;
-      canonical = `${SITE_URL}/category/${encodeURIComponent(category)}`;
+      title = "가전 관리 매뉴얼 전체 목록 | 버진로드";
+      description = DEFAULT_DESCRIPTION;
+      canonical = `${SITE_URL}/category/${encodeURIComponent("신혼가전")}`;
     } else if (currentPage === "about") {
-      title = "소개 및 편집원칙 | 버진로드 - 가전 관리 매뉴얼";
+      title = "사이트 소개 및 편집원칙 | 버진로드";
+      description =
+        "버진로드 생활가전 기술편집팀의 설립 취지, 4대 검증 원칙 및 공식 문의 창구를 안내합니다.";
       canonical = `${SITE_URL}/about`;
     } else if (currentPage === "contact") {
       title = "문의하기 및 오류 정정 접수 | 버진로드";
-      description = "버진로드 편집국 공식 연락처(apark12321@gmail.com) 및 콘텐츠 정정보도·기술 문의 접수 안내입니다.";
+      description =
+        "버진로드 공식 이메일(apark12321@gmail.com) 및 매뉴얼 오류 정정·정책 문의 안내입니다.";
       canonical = `${SITE_URL}/contact`;
     } else if (currentPage === "privacy") {
       title = "개인정보 처리방침 | 버진로드";
       canonical = `${SITE_URL}/privacy`;
     } else if (currentPage === "terms") {
-      title = "이용약관 | 버진로드";
+      title = "이용약관 및 면책고지 | 버진로드";
       canonical = `${SITE_URL}/terms`;
     } else if (currentPage === "announcement") {
-      title = "공지사항 | 버진로드";
+      title = "업데이트 이력 및 공지사항 | 버진로드";
       canonical = `${SITE_URL}/announcement`;
     } else if (currentPage === "policy") {
-      title = "2026 가정경제·생활정책 핵심 정보 | 버진로드";
+      title = "가전 안전·효율 기준 및 검증 정책 | 버진로드";
+      description =
+        "한국소비자원, 한국전기안전공사, 한국전력공사 공공 기준과 버진로드 4단계 기술 문서 팩트체크 절차를 안내합니다.";
       canonical = `${SITE_URL}/policy`;
     }
 
@@ -622,10 +648,9 @@ export default function App() {
     setCanonical(canonical);
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
-    setMeta("og:image", ogImage, "property");
     setMeta("og:url", canonical, "property");
     updateStructuredData(currentPage, currentPost);
-  }, [currentPage, currentPost]);
+  }, [currentPage, currentPost, isPostNotFound]);
 
   const handleNavigate = (page: string) => {
     const nextPage = page as Page;
@@ -644,225 +669,441 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activeCategory = currentPage.startsWith("category-")
-    ? currentPage.replace("category-", "")
-    : undefined;
+  const isFeedView =
+    !currentPost &&
+    !isPostNotFound &&
+    (currentPage === "home" || currentPage.startsWith("category-"));
+
+  const isFullWidthView =
+    currentPage === "tool-power-cost" ||
+    currentPage === "tool-filter-cycle" ||
+    currentPage === "about" ||
+    currentPage === "policy" ||
+    currentPage === "contact";
+
+  const leadManual = livePosts[0] || null;
 
   return (
-    <div className="min-h-screen bg-[#fdfdfd] text-[#1f2937] font-sans antialiased selection:bg-rose-500 selection:text-white flex flex-col justify-between">
-      {/* 1. Header Navigation */}
+    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A] font-sans antialiased selection:bg-[#0F766E] selection:text-white flex flex-col justify-between">
       <Navbar
         onSearch={(q) => {
           setSearchQuery(q);
           setFeedPage(1);
+          if (q && !isFeedView) {
+            handleNavigate("home");
+          }
         }}
         onNavigate={handleNavigate}
         searchQuery={searchQuery}
         currentPage={currentPage}
       />
 
-      {/* 2. Main Content Container (Classic 2-Column Tistory Layout) */}
       <main className="max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-          {/* ========================================================================= */}
-          {/* LEFT / CENTER COLUMN (Col-span-8): Main Blog Feed or Reader or Page       */}
-          {/* ========================================================================= */}
-          <section className="lg:col-span-8 w-full min-w-0">
-            {/* VIEW 1: BLOG POST READER */}
-            {currentPost && (
-              <GuideReader
-                post={currentPost}
-                allPosts={allPosts}
-                categories={CATEGORIES}
-                prevPost={prevPost}
-                nextPost={nextPost}
-                relatedPosts={relatedPosts}
-                onNavigate={handleNavigate}
-                showToast={showToast}
-              />
+        {isFullWidthView ? (
+          <div>
+            {currentPage === "tool-power-cost" && (
+              <AppliancePowerCalculator onNavigate={handleNavigate} />
             )}
-
-            {/* VIEW 2: ABOUT PAGE */}
-            {currentPage === "about" && (
-              <AboutPage onNavigate={handleNavigate} />
+            {currentPage === "tool-filter-cycle" && (
+              <FilterCycleTracker onNavigate={handleNavigate} />
             )}
-
-            {/* VIEW 2-B: CONTACT PAGE (MANDATORY TRUST/COMMUNICATION ROUTE) */}
-            {currentPage === "contact" && (
-              <ContactPage onNavigate={handleNavigate} />
-            )}
-
-            {/* VIEW 3: POLICY HUB */}
+            {currentPage === "about" && <AboutPage onNavigate={handleNavigate} />}
             {currentPage === "policy" && (
               <PolicyHub compact={false} onNavigate={handleNavigate} />
             )}
+            {currentPage === "contact" && <ContactPage onNavigate={handleNavigate} />}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            {/* LEFT / MAIN COLUMN (Col-span-8) */}
+            <section className="lg:col-span-8 w-full min-w-0">
+              {/* VIEW 1: MANUAL DETAIL READER */}
+              {currentPost && (
+                <GuideReader
+                  post={currentPost}
+                  allPosts={allPosts}
+                  categories={CATEGORIES}
+                  prevPost={prevPost}
+                  nextPost={nextPost}
+                  relatedPosts={relatedPosts}
+                  onNavigate={handleNavigate}
+                  showToast={showToast}
+                />
+              )}
 
-            {/* VIEW 4: PRIVACY POLICY (GOOGLE ADSENSE & DART COOKIE COMPLIANCE) */}
-            {currentPage === "privacy" && (
-              <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left article-body">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-                  개인정보 처리방침 (Privacy Policy)
-                </h1>
-                <p className="text-[14.5px] leading-relaxed text-gray-700 mb-6">
-                  버진로드(Virginroad, 이하 &lsquo;본 사이트&rsquo;)는 이용자의 개인정보를 소중하게 보호하며, 관련 법령 및 구글 애드센스(Google AdSense) 운영 정책을 철저히 준수합니다. 본 방침은 이용자가 사이트를 이용할 때 발생하는 정보 처리 방식과 이용자의 권리를 명확히 설명합니다.
-                </p>
-
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">1. 개인정보 수집 항목 및 목적</h2>
-                <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
-                  본 사이트는 별도의 회원가입이나 로그인 절차 없이 모든 가전 관리 매뉴얼과 기술 가이드를 100% 무료로 자유롭게 열람하실 수 있으며, 이용자의 성명, 주민등록번호, 연락처 등 고유식별정보를 직접 수집하거나 데이터베이스에 저장하지 않습니다.
-                </p>
-
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 구글 애드센스 및 제3자 광고 쿠키(Cookie)·DART 쿠키 고지</h2>
-                <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
-                  본 사이트는 서비스 유지 및 품질 개선을 위해 Google을 비롯한 제3자 광고 공급업체를 통해 광고를 송출합니다.
-                </p>
-                <ul className="list-disc list-inside text-[13.5px] text-gray-600 space-y-2 pl-2 mb-4">
-                  <li><strong>쿠키(Cookie) 사용 목적:</strong> Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자가 본 웹사이트 또는 다른 인터넷 사이트를 과거에 방문한 기록을 바탕으로 관련성 높은 맞춤형 광고를 게재합니다.</li>
-                  <li><strong>Google DART 쿠키:</strong> Google은 DART 쿠키를 사용하여 인터넷상의 방문 기록을 분석하고 최적화된 광고를 제공합니다.</li>
-                  <li><strong>맞춤 광고 및 DART 쿠키 수집 거부(Opt-Out):</strong> 사용자는 언제든지 <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#0f766e] font-semibold underline">Google 광고 설정</a> 또는 <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-[#0f766e] font-semibold underline">Google 개인정보 보호 및 약관</a> 페이지를 방문하여 맞춤설정 광고 및 DART 쿠키 사용을 중지할 수 있습니다.</li>
-                  <li><strong>제3자 공급업체 쿠키 차단:</strong> 사용자는 <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener noreferrer" className="text-[#0f766e] font-semibold underline">Network Advertising Initiative (aboutads.info)</a> 웹사이트를 방문하여 제3자 광고 업체의 쿠키 사용을 일괄 거부할 수 있습니다.</li>
-                </ul>
-
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">3. 웹 브라우저를 통한 쿠키 차단 방법</h2>
-                <p className="text-[14px] text-gray-700 leading-relaxed mb-3">
-                  이용자는 사용 중인 웹 브라우저의 옵션 설정을 변경하여 모든 쿠키의 저장을 허용하거나, 쿠키가 저장될 때마다 확인을 거치거나, 모든 쿠키의 저장을 거부할 수 있습니다. 단, 쿠키 설치를 거부할 경우 일부 웹 서비스 이용에 기술적 제한이 발생할 수 있습니다.
-                </p>
-                <div className="p-3.5 bg-gray-50 border border-gray-200 rounded text-[13px] text-gray-600 space-y-1 mb-4">
-                  <p>&bull; <strong>Chrome:</strong> 설정 &gt; 개인정보 보호 및 보안 &gt; 서드 파티 쿠키 &gt; 타사 쿠키 차단</p>
-                  <p>&bull; <strong>Safari:</strong> 환경설정 &gt; 개인정보 보호 &gt; 모든 쿠키 차단</p>
-                  <p>&bull; <strong>Edge:</strong> 설정 &gt; 쿠키 및 사이트 권한 &gt; 쿠키 및 사이트 데이터 관리 및 삭제</p>
-                </div>
-
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">4. 개인정보 보호책임자 및 의견 수렴 창구</h2>
-                <div className="p-4 bg-[#f8fafc] border border-[#cbd5e1] rounded-md text-[13px] text-gray-700 space-y-1">
-                  <p><strong>운영 주체:</strong> 버진로드(Virginroad) 기술편집팀</p>
-                  <p><strong>개인정보 보호 담당자:</strong> 박성진 (편집국 총괄)</p>
-                  <p><strong>공식 이메일:</strong> <a href="mailto:apark12321@gmail.com" className="text-[#0f766e] font-medium underline">apark12321@gmail.com</a></p>
-                  <p><strong>공식 문의 페이지:</strong> <button type="button" onClick={() => handleNavigate("contact")} className="text-[#0f766e] underline cursor-pointer">/contact 문의하기</button></p>
-                  <p><strong>시행일자:</strong> 2026년 1월 1일 (최신 개정: 2026년 10월 22일)</p>
-                </div>
-              </div>
-            )}
-
-            {/* VIEW 5: TERMS OF SERVICE */}
-            {currentPage === "terms" && (
-              <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left article-body">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-                  이용약관 및 면책고지 (Terms of Service)
-                </h1>
-                <p className="text-[14.5px] leading-relaxed text-gray-700 mb-6">
-                  본 약관은 버진로드(Virginroad) 블로그가 제공하는 정보와 가이드의 이용 조건 및 면책 사항을 규정합니다.
-                </p>
-
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">1. 저작권 및 팩트체크 기준</h2>
-                <p className="text-[14px] text-gray-700 leading-relaxed">
-                  본 블로그에 작성된 모든 칼럼, 조견표, 데이터 분석 가이드는 공공기관(국토교통부, 주택도시기금, 한국주택금융공사, 청약홈)의 고시 자료를 철저히 검증하여 작성된 버진로드의 저작물입니다. 무단 전재 및 AI 불법 스크래핑을 엄격히 금합니다.
-                </p>
-
-                <h2 className="text-[19px] font-bold text-gray-900 mt-6 mb-3">2. 금융·정책 정보에 대한 면책 고지</h2>
-                <p className="text-[14px] text-gray-700 leading-relaxed">
-                  본 블로그의 대출 금리, 한도 요건, 청약 자격 정보는 참고용으로 제공되며, 정부 정책 개정 및 수탁 은행 심사 지침에 따라 차이가 발생할 수 있습니다. 대출 실행 및 청약 신청 전 반드시 관계 기관 및 취급 은행을 통해 최종 확인하시기 바랍니다.
-                </p>
-              </div>
-            )}
-
-            {/* VIEW 6: ANNOUNCEMENT */}
-            {currentPage === "announcement" && (
-              <div className="bg-white border border-[#e5e7eb] rounded-lg p-6 sm:p-10 text-left">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-                  공지사항
-                </h1>
-                <div className="space-y-4">
-                  <div className="p-5 border border-gray-200 rounded-lg hover:border-rose-300 transition-colors">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-xs bg-rose-50 text-rose-600 font-bold px-2 py-0.5 rounded">
-                        공지
-                      </span>
-                      <span className="text-xs text-gray-400">2026.09.09</span>
-                    </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-2">
-                      2026년 주거금융·디딤돌 금리 개편안 전면 반영 안내
-                    </h2>
-                    <p className="text-[13.5px] text-gray-600 leading-relaxed">
-                      국토교통부 및 주택도시기금의 최신 신혼부부·신생아 특례 정책 개정 사항이 본 블로그의 86편 전 포스팅에 완벽히 반영되었습니다. 신혼부부 여러분의 많은 성원 바랍니다.
-                    </p>
+              {/* VIEW 2: 404 NOT FOUND */}
+              {(currentPage === "not-found" || isPostNotFound) && (
+                <div className="bg-white border border-[#E2E8F0] rounded-xl p-8 sm:p-12 text-center space-y-4">
+                  <p className="text-[12.5px] font-bold text-[#0F766E] uppercase tracking-wider">
+                    404 Not Found
+                  </p>
+                  <h1 className="text-[24px] font-extrabold text-[#0F172A]">
+                    요청하신 페이지를 찾을 수 없습니다
+                  </h1>
+                  <p className="text-[14.5px] text-[#475569] max-w-md mx-auto leading-relaxed break-keep">
+                    주소가 변경되었거나 삭제된 문서입니다. 버진로드 생활가전 관리 매뉴얼 아카이브와 무료 진단 도구에서 원하시는 정보를 찾아보세요.
+                  </p>
+                  <div className="pt-2 flex flex-wrap justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate("home")}
+                      className="px-4 py-2.5 bg-[#0F766E] hover:bg-[#115E59] text-white text-[13.5px] font-bold rounded-lg transition-colors cursor-pointer"
+                    >
+                      홈으로 이동
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate("tool-power-cost")}
+                      className="px-4 py-2.5 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#0F172A] border border-[#CBD5E1] text-[13.5px] font-semibold rounded-lg transition-colors cursor-pointer"
+                    >
+                      전기요금 계산기
+                    </button>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* VIEW 7: HOME / CATEGORY / SEARCH (MAIN BLOG FEED) */}
-            {!currentPost &&
-              currentPage !== "about" &&
-              currentPage !== "privacy" &&
-              currentPage !== "terms" &&
-              currentPage !== "announcement" &&
-              currentPage !== "policy" && (
-                <div className="space-y-6">
-                  {/* Category / Search Header Banner */}
-                  <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FolderOpen className="w-3.5 h-3.5 text-[#0f766e]" />
-                        <span className="text-[11.5px] font-bold text-[#0f766e] uppercase tracking-wider">
-                          {activeCategory ? `분야: ${activeCategory}` : searchQuery ? "검색 결과" : "전체 가이드 목록"}
-                        </span>
-                      </div>
-                      <h2 className="text-[18px] sm:text-[20px] font-bold text-[#0f172a]">
-                        {activeCategory ? (
-                          <span>{activeCategory}</span>
-                        ) : searchQuery ? (
-                          <span>&lsquo;{searchQuery}&rsquo; 검색 ({filteredPosts.length}건)</span>
-                        ) : (
-                          <span>신혼부부 주거·금융·가전 실무 가이드 &amp; Q&amp;A</span>
-                        )}
+              {/* VIEW 3: PRIVACY POLICY */}
+              {currentPage === "privacy" && (
+                <article className="bg-white border border-[#E2E8F0] rounded-xl p-6 sm:p-10 text-left space-y-5">
+                  <header className="pb-5 border-b border-[#E2E8F0]">
+                    <p className="text-[12px] font-bold uppercase tracking-wider text-[#0F766E] mb-1.5">
+                      Privacy Policy
+                    </p>
+                    <h1 className="text-[24px] sm:text-[28px] font-extrabold text-[#0F172A]">
+                      개인정보 처리방침
+                    </h1>
+                  </header>
+
+                  <p className="text-[14.5px] leading-[1.8] text-[#334155]">
+                    버진로드(virginroad.kr, 이하 &lsquo;본 사이트&rsquo;)는 이용자의 개인정보를 중요하게 보호하며, 개인정보 보호법 및 Google AdSense 프로그램 정책을 준수합니다.
+                  </p>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      1. 개인정보 수집 항목 및 브라우저 로컬 저장
+                    </h2>
+                    <p className="text-[14px] leading-[1.8] text-[#475569]">
+                      본 사이트는 회원가입이나 로그인 없이 모든 생활가전 관리 매뉴얼과 진단 도구를 무료로 제공합니다. 이용자의 성명, 전화번호, 주민등록번호 등 개인 식별 정보를 별도 서버에 수집·저장하지 않습니다. 단, &lsquo;필터 교체 주기 진단기&rsquo;에서 이용자가 입력한 마지막 세척일은 편의를 위해 이용자 본인의 웹 브라우저(localStorage)에만 저장되며 외부로 전송되지 않습니다.
+                    </p>
+                  </section>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      2. Google AdSense 및 제3자 광고 쿠키 고지
+                    </h2>
+                    <ul className="list-disc pl-5 text-[14px] text-[#475569] space-y-2 leading-relaxed">
+                      <li>
+                        Google을 포함한 제3자 광고 공급업체는 쿠키를 사용하여 이용자의 본 사이트 및 타 웹사이트 과거 방문 기록에 기반한 광고를 게재할 수 있습니다.
+                      </li>
+                      <li>
+                        Google은 광고 쿠키(DART 쿠키 포함)를 통해 이용자에게 적합한 맞춤형 광고를 제공합니다.
+                      </li>
+                      <li>
+                        이용자는 언제든지{" "}
+                        <a
+                          href="https://www.google.com/settings/ads"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#0F766E] font-semibold underline"
+                        >
+                          Google 광고 설정
+                        </a>{" "}
+                        또는{" "}
+                        <a
+                          href="https://www.aboutads.info/choices"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#0F766E] font-semibold underline"
+                        >
+                          aboutads.info
+                        </a>
+                        에서 맞춤 광고 쿠키 사용을 거부(Opt-Out)할 수 있습니다.
+                      </li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      3. 브라우저 쿠키 차단 안내
+                    </h2>
+                    <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[13.5px] text-[#475569] space-y-1">
+                      <p>· Chrome: 설정 &gt; 개인정보 보호 및 보안 &gt; 서드 파티 쿠키</p>
+                      <p>· Safari: 설정 &gt; 개인정보 보호 &gt; 모든 쿠키 차단</p>
+                      <p>· Edge: 설정 &gt; 쿠키 및 사이트 권한 &gt; 쿠키 관리 및 삭제</p>
+                    </div>
+                  </section>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      4. 개인정보 보호 담당자 및 문의처
+                    </h2>
+                    <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[13.5px] text-[#334155] space-y-1">
+                      <p>
+                        <strong>운영 주체:</strong> 버진로드 생활가전 기술편집팀
+                      </p>
+                      <p>
+                        <strong>공식 이메일:</strong>{" "}
+                        <a
+                          href="mailto:apark12321@gmail.com"
+                          className="text-[#0F766E] font-mono underline"
+                        >
+                          apark12321@gmail.com
+                        </a>
+                      </p>
+                      <p>
+                        <strong>시행 및 최종 개정일:</strong> 2026년 11월 22일
+                      </p>
+                    </div>
+                  </section>
+                </article>
+              )}
+
+              {/* VIEW 4: TERMS OF SERVICE */}
+              {currentPage === "terms" && (
+                <article className="bg-white border border-[#E2E8F0] rounded-xl p-6 sm:p-10 text-left space-y-5">
+                  <header className="pb-5 border-b border-[#E2E8F0]">
+                    <p className="text-[12px] font-bold uppercase tracking-wider text-[#0F766E] mb-1.5">
+                      Terms of Service
+                    </p>
+                    <h1 className="text-[24px] sm:text-[28px] font-extrabold text-[#0F172A]">
+                      이용약관 및 기술 면책고지
+                    </h1>
+                  </header>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      1. 콘텐츠 저작권 및 이용 범위
+                    </h2>
+                    <p className="text-[14px] leading-[1.8] text-[#475569]">
+                      버진로드(virginroad.kr)에 게시된 30종의 생활가전 관리 매뉴얼, 비교 표, 전기요금 계산기 및 필터 교체 주기 진단 도구는 버진로드 기술편집팀이 작성·제작한 저작물입니다. 개인적인 가정 내 가전 유지관리 목적의 열람과 인쇄는 자유롭게 허용되나, 출처 표기 없는 무단 복제 및 상업적 재배포를 금지합니다.
+                    </p>
+                  </section>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      2. 가전 분해·세척 및 전기요금 계산에 관한 면책 고지
+                    </h2>
+                    <p className="text-[14px] leading-[1.8] text-[#475569]">
+                      본 사이트의 매뉴얼은 제조사 공식 사용설명서와 한국소비자원·한국전기안전공사 안전 지침을 참고해 작성된 일반 기술 안내입니다. 동일한 제품군이라도 제조 연식과 모델에 따라 분해 구조 및 권장 세제가 다를 수 있으므로, 모든 점검 작업 전 전원 플러그를 분리하고 해당 제품의 공식 설명서를 우선 확인해야 합니다. 고전압 기판·냉매 배관 수리는 반드시 공식 서비스센터에 의뢰하시기 바랍니다.
+                    </p>
+                  </section>
+
+                  <section className="space-y-2">
+                    <h2 className="text-[18px] font-bold text-[#0F172A]">
+                      3. 오류 정정 요청
+                    </h2>
+                    <p className="text-[14px] leading-[1.8] text-[#475569]">
+                      매뉴얼 본문이나 계산식에서 오류가 발견되면{" "}
+                      <button
+                        type="button"
+                        onClick={() => handleNavigate("contact")}
+                        className="text-[#0F766E] font-semibold underline cursor-pointer"
+                      >
+                        문의하기 페이지
+                      </button>{" "}
+                      또는{" "}
+                      <a
+                        href="mailto:apark12321@gmail.com"
+                        className="text-[#0F766E] font-mono underline"
+                      >
+                        apark12321@gmail.com
+                      </a>
+                      으로 제보해 주시기 바랍니다.
+                    </p>
+                  </section>
+                </article>
+              )}
+
+              {/* VIEW 5: ANNOUNCEMENT */}
+              {currentPage === "announcement" && (
+                <article className="bg-white border border-[#E2E8F0] rounded-xl p-6 sm:p-10 text-left space-y-6">
+                  <header className="pb-5 border-b border-[#E2E8F0]">
+                    <p className="text-[12px] font-bold uppercase tracking-wider text-[#0F766E] mb-1.5">
+                      Editorial Changelog
+                    </p>
+                    <h1 className="text-[24px] sm:text-[28px] font-extrabold text-[#0F172A]">
+                      업데이트 이력 및 공지사항
+                    </h1>
+                  </header>
+
+                  <div className="divide-y divide-[#E2E8F0]">
+                    <div className="py-5 first:pt-0 space-y-1.5">
+                      <p className="text-[12.5px] font-semibold text-[#0F766E] tabular-nums">
+                        2026.11.22 · 기능 및 아카이브 개편
+                      </p>
+                      <h2 className="text-[17px] font-bold text-[#0F172A]">
+                        생활가전 2대 진단 도구 출시 및 30종 공식 기술 매뉴얼 아카이브 정비
                       </h2>
-                      <p className="text-[12.5px] text-[#64748b] mt-0.5">
-                        총 <strong className="text-[#0f766e]">{filteredPosts.length}</strong>개의 실전 가이드가 등록되어 있습니다.
+                      <p className="text-[14px] text-[#475569] leading-relaxed break-keep">
+                        2026년 한국전력공사 주택용(저압) 누진제 기준을 반영한 &lsquo;생활가전 월간 전기요금 계산기&rsquo;와 10대 가전의 세척·교체 D-Day를 추적하는 &lsquo;필터 교체 주기 진단기&rsquo;를 정식 오픈했습니다. 아울러 세탁·건조, 주방가전, 냉난방·공조, 청소·생활 4대 영역 30종 매뉴얼의 표 서식과 안전 기준 문서를 전면 점검했습니다.
                       </p>
                     </div>
 
-                    {/* View Switcher (목록형 / 웹진형) */}
-                    <div className="flex items-center gap-1 bg-[#f1f5f9] p-1 rounded shrink-0 border border-[#e2e8f0]">
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("list")}
-                        className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
-                          viewMode === "list"
-                            ? "bg-white text-[#0f766e] shadow-2xs font-bold border border-[#cbd5e1]"
-                            : "text-[#64748b] hover:text-[#0f172a]"
-                        }`}
-                        title="목록형 보기"
+                    <div className="py-5 space-y-1.5">
+                      <p className="text-[12.5px] font-semibold text-[#64748B] tabular-nums">
+                        2026.10.16 · 아카이브 개시
+                      </p>
+                      <h2 className="text-[17px] font-bold text-[#0F172A]">
+                        신혼가전·생활가전 30종 유지관리 매뉴얼 시리즈 순차 발행 안내
+                      </h2>
+                      <p className="text-[14px] text-[#475569] leading-relaxed break-keep">
+                        드럼세탁기 고무패킹 관리부터 히트펌프 건조기 콘덴서 청소, 4도어 냉장고 적정 온도, 시스템 에어컨 프리필터·드레인 펌프 점검까지 30개 필수 가전 매뉴얼을 순차 발행 완료했습니다.
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              )}
+
+              {/* VIEW 6: HOME / CATEGORY FEED */}
+              {isFeedView && (
+                <div className="space-y-7">
+                  {/* Editorial Hero + Lead Featured Manual (only on Home when not searching) */}
+                  {currentPage === "home" && !searchQuery && leadManual && (
+                    <section className="space-y-6">
+                      {/* Lead Featured Manual */}
+                      <div
+                        onClick={() => handleNavigate(`post-${leadManual.id}`)}
+                        className="bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0F766E] rounded-xl p-6 sm:p-7 transition-colors cursor-pointer group text-left"
                       >
-                        <LayoutList className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">목록형</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("card")}
-                        className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-medium transition-colors cursor-pointer ${
-                          viewMode === "card"
-                            ? "bg-white text-[#0f766e] shadow-2xs font-bold border border-[#cbd5e1]"
-                            : "text-[#64748b] hover:text-[#0f172a]"
-                        }`}
-                        title="카드형 보기"
-                      >
-                        <LayoutGrid className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">카드형</span>
-                      </button>
+                        <div className="flex items-center gap-2 text-[12px] text-[#64748B] mb-2.5 tabular-nums">
+                          <span className="font-bold text-[#0F766E]">
+                            최신 기술 매뉴얼 · {getApplianceGroup(leadManual.id, leadManual.title)}
+                          </span>
+                          <span className="text-[#CBD5E1]">·</span>
+                          <span>{formatPostDateTime(leadManual.date, leadManual.id)}</span>
+                        </div>
+                        <h1 className="text-[22px] sm:text-[26px] font-extrabold text-[#0F172A] group-hover:text-[#0F766E] transition-colors leading-snug tracking-tight break-keep mb-3">
+                          {leadManual.title}
+                        </h1>
+                        <p className="text-[14.5px] leading-[1.7] text-[#475569] break-keep mb-4">
+                          {leadManual.excerpt}
+                        </p>
+                        <span className="inline-flex items-center gap-1 text-[13.5px] font-bold text-[#0F766E]">
+                          매뉴얼 전문 읽기 <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </div>
+
+                      {/* 2-Card Interactive Tools Strip */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button
+                          type="button"
+                          onClick={() => handleNavigate("tool-power-cost")}
+                          className="text-left p-5 bg-white border border-[#E2E8F0] hover:border-[#0F766E] rounded-xl transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#0F766E]">
+                              <Zap className="w-3.5 h-3.5" />
+                              2026 한전 누진제 계산기
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#0F766E] transition-colors" />
+                          </div>
+                          <h2 className="text-[16px] font-bold text-[#0F172A] group-hover:text-[#0F766E] mb-1">
+                            생활가전 월간 전기요금 계산기
+                          </h2>
+                          <p className="text-[13px] text-[#475569] leading-relaxed break-keep">
+                            보유 가전 12종의 가동 시간으로 누진 단계와 예상 청구액을 즉시 계산합니다.
+                          </p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleNavigate("tool-filter-cycle")}
+                          className="text-left p-5 bg-white border border-[#E2E8F0] hover:border-[#0F766E] rounded-xl transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#0F766E]">
+                              <Wrench className="w-3.5 h-3.5" />
+                              10대 가전 소모품 점검표
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#0F766E] transition-colors" />
+                          </div>
+                          <h2 className="text-[16px] font-bold text-[#0F172A] group-hover:text-[#0F766E] mb-1">
+                            필터·소모품 교체 주기 진단기
+                          </h2>
+                          <p className="text-[13px] text-[#475569] leading-relaxed break-keep">
+                            마지막 청소일로 다음 관리 D-Day와 연간 소모품 유지비를 자동 진단합니다.
+                          </p>
+                        </button>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Archive Header + Group Segmented Filter */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
+                      <div>
+                        <h2 className="text-[19px] sm:text-[21px] font-extrabold text-[#0F172A]">
+                          {searchQuery
+                            ? `'${searchQuery}' 검색 결과 (${filteredPosts.length}건)`
+                            : "생활가전 관리 매뉴얼 아카이브"}
+                        </h2>
+                        <p className="text-[13px] text-[#64748B] mt-0.5 tabular-nums">
+                          총 {filteredPosts.length}종의 검증된 가전 사용·세척·고장 예방 매뉴얼
+                        </p>
+                      </div>
+
+                      <div className="inline-flex items-center gap-1 bg-[#F8FAFC] p-1 rounded-lg border border-[#E2E8F0] self-start sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("list")}
+                          className={`px-2.5 py-1 rounded text-[12px] inline-flex items-center gap-1 font-semibold transition-colors cursor-pointer ${
+                            viewMode === "list"
+                              ? "bg-white text-[#0F766E] border border-[#CBD5E1]"
+                              : "text-[#64748B] hover:text-[#0F172A]"
+                          }`}
+                        >
+                          <LayoutList className="w-3.5 h-3.5" />
+                          <span>목록</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("card")}
+                          className={`px-2.5 py-1 rounded text-[12px] inline-flex items-center gap-1 font-semibold transition-colors cursor-pointer ${
+                            viewMode === "card"
+                              ? "bg-white text-[#0F766E] border border-[#CBD5E1]"
+                              : "text-[#64748B] hover:text-[#0F172A]"
+                          }`}
+                        >
+                          <LayoutGrid className="w-3.5 h-3.5" />
+                          <span>카드</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Appliance Group Filter Bar */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                      {(["전체", ...APPLIANCE_GROUPS] as const).map((grp) => {
+                        const isSelected = activeGroup === grp;
+                        return (
+                          <button
+                            key={grp}
+                            type="button"
+                            onClick={() => {
+                              setActiveGroup(grp);
+                              setFeedPage(1);
+                            }}
+                            className={`px-3 py-1.5 text-[13px] font-semibold rounded-lg border transition-colors whitespace-nowrap shrink-0 cursor-pointer tabular-nums ${
+                              isSelected
+                                ? "bg-[#0F766E] text-white border-[#0F766E]"
+                                : "bg-white text-[#475569] border-[#E2E8F0] hover:border-[#94A3B8] hover:text-[#0F172A]"
+                            }`}
+                          >
+                            {grp} ({groupCounts[grp] || 0})
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Feed In-Stream AdSense Slot (Top) */}
                   {ADSENSE_ENABLED && (
                     <AdSenseUnit slot="home-feed-top" label="광고 / Sponsored" format="fluid" />
                   )}
 
-                  {/* Post Stream */}
+                  {/* Manual List / Card Stream */}
                   {filteredPosts.length > 0 ? (
-                    <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-6 shadow-2xs">
+                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-6">
                       {viewMode === "list" ? (
-                        <div className="divide-y divide-[#f1f5f9]">
+                        <div className="divide-y divide-[#F1F5F9]">
                           {paginatedPosts.map((post, idx) => (
                             <div key={post.id}>
                               <PostCard
@@ -870,10 +1111,13 @@ export default function App() {
                                 onClick={(id) => handleNavigate(`post-${id}`)}
                                 viewMode="list"
                               />
-                              {/* In-feed middle Ad after 4th post on page */}
                               {ADSENSE_ENABLED && idx === 3 && (
                                 <div className="py-4">
-                                  <AdSenseUnit slot="home-feed-mid" label="광고 / Sponsored" format="fluid" />
+                                  <AdSenseUnit
+                                    slot="home-feed-mid"
+                                    label="광고 / Sponsored"
+                                    format="fluid"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -892,82 +1136,60 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Pagination */}
                       {totalPages > 1 && (
-                        <div className="mt-8 pt-5 border-t border-[#e2e8f0] flex items-center justify-center gap-1 text-[13px]">
-                          {/* First Page */}
+                        <div className="mt-7 pt-5 border-t border-[#E2E8F0] flex items-center justify-center gap-1 text-[13px] tabular-nums">
                           <button
                             type="button"
                             onClick={() => handlePageChange(1)}
                             disabled={feedPage === 1}
-                            className="p-1.5 rounded text-[#64748b] hover:text-[#0f172a] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="첫 페이지"
+                            className="p-1.5 rounded text-[#64748B] hover:text-[#0F172A] disabled:opacity-30 cursor-pointer"
+                            aria-label="첫 페이지"
                           >
                             <ChevronsLeft className="w-4 h-4" />
                           </button>
-
-                          {/* Prev Page */}
                           <button
                             type="button"
                             onClick={() => handlePageChange(feedPage - 1)}
                             disabled={feedPage === 1}
-                            className="p-1.5 rounded text-[#64748b] hover:text-[#0f172a] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="이전 페이지"
+                            className="p-1.5 rounded text-[#64748B] hover:text-[#0F172A] disabled:opacity-30 cursor-pointer"
+                            aria-label="이전 페이지"
                           >
                             <ChevronLeft className="w-4 h-4" />
                           </button>
 
-                          {/* Page Numbers */}
                           {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                            if (
-                              pageNum === 1 ||
-                              pageNum === totalPages ||
-                              (pageNum >= feedPage - 2 && pageNum <= feedPage + 2)
-                            ) {
-                              const isActive = pageNum === feedPage;
-                              return (
-                                <button
-                                  key={pageNum}
-                                  type="button"
-                                  onClick={() => handlePageChange(pageNum)}
-                                  className={`min-w-[32px] h-[32px] rounded text-[13px] font-bold transition-colors cursor-pointer ${
-                                    isActive
-                                      ? "bg-[#0f766e] text-white"
-                                      : "text-[#334155] hover:bg-[#f1f5f9]"
-                                  }`}
-                                >
-                                  {pageNum}
-                                </button>
-                              );
-                            }
-                            if (pageNum === feedPage - 3 || pageNum === feedPage + 3) {
-                              return (
-                                <span key={pageNum} className="px-1 text-gray-400">
-                                  ...
-                                </span>
-                              );
-                            }
-                            return null;
+                            const isActive = pageNum === feedPage;
+                            return (
+                              <button
+                                key={pageNum}
+                                type="button"
+                                onClick={() => handlePageChange(pageNum)}
+                                className={`min-w-[32px] h-[32px] rounded-md text-[13px] font-bold transition-colors cursor-pointer ${
+                                  isActive
+                                    ? "bg-[#0F766E] text-white"
+                                    : "text-[#334155] hover:bg-[#F1F5F9]"
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
                           })}
 
-                          {/* Next Page */}
                           <button
                             type="button"
                             onClick={() => handlePageChange(feedPage + 1)}
                             disabled={feedPage === totalPages}
-                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="다음 페이지"
+                            className="p-1.5 rounded text-[#64748B] hover:text-[#0F172A] disabled:opacity-30 cursor-pointer"
+                            aria-label="다음 페이지"
                           >
                             <ChevronRight className="w-4 h-4" />
                           </button>
-
-                          {/* Last Page */}
                           <button
                             type="button"
                             onClick={() => handlePageChange(totalPages)}
                             disabled={feedPage === totalPages}
-                            className="p-2 rounded text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="마지막 페이지"
+                            className="p-1.5 rounded text-[#64748B] hover:text-[#0F172A] disabled:opacity-30 cursor-pointer"
+                            aria-label="마지막 페이지"
                           >
                             <ChevronsRight className="w-4 h-4" />
                           </button>
@@ -975,54 +1197,51 @@ export default function App() {
                       )}
                     </div>
                   ) : (
-                    /* No Results */
-                    <div className="bg-white border border-[#e5e7eb] rounded-lg p-10 text-center space-y-4 shadow-2xs">
-                      <Search className="w-10 h-10 text-gray-300 mx-auto" />
-                      <h3 className="text-lg font-bold text-gray-900">
+                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-10 text-center space-y-4">
+                      <Search className="w-9 h-9 text-[#CBD5E1] mx-auto" />
+                      <h3 className="text-[17px] font-bold text-[#0F172A]">
                         &lsquo;{searchQuery}&rsquo; 검색 결과가 없습니다
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        다른 키워드로 검색하시거나 전체 목록으로 돌아가 보세요.
+                      <p className="text-[13.5px] text-[#64748B]">
+                        다른 가전 품목명(예: 드럼세탁기, 식기세척기, 건조기)으로 검색하거나 전체 목록을 확인하세요.
                       </p>
                       <button
                         type="button"
                         onClick={() => {
                           setSearchQuery("");
+                          setActiveGroup("전체");
                           handleNavigate("home");
                         }}
-                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded transition-colors"
+                        className="px-4 py-2 bg-[#0F766E] hover:bg-[#115E59] text-white font-bold text-[13px] rounded-lg transition-colors cursor-pointer"
                       >
-                        전체 글 목록으로 돌아가기
+                        전체 매뉴얼 보기
                       </button>
                     </div>
                   )}
                 </div>
               )}
-          </section>
+            </section>
 
-          {/* ========================================================================= */}
-          {/* RIGHT COLUMN (Col-span-4): Classic Tistory / Naver Blog Sidebar           */}
-          {/* ========================================================================= */}
-          <section className="lg:col-span-4 w-full">
-            <Sidebar
-              posts={allPosts}
-              categories={CATEGORIES}
-              activeCategory={activeCategory}
-              onNavigate={handleNavigate}
-              currentPostId={currentPost?.id}
-              onSearch={(q) => {
-                setSearchQuery(q);
-                handleNavigate("home");
-              }}
-            />
-          </section>
-        </div>
+            {/* RIGHT COLUMN (Col-span-4): Sidebar */}
+            <section className="lg:col-span-4 w-full">
+              <Sidebar
+                posts={livePosts}
+                categories={CATEGORIES}
+                onNavigate={handleNavigate}
+                currentPostId={currentPost?.id}
+                onSearch={(q) => {
+                  setSearchQuery(q);
+                  setActiveGroup("전체");
+                  handleNavigate("home");
+                }}
+              />
+            </section>
+          </div>
+        )}
       </main>
 
-      {/* 3. Footer */}
       <Footer onNavigate={handleNavigate} />
 
-      {/* Google Search Console Modal (Admin only) */}
       <SearchConsoleModal
         isOpen={isSearchConsoleModalOpen}
         onClose={() => setIsSearchConsoleModalOpen(false)}
@@ -1030,7 +1249,6 @@ export default function App() {
         currentPostTitle={selectedPostForIndexing.title}
       />
 
-      {/* Floating Toast Notification */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -1038,7 +1256,7 @@ export default function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-lg shadow-xl text-[13.5px] font-semibold"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2 bg-[#0F172A] text-white px-5 py-3 rounded-lg shadow-xl text-[13.5px] font-semibold"
           >
             <span>{toast.message}</span>
           </motion.div>

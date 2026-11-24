@@ -475,20 +475,22 @@ def markdown_to_semantic_html(md):
         nonlocal in_table, table_headers, table_rows, html_out
         if in_table:
             html_out.append('<div class="overflow-x-auto my-6">')
-            html_out.append('  <table class="w-full text-left border-collapse border border-slate-300 rounded-lg">')
+            html_out.append('  <table class="w-full text-left border-collapse border border-slate-200 rounded-lg tabular-nums">')
             if table_headers:
                 html_out.append('    <thead>')
                 html_out.append('      <tr>')
                 for th in table_headers:
-                    html_out.append(f'        <th class="border border-slate-300 bg-slate-100 px-4 py-3 font-bold text-slate-800 text-[14px]">{th}</th>')
+                    th_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', th)
+                    html_out.append(f'        <th class="border border-slate-200 bg-slate-50 px-4 py-3 font-bold text-slate-900 text-[13.5px]">{th_html}</th>')
                 html_out.append('      </tr>')
                 html_out.append('    </thead>')
             if table_rows:
                 html_out.append('    <tbody>')
                 for row in table_rows:
-                    html_out.append('      <tr class="border-b border-slate-200 hover:bg-slate-50">')
+                    html_out.append('      <tr class="border-b border-slate-200 hover:bg-slate-50/70">')
                     for cell in row:
-                        html_out.append(f'        <td class="border border-slate-200 px-4 py-3 text-slate-700 text-[14px]">{cell}</td>')
+                        cell_html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', cell)
+                        html_out.append(f'        <td class="border border-slate-200 px-4 py-3 text-slate-700 text-[13.5px] leading-relaxed">{cell_html}</td>')
                     html_out.append('      </tr>')
                 html_out.append('    </tbody>')
             html_out.append('  </table>')
@@ -500,9 +502,10 @@ def markdown_to_semantic_html(md):
     def flush_quote():
         nonlocal in_quote, quote_lines, html_out
         if in_quote and quote_lines:
-            html_out.append('<div class="p-4 bg-slate-50 border-l-4 border-[#0f766e] rounded-r-lg my-4 text-slate-700 leading-relaxed font-medium">')
+            html_out.append('<div class="p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl my-5 text-[#334155] leading-relaxed space-y-2">')
             for ql in quote_lines:
-                html_out.append(f'  <p class="mb-1 text-[15px]">{ql}</p>')
+                clean_ql = re.sub(r'^\*\s+', '· ', ql)
+                html_out.append(f'  <p class="text-[14.5px] leading-[1.7]">{clean_ql}</p>')
             html_out.append('</div>')
             in_quote = False
             quote_lines = []

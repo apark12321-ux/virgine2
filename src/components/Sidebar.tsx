@@ -1,13 +1,6 @@
 import { Post } from "../types";
 import { formatPostDateTime } from "../lib/utils";
-import { 
-  Trophy, 
-  HelpCircle, 
-  ShieldCheck,
-  Mail,
-  FileText,
-  Clock
-} from "lucide-react";
+import { Zap, Wrench, ArrowRight } from "lucide-react";
 import { AdSenseUnit, ADSENSE_ENABLED } from "./AdSenseUnit";
 
 interface SidebarProps {
@@ -21,81 +14,80 @@ interface SidebarProps {
 
 export function Sidebar({
   posts,
-  categories,
-  activeCategory,
   onNavigate,
   currentPostId,
   onSearch,
 }: SidebarProps) {
   const popularPosts = posts
     .filter((p) => p.id !== currentPostId)
-    .slice(0, 5);
+    .slice(0, 6);
 
   const POPULAR_TAGS = [
-    "식기세척기",
     "드럼세탁기",
-    "건조기필터",
-    "인덕션상판",
-    "로봇청소기",
+    "히트펌프건조기",
+    "식기세척기",
     "시스템에어컨",
-    "키친핏냉장고",
+    "로봇청소기",
+    "인덕션",
     "공기청정기",
-    "음식물처리기",
-    "스타일러"
+    "냉장고",
+    "제습기",
+    "전기압력밥솥",
   ];
 
   return (
     <aside className="w-full space-y-5 font-sans text-left" id="blog-sidebar">
-      {/* 1. Official Technical Manual Center Card */}
-      <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs">
-        <div className="flex items-center gap-3 pb-3 border-b border-[#f1f5f9]">
-          <div className="w-10 h-10 rounded bg-[#0f766e] text-white flex items-center justify-center font-bold text-sm shrink-0">
-            VR
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h3 className="font-bold text-[15px] text-[#0f172a]">버진로드 기술편집팀</h3>
-              <span className="text-[11px] px-1.5 py-0.2 bg-[#f0fdfa] text-[#0f766e] font-semibold border border-[#ccfbf1] rounded">
-                공식
+      {/* 1. Interactive Care Tools Box */}
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
+        <h3 className="text-[13.5px] font-bold text-[#0F172A] pb-3 mb-3 border-b border-[#F1F5F9]">
+          가전 자가 진단 도구
+        </h3>
+        <div className="space-y-2.5">
+          <button
+            type="button"
+            onClick={() => onNavigate("tool-power-cost")}
+            className="w-full text-left p-3 rounded-lg bg-[#F8FAFC] hover:bg-[#F0FDFA] border border-[#E2E8F0] hover:border-[#99F6E4] transition-colors cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-[#0F172A] group-hover:text-[#0F766E]">
+                <Zap className="w-3.5 h-3.5 text-[#0F766E]" />
+                월간 전기요금 계산기
               </span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#94A3B8] group-hover:text-[#0F766E]" />
             </div>
-            <p className="text-[12px] text-[#64748b]">가전 사용·관리 전문 매뉴얼</p>
-          </div>
-        </div>
-
-        <p className="text-[12.5px] leading-relaxed text-[#475569] my-3 break-keep">
-          제조사 공식 규격과 가전 엔지니어 정밀 점검 매뉴얼을 바탕으로, 신혼부부 및 입주 가구를 위한 고장 방지·세척 주기를 꼼꼼히 검증하여 전달합니다.
-        </p>
-
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <button
-            type="button"
-            onClick={() => onNavigate("about")}
-            className="py-1.5 px-2.5 text-[12px] font-medium text-[#475569] hover:text-[#0f172a] bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#cbd5e1] rounded transition-colors text-center cursor-pointer"
-          >
-            소개 &amp; 편집원칙
+            <p className="text-[12px] text-[#64748B] leading-snug">
+              2026 한전 누진제 구간·가전별 전력량 계산
+            </p>
           </button>
+
           <button
             type="button"
-            onClick={() => onNavigate("contact")}
-            className="py-1.5 px-2.5 text-[12px] font-medium text-[#0f766e] hover:text-[#115e59] bg-[#f0fdfa] hover:bg-[#ccfbf1] border border-[#ccfbf1] rounded transition-colors text-center cursor-pointer"
+            onClick={() => onNavigate("tool-filter-cycle")}
+            className="w-full text-left p-3 rounded-lg bg-[#F8FAFC] hover:bg-[#F0FDFA] border border-[#E2E8F0] hover:border-[#99F6E4] transition-colors cursor-pointer group"
           >
-            문의하기
+            <div className="flex items-center justify-between mb-1">
+              <span className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-[#0F172A] group-hover:text-[#0F766E]">
+                <Wrench className="w-3.5 h-3.5 text-[#0F766E]" />
+                필터 교체 주기 진단기
+              </span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#94A3B8] group-hover:text-[#0F766E]" />
+            </div>
+            <p className="text-[12px] text-[#64748B] leading-snug">
+              10대 가전 청소 D-Day·연간 소모품비 진단
+            </p>
           </button>
         </div>
       </div>
 
-      {/* 2. Most Read Technical Guides (No Images, Clean Typography) */}
-      <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs">
-        <h4 className="text-[14px] font-bold text-[#0f172a] pb-2.5 mb-3 border-b border-[#f1f5f9] flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-[#d97706]" />
-          <span>필독 가전 관리 매뉴얼</span>
+      {/* 2. Most Read Technical Guides */}
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
+        <h4 className="text-[13.5px] font-bold text-[#0F172A] pb-3 mb-3 border-b border-[#F1F5F9]">
+          주요 가전 관리 매뉴얼
         </h4>
-
-        <ul className="divide-y divide-gray-100 text-[13px]">
+        <ul className="divide-y divide-[#F1F5F9] text-[13px]">
           {popularPosts.map((post, idx) => (
             <li key={post.id} className="py-2.5 first:pt-0 last:pb-0 flex items-start gap-2.5">
-              <span className="font-bold text-[#0f766e] text-xs mt-0.5 w-4 text-center shrink-0">
+              <span className="font-bold text-[#0F766E] text-[12px] mt-0.5 w-4 text-center shrink-0 tabular-nums">
                 {idx + 1}
               </span>
               <button
@@ -103,10 +95,10 @@ export function Sidebar({
                 onClick={() => onNavigate(`post-${post.id}`)}
                 className="text-left group cursor-pointer flex-1"
               >
-                <span className="text-[#0f172a] group-hover:text-[#0f766e] font-medium leading-snug line-clamp-2 transition-colors">
+                <span className="text-[#0F172A] group-hover:text-[#0F766E] font-medium leading-snug line-clamp-2 transition-colors">
                   {post.title}
                 </span>
-                <span className="text-[11.5px] text-[#94a3b8] mt-1 block">
+                <span className="text-[11.5px] text-[#94A3B8] mt-1 block tabular-nums">
                   {formatPostDateTime(post.date, post.id)}
                 </span>
               </button>
@@ -115,18 +107,18 @@ export function Sidebar({
         </ul>
       </div>
 
-      {/* 3. Core Appliance Tags */}
-      <div className="bg-white border border-[#e2e8f0] rounded p-4 sm:p-5 shadow-2xs">
-        <h4 className="text-[14px] font-bold text-[#0f172a] pb-2.5 mb-3 border-b border-[#f1f5f9]">
-          주요 가전별 매뉴얼 검색
+      {/* 3. Quick Appliance Keyword Index */}
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
+        <h4 className="text-[13.5px] font-bold text-[#0F172A] pb-3 mb-3 border-b border-[#F1F5F9]">
+          품목별 빠른 검색
         </h4>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-x-3 gap-y-2 text-[12.5px]">
           {POPULAR_TAGS.map((tag) => (
             <button
               key={tag}
               type="button"
               onClick={() => onSearch && onSearch(tag)}
-              className="text-[12px] bg-[#f8fafc] hover:bg-[#f0fdfa] text-[#475569] hover:text-[#0f766e] border border-[#e2e8f0] hover:border-[#ccfbf1] px-2 py-1 rounded transition-colors cursor-pointer"
+              className="text-[#475569] hover:text-[#0F766E] hover:underline transition-colors cursor-pointer"
             >
               #{tag}
             </button>
@@ -134,7 +126,39 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* 4. Sidebar AdSense Unit */}
+      {/* 4. Editorial Desk Box */}
+      <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5">
+        <h3 className="font-bold text-[14px] text-[#0F172A] mb-1.5">버진로드 기술편집팀</h3>
+        <p className="text-[12.5px] leading-relaxed text-[#475569] mb-3.5 break-keep">
+          제조사 공식 서비스 규격과 안전 기준을 교차 검토하여 가정용 기기 유지관리 지침을 발행합니다.
+        </p>
+        <div className="flex items-center gap-3 text-[12.5px] font-semibold">
+          <button
+            type="button"
+            onClick={() => onNavigate("about")}
+            className="text-[#0F172A] hover:text-[#0F766E] transition-colors cursor-pointer"
+          >
+            편집원칙
+          </button>
+          <span className="text-[#CBD5E1]">·</span>
+          <button
+            type="button"
+            onClick={() => onNavigate("policy")}
+            className="text-[#0F172A] hover:text-[#0F766E] transition-colors cursor-pointer"
+          >
+            안전기준
+          </button>
+          <span className="text-[#CBD5E1]">·</span>
+          <button
+            type="button"
+            onClick={() => onNavigate("contact")}
+            className="text-[#0F766E] hover:underline transition-colors cursor-pointer"
+          >
+            정정 제보
+          </button>
+        </div>
+      </div>
+
       {ADSENSE_ENABLED && (
         <AdSenseUnit slot="sidebar-01" label="광고 / Sponsored" format="rectangle" />
       )}

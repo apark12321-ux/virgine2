@@ -1,275 +1,169 @@
-import {
-  POLICY_LAST_UPDATED,
-  DEADLINE_POLICIES,
-  LOAN_RATES,
-  CASH_SUPPORTS,
-  POLICY_CHANGES,
-} from "../policyData";
-import { Calendar, TrendingDown, Gift, FileText, AlertCircle, ExternalLink } from "lucide-react";
-
-function daysUntil(dateStr: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
+import React from "react";
+import { ShieldCheck, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 
 interface PolicyHubProps {
-  compact?: boolean;            // true = 홈 요약 카드, false = 전체 페이지
+  compact?: boolean;
   onNavigate?: (page: string) => void;
 }
 
-export function PolicyHub({ compact = false, onNavigate }: PolicyHubProps) {
-  // ───────────── 홈 요약 버전 ─────────────
-  if (compact) {
-    return (
-      <section className="max-w-[1400px] mx-auto px-5 lg:px-10 py-12 lg:py-16 border-t border-[#E2E4F0]">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1 h-6 bg-[#E8745F] rounded-full" />
-              <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8745F]">
-                Policy Hub
-              </p>
-            </div>
-            <h2 className="text-[24px] sm:text-[30px] font-bold text-[#1E1B2E] tracking-[-0.025em]">
-              최신 정책·금리 핵심 브리핑
-            </h2>
-            <p className="text-[13px] text-[#5B5870] mt-1">
-              가정에 바로 영향 주는 핵심 정책을 항상 최신으로 정리해 드립니다.
-            </p>
-          </div>
-          {onNavigate && (
-            <button
-              onClick={() => onNavigate("policy")}
-              className="text-[13px] font-bold text-[#4F46E5] hover:text-[#3730A3] inline-flex items-center gap-1.5 bg-[#EEF0FB] hover:bg-[#E2E4F0] px-4 py-2 rounded-full transition-all whitespace-nowrap cursor-pointer"
-            >
-              전체 정책 보기
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
+const SAFETY_STANDARDS = [
+  {
+    agency: "한국전기안전공사 (KESCO)",
+    topic: "고출력 주방·세탁 가전 단독 콘센트 규격",
+    detail:
+      "인덕션(3.4kW), 식기세척기(1.8kW), 전기압력밥솥(1.4kW), 의류건조기(1.0~1.5kW) 등 고전력 가전은 멀티탭 문어발 연결을 금지하고 접지형 벽면 단독 콘센트(정격 16A 이상)에 직결해야 화재와 누전차단기 트립을 예방할 수 있습니다.",
+  },
+  {
+    agency: "한국소비자원 (KCA)",
+    topic: "세척제 화학 혼합 금지 및 코팅 보호 수칙",
+    detail:
+      "염소계 표백제(차아염소산나트륨)와 산성 세정제(구연산·식초)를 혼합하면 유독성 염소 가스가 발생합니다. 세탁조·주방가전 세척 시에는 반드시 단일 성분만 정량 사용하고, 스테인리스 열판이나 테프론 바스켓에는 연마제·철수세미 사용을 금지합니다.",
+  },
+  {
+    agency: "한국전력공사 (KEPCO)",
+    topic: "2026 주택용(저압) 전기요금 누진 단계 및 대기전력 관리",
+    detail:
+      "주택용 저압 전력은 기타 계절 200/400 kWh, 하계(7~8월) 300/450 kWh를 기준으로 3단계 누진 단가(120.0 / 214.6 / 307.3원)가 적용됩니다. 열교환기·필터 정기 청소로 압축기 부하를 낮추면 누진 3단계 진입을 효과적으로 억제할 수 있습니다.",
+  },
+  {
+    agency: "산업통상자원부 · 한국에너지공단",
+    topic: "에너지소비효율 1등급 가전 유지 기준",
+    detail:
+      "인버터 컴프레서를 탑재한 1등급 냉장고·에어컨·제습기라도 방열판 통풍 이격거리(벽면 최소 10cm)가 확보되지 않거나 필터가 막히면 실제 소비효율이 3~4등급 수준으로 저하됩니다.",
+  },
+];
 
-        {/* D-day 카드 + 금리 미니 테이블 */}
-        <div className="grid lg:grid-cols-12 gap-6">
-          {/* 마감 임박 */}
-          <div className="lg:col-span-5 space-y-4">
-            {DEADLINE_POLICIES.map((p) => {
-              const d = daysUntil(p.deadline);
-              return (
-                <div key={p.title} className="card-warm p-5 bg-white">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="badge-coral">
-                      <Calendar className="w-3 h-3 text-[#3730A3]" /> 마감 임박
-                    </span>
-                    <span className="text-[20px] font-bold text-[#E8745F] tabular-nums">
-                      D-{d > 0 ? d : 0}
-                    </span>
-                  </div>
-                  <h3 className="text-[16px] font-bold text-[#1E1B2E] mb-1.5">{p.title}</h3>
-                  <p className="text-[13px] leading-[1.6] text-[#5B5870] break-keep">
-                    {p.description}
-                  </p>
-                  <p className="text-[11px] text-[#8A87A0] mt-3">
-                    마감 {p.deadline.replace(/-/g, ". ")} · 출처 {p.sourceName}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+const VERIFICATION_STEPS = [
+  {
+    step: "1단계",
+    title: "제조사 공식 사용설명서 원문 수집",
+    desc: "국내 보급률이 높은 주요 모델의 공식 매뉴얼에서 세척 주기, 에러 코드 정의, 금지 세제 항목을 추출합니다.",
+  },
+  {
+    step: "2단계",
+    title: "공공 안전·전력 기준 교차 대조",
+    desc: "한국소비자원 안전 주의보, 한국전기안전공사 전기화재 예방 지침, 한전 요금표 수치와 불일치 여부를 검토합니다.",
+  },
+  {
+    step: "3단계",
+    title: "현장 자가 조치 가능 범위 분리",
+    desc: "소비자가 전원을 차단한 상태에서 안전하게 수행할 수 있는 관리 절차와 공식 서비스센터 접수가 필요한 수리 영역을 명확히 구분합니다.",
+  },
+  {
+    step: "4단계",
+    title: "독자 제보 반영 및 정기 개정",
+    desc: "오류 정정 메일 접수 시 영업일 기준 24시간 내 검토하며, 규격 변경 사항은 본문에 반영합니다.",
+  },
+];
 
-          {/* 대출 금리 미니 테이블 */}
-          <div className="lg:col-span-7 card-warm p-5 overflow-hidden bg-white">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingDown className="w-4 h-4 text-[#E8745F]" />
-              <h3 className="text-[15px] font-bold text-[#1E1B2E]">2026 신혼부부 대출 금리</h3>
-            </div>
-            <div className="overflow-x-auto hide-scrollbar">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-[#E2E4F0]">
-                    <th className="pb-2 text-[11px] font-bold text-[#8A87A0] uppercase">상품</th>
-                    <th className="pb-2 text-[11px] font-bold text-[#8A87A0] uppercase">금리</th>
-                    <th className="pb-2 text-[11px] font-bold text-[#8A87A0] uppercase">한도</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {LOAN_RATES.map((l) => (
-                    <tr key={l.name} className="border-b border-[#EDEEF7] last:border-0">
-                      <td className="py-2.5 text-[13px] font-semibold text-[#1E1B2E] break-keep">{l.name}</td>
-                      <td className="py-2.5 text-[13px] font-bold text-[#E8745F] whitespace-nowrap">{l.rate}</td>
-                      <td className="py-2.5 text-[13px] text-[#5B5870] whitespace-nowrap">{l.limit}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-[11px] text-[#8A87A0] mt-3">
-              출처: 주택도시기금·한국주택금융공사 공시 ({POLICY_LAST_UPDATED.replace(/-/g, ". ")} 기준)
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // ───────────── 전체 페이지 버전 ─────────────
+export function PolicyHub({ onNavigate }: PolicyHubProps) {
   return (
-    <div className="max-w-[1400px] mx-auto px-5 lg:px-10 py-10 lg:py-14 bg-white">
-      {/* 헤더 */}
-      <div className="mb-10">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="badge-coral">
-            <FileText className="w-3 h-3 text-[#3730A3]" /> Policy Hub
-          </span>
-          <span className="text-[12px] text-[#8A87A0]">
-            최종 업데이트 {POLICY_LAST_UPDATED.replace(/-/g, ". ")}
-          </span>
-        </div>
-        <h1 className="text-[28px] sm:text-[36px] font-bold tracking-[-0.03em] text-[#1E1B2E] mb-3 break-keep">
-          2026 가정경제·생활정책 한눈에
+    <div className="max-w-[920px] mx-auto text-left font-sans pb-14 space-y-10">
+      {/* Breadcrumb */}
+      {onNavigate && (
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[12.5px] text-[#64748B]">
+          <button
+            type="button"
+            onClick={() => onNavigate("home")}
+            className="hover:text-[#0F766E] transition-colors cursor-pointer"
+          >
+            홈
+          </button>
+          <span className="text-[#CBD5E1]">/</span>
+          <span className="text-[#0F172A] font-medium">가전 안전·효율 기준 및 검증 정책</span>
+        </nav>
+      )}
+
+      {/* Header */}
+      <header className="pb-6 border-b border-[#E2E8F0]">
+        <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-[#0F766E] mb-2">
+          Safety &amp; Verification Standards
+        </p>
+        <h1 className="text-[26px] sm:text-[32px] font-extrabold text-[#0F172A] tracking-tight leading-snug break-keep mb-3">
+          가전 안전·효율 기준 및 콘텐츠 검증 정책
         </h1>
-        <p className="text-[15px] leading-[1.7] text-[#3F3D56] max-w-2xl break-keep">
-          대출 금리, 세금 혜택, 출산 지원금처럼 가정에 바로 영향을 주는 정책 핵심 정보를 한눈에 모았습니다. 정책이 바뀌면 그때그때 업데이트합니다.
+        <p className="text-[15px] leading-[1.75] text-[#475569] break-keep">
+          버진로드에 발행되는 모든 생활가전 관리 매뉴얼과 진단 도구가 준수하는 공공 안전 규격, 전력 효율 기준, 그리고 4단계 팩트체크 절차를 투명하게 공개합니다.
         </p>
-      </div>
+      </header>
 
-      {/* 마감 임박 정책 */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-5">
-          <AlertCircle className="w-5 h-5 text-[#E8745F]" />
-          <h2 className="text-[20px] font-bold text-[#1E1B2E]">마감 임박 — 놓치면 못 받습니다</h2>
+      {/* Public Safety & Efficiency Standards */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-[#0F766E]" />
+          <h2 className="text-[20px] font-extrabold text-[#0F172A]">
+            1. 핵심 참조 공공 안전·전력 기준
+          </h2>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {DEADLINE_POLICIES.map((p) => {
-            const d = daysUntil(p.deadline);
-            return (
-              <div key={p.title} className="card-warm p-6 relative overflow-hidden bg-white">
-                <div className="absolute top-0 right-0 gradient-coral text-white px-4 py-2 rounded-bl-xl">
-                  <span className="text-[18px] font-bold tabular-nums">D-{d > 0 ? d : 0}</span>
-                </div>
-                <h3 className="text-[17px] font-bold text-[#1E1B2E] mb-2 pr-16">{p.title}</h3>
-                <p className="text-[14px] leading-[1.65] text-[#3F3D56] break-keep mb-4">
-                  {p.description}
-                </p>
-                <div className="flex items-center justify-between pt-3 border-t border-[#EDEEF7]">
-                  <span className="text-[12px] text-[#8A87A0]">
-                    마감 {p.deadline.replace(/-/g, ". ")}
-                  </span>
-                  <a
-                    href={p.source}
-                    rel="noopener noreferrer"
-                    className="text-[12px] font-semibold text-[#E8745F] hover:text-[#B0432F] inline-flex items-center gap-1"
-                  >
-                    {p.sourceName} <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* 대출 금리 비교 */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-5">
-          <TrendingDown className="w-5 h-5 text-[#E8745F]" />
-          <h2 className="text-[20px] font-bold text-[#1E1B2E]">신혼부부 대출 금리 비교</h2>
-        </div>
-        <div className="card-warm overflow-hidden bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#EEF0FB]">
-                  <th className="px-4 py-3 text-[12px] font-bold text-[#1E1B2E]">상품</th>
-                  <th className="px-4 py-3 text-[12px] font-bold text-[#1E1B2E]">대상</th>
-                  <th className="px-4 py-3 text-[12px] font-bold text-[#1E1B2E] whitespace-nowrap">소득 한도</th>
-                  <th className="px-4 py-3 text-[12px] font-bold text-[#1E1B2E]">금리</th>
-                  <th className="px-4 py-3 text-[12px] font-bold text-[#1E1B2E]">한도</th>
-                </tr>
-              </thead>
-              <tbody>
-                {LOAN_RATES.map((l) => (
-                  <tr key={l.name} className="border-b border-[#EDEEF7] last:border-0 align-top">
-                    <td className="px-4 py-3.5 text-[13px] font-bold text-[#1E1B2E] break-keep">{l.name}</td>
-                    <td className="px-4 py-3.5 text-[13px] text-[#3F3D56] break-keep">{l.target}</td>
-                    <td className="px-4 py-3.5 text-[13px] text-[#3F3D56] whitespace-nowrap">{l.incomeLimit}</td>
-                    <td className="px-4 py-3.5 text-[13px] font-bold text-[#E8745F] whitespace-nowrap">{l.rate}</td>
-                    <td className="px-4 py-3.5 text-[13px] text-[#3F3D56] whitespace-nowrap">{l.limit}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="mt-3 space-y-1.5">
-          {LOAN_RATES.map((l) => (
-            <p key={l.name} className="text-[12px] text-[#8A87A0] leading-[1.5]">
-              <span className="font-semibold text-[#5B5870]">{l.name}:</span> {l.note}
-            </p>
-          ))}
-        </div>
-        <p className="text-[11px] text-[#8A87A0] mt-3">
-          출처: 주택도시기금(nhuf.molit.go.kr)·한국주택금융공사(hf.go.kr) 공시 · {POLICY_LAST_UPDATED.replace(/-/g, ". ")} 기준
-        </p>
-      </section>
-
-      {/* 출산 현금 지원 */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-5">
-          <Gift className="w-5 h-5 text-[#E8745F]" />
-          <h2 className="text-[20px] font-bold text-[#1E1B2E]">출산 현금 지원 — 출생신고만 하면</h2>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {CASH_SUPPORTS.map((c) => (
-            <div key={c.name} className="card-warm p-5 bg-white">
-              <h3 className="text-[14px] font-bold text-[#1E1B2E] mb-1 break-keep">{c.name}</h3>
-              <p className="text-[22px] font-bold text-[#E8745F] mb-1">{c.amount}</p>
-              <p className="text-[12px] text-[#8A87A0] mb-2">{c.period}</p>
-              <p className="text-[12px] leading-[1.5] text-[#5B5870] break-keep">{c.note}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {SAFETY_STANDARDS.map((item) => (
+            <div
+              key={item.topic}
+              className="p-5 bg-white border border-[#E2E8F0] rounded-xl space-y-2"
+            >
+              <p className="text-[12px] font-bold text-[#0F766E]">{item.agency}</p>
+              <h3 className="text-[15.5px] font-bold text-[#0F172A] break-keep">{item.topic}</h3>
+              <p className="text-[13.5px] leading-[1.7] text-[#475569] break-keep">{item.detail}</p>
             </div>
           ))}
         </div>
-        <p className="text-[11px] text-[#8A87A0] mt-3">
-          출처: 보건복지부·복지로(bokjiro.go.kr) · 첫 해 누적 약 1,520만원 (지자체 추가 지원 별도)
-        </p>
       </section>
 
-      {/* 정책 변경 타임라인 */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-5">
-          <Calendar className="w-5 h-5 text-[#E8745F]" />
-          <h2 className="text-[20px] font-bold text-[#1E1B2E]">최근 정책 변경 타임라인</h2>
+      {/* 4-Step Editorial Verification Process */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-[#0F766E]" />
+          <h2 className="text-[20px] font-extrabold text-[#0F172A]">
+            2. 버진로드 4단계 기술 문서 검증 프로세스
+          </h2>
         </div>
-        <div className="card-warm p-6 bg-white">
-          <ul className="space-y-5">
-            {POLICY_CHANGES.map((c, idx) => (
-              <li key={idx} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-3 h-3 rounded-full bg-[#E8745F] mt-1.5 shrink-0" />
-                  {idx < POLICY_CHANGES.length - 1 && (
-                    <div className="w-[2px] flex-1 bg-[#E2E4F0] mt-1" />
-                  )}
-                </div>
-                <div className="pb-2">
-                  <span className="text-[12px] font-bold text-[#E8745F] tabular-nums">{c.date}</span>
-                  <h3 className="text-[15px] font-bold text-[#1E1B2E] mt-0.5 mb-1 break-keep">{c.title}</h3>
-                  <p className="text-[13px] leading-[1.6] text-[#3F3D56] break-keep">{c.detail}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+
+        <div className="border border-[#E2E8F0] rounded-xl bg-white divide-y divide-[#E2E8F0]">
+          {VERIFICATION_STEPS.map((v) => (
+            <div key={v.step} className="p-5 flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-5">
+              <span className="text-[13px] font-extrabold text-[#0F766E] w-16 shrink-0">
+                {v.step}
+              </span>
+              <div className="space-y-1">
+                <h3 className="text-[15px] font-bold text-[#0F172A]">{v.title}</h3>
+                <p className="text-[13.5px] text-[#475569] leading-relaxed break-keep">{v.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 면책 */}
-      <div className="bg-[#F5F6FD] border border-[#E2E4F0] rounded-xl p-5">
-        <p className="text-[12px] leading-[1.7] text-[#8A87A0] break-keep">
-          본 정보는 정부·공공기관 공시 자료를 바탕으로 정리한 참고용 자료입니다. 실제 대출 금리·한도·자격은
-          개인 신용, 소득, 주택 조건에 따라 달라질 수 있으며, 정책은 예고 없이 변경될 수 있습니다. 신청 전
-          반드시 해당 기관(주택도시기금, 한국주택금융공사, 홈택스, 복지로 등)의 공식 안내를 확인하시기 바랍니다.
-        </p>
-      </div>
+      {/* Quick Actions */}
+      {onNavigate && (
+        <section className="p-5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[14.5px] font-bold text-[#0F172A]">
+              <Zap className="w-4 h-4 text-[#0F766E]" />
+              <span>안전 기준에 맞춰 우리 집 가전 상태를 점검해 보세요</span>
+            </div>
+            <p className="text-[13px] text-[#64748B]">
+              전기요금 누진 단계 계산기와 필터 교체 주기 진단기를 무료로 이용할 수 있습니다.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => onNavigate("tool-power-cost")}
+              className="px-3.5 py-2 bg-[#0F766E] hover:bg-[#115E59] text-white text-[13px] font-semibold rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              전기요금 계산기 <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate("tool-filter-cycle")}
+              className="px-3.5 py-2 bg-white hover:bg-[#F0FDFA] text-[#0F766E] border border-[#99F6E4] text-[13px] font-semibold rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              필터 진단기 <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

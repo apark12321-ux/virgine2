@@ -1,17 +1,14 @@
 import fs from "fs";
 import path from "path";
-import { GoogleGenAI } from "@google/genai";
 import { MOCK_POSTS } from "../constants";
-import { generateRealisticPostDateTime, slugify, parsePostTimestamp } from "./utils";
-import { expandContentIfNeeded } from "./contentExpander";
-import { submitUrlsToSearchConsole } from "./googleIndexing";
+import { parsePostTimestamp } from "./utils";
 
 const LOCAL_POSTS_FILE = path.join(process.cwd(), "posts-local.json");
 const SCHEDULE_FILE = path.join(process.cwd(), "auto-schedule.json");
 
 export type PostCategory = "신혼금융" | "신혼가전" | "결혼준비";
 
-export const CATEGORIES: PostCategory[] = ["신혼금융", "신혼가전", "결혼준비"];
+export const CATEGORIES: PostCategory[] = ["신혼가전"];
 
 export function normalizeTitle(str: string): string {
   return (str || "").replace(/[^a-zA-Z0-9가-힣]/g, "").toLowerCase();
@@ -24,7 +21,7 @@ export interface Post {
   content: string;
   category: PostCategory;
   author: string;
-  date: string; // "YYYY-MM-DD HH:mm:ss" in KST
+  date: string;
   image: string;
   readTime: string;
   hashtags: string[];
@@ -33,7 +30,7 @@ export interface Post {
 export interface DayScheduleItem {
   id: string;
   category: PostCategory;
-  targetTime: string; // "HH:mm:ss" in KST (랜덤 시·분·초)
+  targetTime: string;
   published: boolean;
   publishedAt?: string;
   postId?: string;
@@ -41,11 +38,10 @@ export interface DayScheduleItem {
 }
 
 export interface ScheduleStore {
-  schedules: Record<string, DayScheduleItem[]>; // key: "YYYY-MM-DD"
+  schedules: Record<string, DayScheduleItem[]>;
   lastCheck?: string;
 }
 
-// Convert seconds from midnight (0~86399) to "HH:mm:ss"
 function secondsToTimeStr(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600) % 24;
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -53,17 +49,6 @@ function secondsToTimeStr(totalSeconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-// Convert "HH:mm:ss" or "HH:mm" to seconds from midnight
-function timeStrToSeconds(timeStr: string): number {
-  if (!timeStr) return 0;
-  const parts = timeStr.split(":").map(Number);
-  const h = parts[0] || 0;
-  const m = parts[1] || 0;
-  const s = parts[2] || 0;
-  return h * 3600 + m * 60 + s;
-}
-
-// Get current date/time in KST (UTC+9)
 export function getKSTNow(): Date {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -84,11 +69,6 @@ export function getKSTTimeString(d: Date = getKSTNow()): string {
   return `${hh}:${min}:${sec}`;
 }
 
-/**
- * 1일 1포스팅 자동화 스케줄러:
- * - 매일 1개의 글을 골든타임(08:15 ~ 21:45 KST) 중 완전히 무작위(랜덤 시·분·초) 시간에 자동 발행
- * - 카테고리는 신혼가전, 신혼금융, 결혼준비 순으로 일자별 균등 자동 순환
- */
 export function getRandomPeakTime(seedStr?: string): string {
   let rand = Math.random();
   if (seedStr) {
@@ -99,23 +79,22 @@ export function getRandomPeakTime(seedStr?: string): string {
     }
     rand = Math.abs(Math.sin(hash));
   }
-  // 08:15:00 ~ 21:45:00 (29,700s ~ 78,300s)
   const totalSeconds = 29700 + Math.floor(rand * (78300 - 29700));
   return secondsToTimeStr(totalSeconds);
 }
 
 export function generateDailyCategorySchedules(dateStr: string): DayScheduleItem[] {
-  // 1일 1포스팅 기준 일자별 카테고리 순환
-  const dateNum = parseInt(dateStr.replace(/-/g, ""), 10) || 0;
-  const category = CATEGORIES[dateNum % CATEGORIES.length];
+  const category: PostCategory = "신혼가전";
   const targetTime = getRandomPeakTime(`${dateStr}-${category}`);
 
-  return [{
-    id: `sched-${dateStr.replace(/-/g, "")}-${category}-1`,
-    category,
-    targetTime,
-    published: false
-  }];
+  return [
+    {
+      id: `sched-${dateStr.replace(/-/g, "")}-${category}-1`,
+      category,
+      targetTime,
+      published: false,
+    },
+  ];
 }
 
 export function loadLocalPosts(): Post[] {
@@ -126,10 +105,9 @@ export function loadLocalPosts(): Post[] {
       const seenIds = new Set<string>();
       const unique: Post[] = [];
       for (const p of raw) {
+        if (!p.id || !p.id.startsWith("manual-")) continue;
         const norm = normalizeTitle(p.title);
-        if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
-          continue;
-        }
+        if (!p.title || seenTitles.has(norm) || seenIds.has(p.id)) continue;
         seenTitles.add(norm);
         seenIds.add(p.id);
         unique.push(p);
@@ -148,10 +126,9 @@ export function saveLocalPosts(posts: Post[]) {
     const seenIds = new Set<string>();
     const unique: Post[] = [];
     for (const p of posts) {
+      if (!p.id || !p.id.startsWith("manual-")) continue;
       const norm = normalizeTitle(p.title);
-      if (!p.id || !p.title || seenTitles.has(norm) || seenIds.has(p.id)) {
-        continue;
-      }
+      if (!p.title || seenTitles.has(norm) || seenIds.has(p.id)) continue;
       seenTitles.add(norm);
       seenIds.add(p.id);
       unique.push(p);
@@ -181,889 +158,10 @@ export function saveScheduleStore(store: ScheduleStore) {
   }
 }
 
-// 60+ Rich Topic Pool classified by category for automated SEO generation
-export const TOPIC_POOL: Array<{
-  category: PostCategory;
-  title: string;
-  excerpt: string;
-  image: string;
-  hashtags: string[];
-}> = [
-  // --- 1. 신혼금융 (Financial & Housing) ---
-  {
-    category: "신혼금융",
-    title: "2026년 하반기 신혼부부 디딤돌대출 우대금리 항목별 극대화 전략",
-    excerpt: "청약통장 가입 기간, 전자계약 우대, 신생아 특례 중복 우대까지 적용하여 대출 금리를 연 1%대까지 낮추는 실전 자금 조달 가이드.",
-    image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["디딤돌대출", "우대금리", "신혼금융", "내집마련", "주택도시기금"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 버팀목 전세자금대출 수도권 3억 원 한도 증액 및 보증금 조건 가이드",
-    excerpt: "2026년 기준 신혼 전용 버팀목 전세대출의 수도권 한도 증액 요건과 HUG 보증보험 가입 가이드라인 및 반환보증료 지원 환급 절차.",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["버팀목전세대출", "전세보증금", "HUG보증", "신혼부부대출", "전세자금"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신생아 특례 자녀수별 대출 우대금리 및 5년 연장 가이드",
-    excerpt: "자녀 1인당 추가 금리 인하 혜택과 특례 금리 적용 기간 연장 조항 분석. 둘째 출산 시 금리 및 한도 우대 조건 완벽 정리.",
-    image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신생아특례대출", "출산지원", "우대금리", "주택구입자금", "저출생대책"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신혼부부 주택청약 특별공급 가점 계산 및 우선공급 자격 체크리스트",
-    excerpt: "신혼부부 특공 우선공급, 일반공급 비율 개편안 적용! 자녀 수, 혼인 기간, 당해 지역 거주 조건에 따른 최적 청약 신청 전략.",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼부부특별공급", "청약가점", "아파트청약", "신혼청약", "청약홈"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신혼부부 맞벌이 합산소득 2억 원 완화에 따른 정책금융 상품 총정리",
-    excerpt: "디딤돌·버팀목·신생아특례 맞벌이 부부 소득 제한 2억 원 대폭 완화! 소득 구간별 대출 가능 한도 및 이율 비교표.",
-    image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["맞벌이소득기준", "디딤돌대출", "버팀목대출", "신혼부부혜택", "금융정책"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 통장 쪼개기 4대 원칙 — 고정비·변동비·비상금·투자 통장 세팅법",
-    excerpt: "월급날 자동 이체 시스템 구축으로 결혼 첫해 종잣돈 3천만 원 모으는 실전 가계부 시스템 및 CMA 통장 활용법.",
-    image: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["통장쪼개기", "신혼재테크", "가계부정리", "목돈모으기", "CMA통장"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신혼부부 ISA 계좌와 연금저축펀드 절세 혜택 극대화 포트폴리오",
-    excerpt: "비과세 한도 500만 원 확대 ISA 계좌와 연말정산 세액공제 900만 원 연금저축을 결합한 10년 장기 주거자금 불리기 전략.",
-    image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["ISA계좌", "연금저축펀드", "신혼절세", "연말정산", "비과세혜택"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼집 취득세 감면 조건과 생애최초 주택 구입 200만 원 한도 신청 가이드",
-    excerpt: "혼인 5년 이내 생애최초 주택 매매 시 취득세 감면 요건, 필요 서류 및 지자체 구청 세무과 환급 신청 실무.",
-    image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["생애최초취득세", "취득세감면", "신혼집매매", "부동산세금", "세무가이드"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 전세보증금 반환보증보험(HUG·SGI) 가입 절차 및 보증료 30만 원 전액 지원 환급",
-    excerpt: "국토교통부와 지자체가 시행하는 청년·신혼부부 전세보증금 반환보증료 지원 사업의 신청 조건과 관할 시·군·구청 원스톱 접수법.",
-    image: "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["HUG보증보험", "전세보증료지원", "전세사기예방", "신혼전세", "보증금보호"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 공동명의 vs 단독명의 세금 시뮬레이션 — 취득세·종부세·양도세 완벽 비교",
-    excerpt: "주택 구입 시 부부 공동명의 등록에 따른 취득세, 종합부동산세 1주택자 특례, 향후 양도소득세 누진세율 분산 절세 효과 총정리.",
-    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["공동명의", "양도세절세", "종부세계산", "신혼부부세무", "부동산명의"]
-  },
-
-  // --- 2. 신혼가전 (Appliances & Interior) ---
-  {
-    category: "신혼가전",
-    title: "2026년 맞벌이 신혼부부를 위한 로봇청소기 직수형 vs 집진형 완벽 스펙 비교",
-    excerpt: "자동 오수 정수 직수 시스템과 고온 스팀 세척 기능을 갖춘 최신 로봇청소기(로보락, 삼성, LG) 브랜드별 설치 조건 및 실무 후기.",
-    image: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["로봇청소기", "신혼가전", "직수형로청", "가전졸업", "스마트홈"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 거실 인테리어 아트월 타공 없이 무타공 벽걸이 TV 시공 가이드",
-    excerpt: "전세집이나 신축 아파트 대리석 아트월에 구멍을 뚫지 않고 75인치~85인치 대형 TV를 안전하게 고정하는 무타공 벽걸이 브라켓 비교.",
-    image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["무타공TV", "벽걸이TV", "거실인테리어", "신혼집꾸미기", "전세집인테리어"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 주방 인테리어 식기세척기 빌트인 장내림 시공 및 전기 용량 체크포인트",
-    excerpt: "싱크대 하부장 공사 시 무문선 라인 매칭, 단독 전기 누전차단기 증설, 온수 직수관 연결 시 물튐 방지 조치 가이드.",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["식기세척기빌트인", "주방인테리어", "싱크대장내림", "신혼가전", "빌트인가전"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026년 삼성 비스포크 AI 콤보 vs LG 트롬 워시콤보 올인원 세탁건조기 실사용 분석",
-    excerpt: "세탁 후 건조기로 빨래를 옮길 필요 없는 히트펌프 올인원 세탁건조기 용량별 건조 시간, 전기요금, 먼지 필터 청소 편의성 비교.",
-    image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["세탁건조기", "비스포크AI콤보", "LG워시콤보", "신혼가전비교", "올인원가전"]
-  },
-  {
-    category: "신혼가전",
-    title: "20평대 vs 30평대 신혼집 평수별 냉장고 키친핏 vs 프리스탠딩 용량 선택 가이드",
-    excerpt: "주방 가구장 돌출 없이 깔끔한 600L급 키친핏과 대용량 850L급 프리스탠딩의 냉동·냉장 보관 실효 면적과 가구장 리폼 비용 비교.",
-    image: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["키친핏냉장고", "신혼냉장고", "주방리폼", "냉장고장", "신혼인테리어"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼 침대 매트리스 브랜드별(에이스·시몬스·템퍼·씰리) 경도 및 프레임 선택 요령",
-    excerpt: "소프트·레귤러·하드 타입별 척추 지지력, 라지킹(LK) vs 킹(K) 사이즈 선택 기준과 백화점 웨딩클럽 할인 결합 팁.",
-    image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼매트리스", "침대추천", "시몬스", "템퍼", "침실인테리어"]
-  },
-  {
-    category: "신혼가전",
-    title: "백화점 vs 오픈점 vs 하이마트 신혼가전 패키지 견적 1,000만 원 체감가 할인 받는 법",
-    excerpt: "오픈 매장 추가 캐시백, 주말 백화점 상품권 증정 프로모션, 카드 결제일 할인 혜택을 결합하여 체감 견적을 40% 낮추는 실전 팁.",
-    image: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼가전견적", "가전오픈점", "백화점웨딩클럽", "가전졸업", "가전할인"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 거실 공기청정기 & 제습기 용량 선택 공식 — 실평수 대비 1.5배 마력 계산법",
-    excerpt: "에어컨 공기청정 기능과의 효율 비교, 타워형 360도 흡입 모델 및 결로 곰팡이 방지 연속 배수형 제습기 추천.",
-    image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["공기청정기", "제습기추천", "신혼가전선택", "스마트가전", "실내공기질"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026년 홈카페 머신 캡슐 vs 전자동 원두머신 가성비 및 유지비용 전격 비교",
-    excerpt: "네스프레소 버츄오, 드롱기, 유라 전자동 커피머신의 1회 추출 단가, 세척 유지보수 난이도, 원두 신선도 관리 가이드.",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["커피머신", "홈카페", "전자동커피머신", "신혼가전", "주방인테리어"]
-  },
-
-  // --- 3. 결혼준비 (Wedding Prep & Lifestyle) ---
-  {
-    category: "결혼준비",
-    title: "2026년 웨딩드레스 스드메 견적 비교 및 추가금 없는 정찰제 숍 고르는 법",
-    excerpt: "드레스 투어 피팅비, 헬퍼비, 얼리 스타트비, 원본 수정본 파일 구매비 등 계약서 작성 시 추가금을 원천 차단하는 실전 가이드.",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["스드메견적", "웨딩드레스", "드레스투어", "결혼준비팁", "스드메추가금"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼여행 허니문 휴양지 vs 휴양+쇼핑 추천 코스 — 발리, 칸쿤, 하와이 2026 비교",
-    excerpt: "비행시간, 예산, 풀빌라 리조트 퀄리티, 액티비티 요소를 토대로 분석한 신혼부부 맞춤형 2026년 베스트 허니문 리조트 완벽 비교.",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼여행", "허니문추천", "발리신혼여행", "하와이허니문", "칸쿤여행"]
-  },
-  {
-    category: "결혼준비",
-    title: "2026년 예단·예물 절차와 비용 간소화 가이드 — 현물 예단 대신 가전·가구 실속 대체",
-    excerpt: "양가 부모님과의 마찰 없이 예단 이불, 삼서, 봉채비를 합리적인 현금 봉투와 실용 가전제품 선물로 대처하는 현명한 협상 에티켓.",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["예단예물", "봉채비", "결혼예절", "양가인사", "결혼준비과정"]
-  },
-  {
-    category: "결혼준비",
-    title: "결혼식 6개월 전 웨딩홀 대관료 및 식대 네고 전략과 골든타임 예약 성공법",
-    excerpt: "비수기·일요일 예식·보증인원 조정으로 식대 인당 1만 원 이상 절감하고 대관료 무료 프로모션을 따내는 실전 상담 체크리스트.",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩홀투어", "웨딩홀견적", "식대네고", "결혼준비타임라인", "예식장예약"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼부부 모바일 청첩장 셀프 제작과 계좌번호 표기 에티켓 가이드",
-    excerpt: "무료 모바일 청첩장 툴 비교, 감성적인 인사말 문구 템플릿, 참석 여부(RSVP) 집계 기능 및 축의금 계좌 안내 정중한 문구 모음.",
-    image: "https://images.unsplash.com/photo-1513279922550-250c24733189?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["모바일청첩장", "청첩장문구", "청첩장모임", "축의금에티켓", "RSVP"]
-  },
-  {
-    category: "결혼준비",
-    title: "본식 스냅 및 DVD 영상 업체 선정 기준 — 1인 2캠 vs 2인 3캠 가성비 비교",
-    excerpt: "어두운 홀 vs 밝은 홀 색감 톤, 대표 지정 촬영 추가비 여부, 4K 시네마틱 하이라이트 영상 포함 필수 체크리스트.",
-    image: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["본식스냅", "본식DVD", "웨딩촬영", "웨딩스튜디오", "스냅사진"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼집 입주 전 필수 셀프 체크리스트 — 입주 청소·줄눈·탄성코트·방충망 시공 순서",
-    excerpt: "신축 아파트 및 신축 빌라 입주 시 하자 점검 요령, 사전점검 대행업체 활용 팁과 잔금 치르기 전 확인해야 할 공정 순서.",
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼집입주", "입주청소", "사전점검", "신혼집인테리어", "하자점검"]
-  },
-  {
-    category: "결혼준비",
-    title: "웨딩 밴드 반지 브랜드별(까르띠에·티파니·불가리·종로공방) 견적 및 디자인 비교",
-    excerpt: "백화점 명품 웨딩링의 상품권 결제 및 마일리지 적립 혜택과 종로 예물 전문점 18K/플래티넘 다이아몬드 맞춤 견적 가이드.",
-    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩밴드", "결혼반지", "웨딩링", "종로예물", "결혼준비"]
-  },
-  // --- 추가 2026 심화 가이드 (신혼금융) ---
-  {
-    category: "신혼금융",
-    title: "2026년 하반기 신혼부부 주택구입자금 대출 자산심사 기준 및 분양권 포함 여부 완벽 해설",
-    excerpt: "기금e든든 자산 평가 시 분양권·입주권 가액 반영 기준과 순자산 5.11억 원 초과 방지를 위한 사전 금융자산 분산 노하우.",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["주택구입자금대출", "자산심사", "분양권", "기금e든든", "순자산기준"]
-  },
-  {
-    category: "신혼금융",
-    title: "신생아 특례 전세대출 보증금 상한 5억 상향 적용 요건 및 대환대출 신청 프로세스",
-    excerpt: "2026년 수도권 전세보증금 기준 5억 원으로 확대된 신생아 특례 전세대출의 기존 고금리 대출 대환(갈아타기) 조건 및 취급 은행 심사 요령.",
-    image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신생아특례전세", "대환대출", "전세보증금상한", "주택도시기금", "전세자금"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신혼부부 특별공급 다자녀·신생아 우선배정 가점표 및 청약통장 인정 회차 계산법",
-    excerpt: "공공분양 및 민간분양 특별공급에서 신생아 가산점 산정 방식과 청약통장 월 납입 인정액(25만 원) 상향에 따른 당첨 확률 극대화 전략.",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼특공가점", "신생아가점", "청약통장인정회차", "주택청약", "아파트분양"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 연말정산 절세 전략 — 부부 몰아주기 vs 분할공제 소득 구간별 최적 환급 시뮬레이션",
-    excerpt: "의료비, 신용카드, 보장성 보험료, 주택청약 소득공제를 부부 중 누구에게 집중해야 결정세액을 최소화할 수 있는지 소득 격차별 공제 계산법.",
-    image: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼연말정산", "몰아주기", "소득공제", "세액공제", "환급금극대화"]
-  },
-  {
-    category: "신혼금융",
-    title: "버팀목 전세자금대출 HUG vs HF 보증기관 차이점 분석 및 무소득 배우자 전세보증금 대출 한도",
-    excerpt: "목적물 중심의 HUG 안심전세대출과 차주 소득 중심의 HF 한국주택금융공사 보증 대출의 승인 요건, 보증료율, 질권설정 통지 절차 비교.",
-    image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["HUG보증", "HF보증", "버팀목대출비교", "무소득대출", "전세보증금"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 주택청약종합저축 납입 인정액 월 25만 원 상향에 따른 신혼특공 청약 인정 기준",
-    excerpt: "41년 만에 개편된 청약통장 월 납입 인정 한도 25만 원 증액 규정과 공공분양 일반공급 당첨선 통장 관리법 및 선납이연 활용 전략.",
-    image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["청약통장25만원", "주택청약상향", "공공분양당첨선", "청약홈", "신혼청약"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 공동명의 아파트 취득세·재산세·종부세 절세 효과 및 지분율 5:5 설정 시 주의사항",
-    excerpt: "부부 공동명의 취득 시 1세대 1주택 종부세 12억 공제 활용법, 양도소득세 누진세율 분산 효과 및 주택담보대출 실행 시 근저당권 설정 유의점.",
-    image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["아파트공동명의", "종합부동산세", "양도소득세절세", "지분설정", "부동산세무"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신혼부부 결혼세액공제 100만 원(부부 합산) 신청 자격과 생애최초 주택 LTV 80% 완화",
-    excerpt: "2024~2026년 혼인신고 부부 대상 1인당 50만 원(합산 100만 원) 세액공제 신청 절차와 생애최초 주택구입 시 LTV 80% 대출 활용법.",
-    image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["결혼세액공제", "생애최초LTV80", "혼인신고혜택", "신혼금융정책", "디딤돌대출"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 9월 최신 고시 신생아 특례대출 금리 1.6% 적용 조건 및 주택도시기금 기금e든든 적격 심사 팁",
-    excerpt: "최저 연 1.6% 초저금리 주택구입자금 대출 자격 심사 체크리스트와 심사 부적격 이의신청 및 은행 사전 배정 노하우.",
-    image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신생아특례1프로대", "기금e든든심사", "최저우대금리", "주택구입자금", "2026신혼정책"]
-  },
-  // --- 추가 2026 심화 가이드 (신혼가전) ---
-  {
-    category: "신혼가전",
-    title: "2026 신혼집 거실 TV 인치수별 최적 시청거리 및 OLED vs Neo QLED 번인 방지 비교",
-    excerpt: "25평형·34평형 아파트 거실 아트월 간격 대비 65·75·85인치 추천 공식과 OTT 영화 감상 vs 콘솔 게임용 패널 수명 비교.",
-    image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼TV추천", "75인치TV", "OLED비교", "NeoQLED", "거실시청거리"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼부부 식기세척기 12인용 vs 14인용 용량 선택 기준 및 싱크대 걸레받이 절단 없는 빌트인 시공법",
-    excerpt: "상하단 바스켓 적재 용량 비교, 냄비·프라이팬 동시 세척 조건과 규격장 리폼 비용 및 걸레받이 마감 디테일 실무.",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["식기세척기14인용", "빌트인식세기", "걸레받이리폼", "신혼주방가전", "식세기추천"]
-  },
-  {
-    category: "신혼가전",
-    title: "올인원 세탁건조기 일체형 vs 타워형 비교 — 2026년형 히트펌프 저온제습 및 세탁실 공간 실측",
-    excerpt: "도어 하나로 세탁부터 건조까지 끝내는 일체형 복합기와 분리형 직렬설치 타워의 건조 시간, 전기요금, 세탁실 단차 시공 비교.",
-    image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["올인원세탁건조기", "워시타워비교", "히트펌프건조", "세탁실인테리어", "혼수가전"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026 신혼집 로봇청소기 직배수 키트 셀프 설치 vs 공식 기사 시공 비용 및 배수 역류 방지 팁",
-    excerpt: "싱크대 하부장 오수·정수 배관 연결 규격, 역류 방지 밸브 체크, 누수 감지 센서 설치 및 장내림 공간 확보 가이드.",
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["로봇청소기직배수", "직배수시공", "물걸레로봇청소기", "신혼필수가전", "스마트홈"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 인덕션 3구 올프리 vs 하이브리드 화력 비교 및 전용 배선 차단기 20A 단독공사 요건",
-    excerpt: "하이라이트 결합형 하이브리드의 단점과 올프리존 마그네틱 인덕션의 용기 반응성, 주방 전력 과부하 방지 배선 공사 체크리스트.",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["인덕션비교", "3구올프리", "인덕션전기공사", "주방리모델링", "신혼가전"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 시스템에어컨 4대 다배관 vs 단배관 시공 비용 및 감가상각 전세 계약서 원상복구 특약",
-    excerpt: "천장 도배와 단내림 공사가 필요한 시스템에어컨 거실·침실 설치비 비교와 전세 임차 시 집주인 동의 및 매수 청구권 특약 작성법.",
-    image: "https://images.unsplash.com/photo-1631545648834-0803452c92a2?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["시스템에어컨", "에어컨설치비", "단배관다배관", "신혼집에어컨", "전세인테리어"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026년형 냉장고 키친핏(600L) vs 프리스탠딩(850L) 맞벌이 2인 가구 실사용 공간 및 냉장고장 리폼",
-    excerpt: "도어 돌출 없는 깔끔한 키친핏의 냄비 수납 한계와 850L 프리스탠딩의 용량 만족도 비교 및 도어 반경 간섭 해결책.",
-    image: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["키친핏냉장고", "냉장고장리폼", "프리스탠딩냉장고", "신혼주방", "삼성비스포크LG오브제"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026 가을 웨딩시즌 백화점 웨딩마일리지 더블적립 vs 삼성·LG 플래그십 신혼가전 패키지 견적 비교",
-    excerpt: "롯데·현대·신세계 백화점 VIP 실적 인정 웨딩위크 혜택과 직영 플래그십 매장 캐시백의 실질 체감가 비교 및 최적 결제 수단.",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩마일리지", "더블적립", "신혼가전패키지", "혼수견적비교", "가전체감가"]
-  },
-  // --- 추가 2026 심화 가이드 (결혼준비) ---
-  {
-    category: "결혼준비",
-    title: "2026년 웨딩홀 견적 비교 시 필수 체크리스트 7가지 — 보증인원 할인율 및 식대 네고 실전",
-    excerpt: "성수기 골든타임(토요일 12~14시) 대관료 할인 한계와 일요일 오후 예식 식대 10~15% 네고 기법 및 부대비용 사전 차단 요령.",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩홀견적", "보증인원네고", "식대할인", "웨딩홀투어", "결혼비용절감"]
-  },
-  {
-    category: "결혼준비",
-    title: "스드메 계약서 추가금 방어 완벽 가이드 — 드레스 라벨투어·헬퍼비·원본데이터 정찰제 체크",
-    excerpt: "계약 후 발생하는 200~300만 원의 숨은 추가금(피팅비, 얼리스타트비, 원본USB비, 헬퍼비)을 사전에 정찰가로 확정하는 계약서 특약 문구.",
-    image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["스드메추가금방어", "드레스투어팁", "헬퍼비정찰제", "스튜디오촬영비용", "웨딩플래너"]
-  },
-  {
-    category: "결혼준비",
-    title: "결혼식 본식 스냅 & DVD 영상 1인 2캠 vs 2인 3캠 가격 차이 및 위약금 특약 작성 요령",
-    excerpt: "신부대기실과 로비 하객 맞이를 동시 포착하기 위한 카메라 대수 선택과 프리랜서 작가 노쇼 방지를 위한 위약벌 배상 조항 명시법.",
-    image: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["본식스냅견적", "본식DVD", "노쇼방지특약", "1인2캠", "결혼식촬영"]
-  },
-  {
-    category: "결혼준비",
-    title: "모바일 청첩장 제작 시기 및 종이 청첩장 주문 수량 공식 — 하객 명단 작성과 식권 발급 기준",
-    excerpt: "예상 하객 대비 종이 청첩장 발주율(70%)과 모바일 링크 발송 골든타임(예식 4~5주 전) 및 모바일 계좌번호 표기 에티켓.",
-    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["청첩장주문수량", "모바일청첩장시기", "하객명단정리", "식권발급기준", "결혼에티켓"]
-  },
-  {
-    category: "결혼준비",
-    title: "웨딩밴드(결혼반지) 백화점 명품 vs 청담 예물샵 vs 종로 귀금속거리 견적 비교 및 다이아몬드 감정서",
-    excerpt: "GIA vs 우신 다이아몬드 환금성 및 감정 기준 비교, 종로 공방 세공비 네고 요령과 백화점 명품 웨딩링 리사이징 정책.",
-    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩밴드견적", "종로예물투어", "청담예물", "다이아몬드감정서", "결혼반지추천"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼여행(허니문) 발리 vs 하와이 vs 몰디브 2026 최신 견적 비교 및 조기예약 얼리버드 프로모션",
-    excerpt: "항공권 유류할증료 변동 추이, 리조트 올인클루시브 vs 조식 패키지 가성비와 허니문 여행사 부도 방지 기획여행보증보험 확인법.",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼여행비교", "발리허니문", "하와이신혼여행", "몰디브리조트", "허니문경비"]
-  },
-  {
-    category: "결혼준비",
-    title: "주례 없는 결혼식 식순 및 혼인서약서·성혼선언문 작성 예시 — 양가 부모님 덕담 시간 배분 팁",
-    excerpt: "하객 집중도를 높이는 40분 예식 식순 구성표, 신랑신부 감동 서약서 샘플 문구 및 식전 영상·축가 동선 배치 노하우.",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["주례없는결혼식", "혼인서약서문구", "성혼선언문", "결혼식식순", "부모님덕담"]
-  },
-  // --- 2026 심화 확장: 신혼금융 (Newlywed Finance & Real Estate) ---
-  {
-    category: "신혼금융",
-    title: "2026년 청년 주택드림 청약통장 신혼부부 전환 요건 및 연 2.2% 전용 주택담보대출 연계 전략",
-    excerpt: "총급여 5,000만 원 이하 무주택 청년·신혼 전환 시 최고 연 4.5% 우대이자율과 분양 당첨 시 분양가 80% 전용 모기지 연계 기준 완벽 정리.",
-    image: "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["청년주택드림통장", "청약전환", "주택드림대출", "신혼금융혜택", "분양모기지"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 공공지원 민간임대주택 신혼부부 특별공급 청약 조건 및 10년 거주 보증금 반환 안정성",
-    excerpt: "시세 대비 85% 이하 초기 임대료와 2년 단위 5% 이내 임대료 인상 제한, HUG 보증서 발급으로 깡통전세 위험 없는 10년 안심 주거 가이드.",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["공공지원민간임대", "신혼임대주택", "보증금반환보증", "10년안심거주", "신혼주거안정"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 전세대출 대환(갈아타기) 은행별 금리 비교 및 중도상환수수료 면제 조건 실무 팁",
-    excerpt: "온라인 대환대출 인프라를 활용하여 기존 4%대 고금리 전세대출을 2%대 정책·시중은행 우대금리로 변경하는 서류 준비 및 부대비용 정산.",
-    image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["전세대출갈아타기", "온라인대환대출", "중도상환수수료", "전세금리인하", "신혼대환"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 서울시 신혼부부 임차보증금 이자지원 사업 신청 자격 및 대출 한도 3억 원 확대 해설",
-    excerpt: "서울시와 협약 은행이 지원하는 최대 연 4.0% 대출 이자 지원 사업의 소득 기준(합산 1.3억) 및 청년몽땅정보통 온라인 신청 프로세스.",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["서울시이자지원", "임차보증금지원", "신혼보증금대출", "서울주거포털", "이자지원사업"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 자동차 구매 vs 장기렌트·리스 비용 비교 — 취등록세·자동차세·보험료 절세 시뮬레이션",
-    excerpt: "맞벌이 부부 통근 차량 구매 시 일시불 할부 vs 장기렌트(하·허·호)의 5년 총소유비용(TCO)과 부부 한정 특약 보험료 절약 노하우.",
-    image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼차량구매", "장기렌트비교", "자동차보험부부특약", "취등록세계산", "신혼유지비"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 필수 실손보험 & 3대 질병(암·뇌·심장) 보험 리모델링 — 중복 가입 방지와 월 보험료 10만 원대 설계",
-    excerpt: "미혼 시절 부모님이 가입해 주신 보험 증권 분석을 통해 불필요한 적립보험료를 제거하고 부부 합산 20만 원 이하로 필수 보장만 압축하는 비결.",
-    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["보험리모델링", "신혼실손보험", "3대진단비", "보험료절감", "가계고정비"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼집 아파트 매매 잔금일 당일 실전 타임라인 — 법무사 등기 이전·전세대출 상환·관리비 정산 순서",
-    excerpt: "잔금일 오전 9시부터 12시까지 취득세 납부, 소유권이전등기 서류 확인, 선수관리비 및 장기수선충당금 영수증 수령 완벽 가이드.",
-    image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["잔금일타임라인", "소유권이전등기", "법무사수수료", "관리비정산", "신혼집매매"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 지자체별 신혼부부 결혼축하금 및 정착지원금 조례 총정리 — 최대 100만~300만 원 수령법",
-    excerpt: "전국 주요 시·군·구에서 주민등록 전입 및 혼인신고 완료 부부에게 현금 또는 지역화폐로 지급하는 축하금 신청 기간과 필수 증빙 서류.",
-    image: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["결혼축하금", "신혼정착지원금", "지자체지원금", "지역화폐환급", "신혼복지혜택"]
-  },
-  {
-    category: "신혼금융",
-    title: "신혼부부 비상금 파킹통장(CMA·1금융권 파킹통장) 금리 비교 및 3개월 치 생활비 예치 원칙",
-    excerpt: "수시입출금 고금리 파킹통장 금리(연 2.5%~3.2%) 비교와 급여 이체 우대금리 결합을 통한 월 복리 이자 수령 시스템 구축법.",
-    image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["파킹통장비교", "신혼비상금", "CMA금리", "월복리이자", "신혼재테크"]
-  },
-  {
-    category: "신혼금융",
-    title: "2026년 신혼부부 주택청약 부부 중복 청약 허용 규정 활용법 — 당첨 확률 2배 극대화 실전",
-    excerpt: "같은 단지 특별공급에 부부가 각각 청약하여 동시 당첨되더라도 선접수분 유효 인정 규정을 활용한 스마트 청약홈 접수 전략.",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["부부중복청약", "청약홈접수", "신혼특공당첨", "청약제도개편", "내집마련"]
-  },
-  // --- 2026 심화 확장: 신혼가전 (Appliances & Smart Living) ---
-  {
-    category: "신혼가전",
-    title: "2026 신혼집 거실 스마트 조명 IoT 자동화 루틴 구축 — 기상·시네마·취침 모드 완벽 세팅",
-    excerpt: "필립스 휴 및 아카라 스마트 허브를 활용한 맞벌이 신혼부부 맞춤형 색온도 자동 제어와 조도 센서 연동 스마트홈 실무.",
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["스마트조명", "필립스휴", "신혼스마트홈", "거실인테리어", "IoT조명"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼부부 음식물처리기 건조분쇄형 vs 미생물발효형 2026 실사용 악취·소음·필터유지비 비교",
-    excerpt: "스마트카라 400 Pro와 린클 프라임 실측 비교: 1회 처리 시간, 월 전기료(3천 원대), 활성탄 필터 교체 주기 및 씽크대 배수관 규정.",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["음식물처리기", "미생물음식물처리기", "건조분쇄형", "신혼주방필수템", "가전실사용"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 2in1 스탠드+벽걸이 에어컨 vs 창문형 에어컨 설치비 및 아파트 실외기실 앵글 규정",
-    excerpt: "매립배관 질소 청소 비용, 드레인 배수관 호스 연장 기준과 외벽 실외기 거치 금지 단지의 실외기실 루버창 최적 개방 각도.",
-    image: "https://images.unsplash.com/photo-1631545648834-0803452c92a2?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼에어컨", "2in1에어컨", "실외기실루버창", "매립배관청소", "에어컨설치비"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026 신혼부부 정수기 렌탈 vs 직수형 자가관리 무전원 정수기 가성비 비교 — 3년 총소유비용 분석",
-    excerpt: "월 2~3만 원 렌탈료 약정 대비 브리타 및 쿠쿠 직수 자가필터 교체형의 3년 총비용 60만 원 절감 시뮬레이션 및 수질 안전성 검증.",
-    image: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["신혼정수기", "직수형정수기", "정수기렌탈비교", "자가필터교체", "주방가전"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼집 드레스룸 시스템 행거 셀프 조립 vs 맞춤 수납장 제작 비용 비교 및 곰팡이 방지 통풍 팁",
-    excerpt: "알루미늄 포스트 기둥형 행거의 하중 지지력과 옷 무게 배분, 결로 취약 북향 방 커튼 가림막 및 미니 제습기 배치 공식.",
-    image: "https://images.unsplash.com/photo-1558997519-83ea9252def8?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["시스템행거", "드레스룸인테리어", "맞춤수납장", "옷방결로방지", "신혼가구"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼부부 스마트 도어락 푸시풀 지문인식 vs 얼굴인식 모델 보안성 및 배터리 방전 비상 대처",
-    excerpt: "9V 건전지 비상 전원 공급 단자 위치, 화재 감지 자동 개폐 안전 규격 및 맞벌이 부부 방문객 전용 일회용 임시 비밀번호 설정법.",
-    image: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["스마트도어락", "지문인식도어락", "푸시풀도어락", "신혼집보안", "디지털도어락"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026 신혼집 주방 소형가전 삼총사(에어프라이어 오븐·전기포트·토스터) 감성 인테리어 조합 추천",
-    excerpt: "발뮤다 더 토스터, 드롱기 아이코나 빈티지, 쿠진아트 에어프라이어의 실측 규격과 콘센트 소비전력 용량(합산 3kW 미만) 안전 수칙.",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["소형가전추천", "발뮤다토스터", "에어프라이어오븐", "주방감성인테리어", "신혼가물"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼 안방 암막 커튼 vs 우드 블라인드 암막률 비교 및 전동 커튼 모터 셀프 설치 가이드",
-    excerpt: "100% 생활 암막 형상기억 커튼의 보온 효과와 전동 레일(투야·아카라 지그비) 배선 연결 및 구글 홈 연동 음성 제어 설정법.",
-    image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["암막커튼", "전동커튼설치", "우드블라인드", "침실인테리어", "스마트커튼"]
-  },
-  {
-    category: "신혼가전",
-    title: "신혼부부 식기건조대 및 싱크대 올스텐 304 물빠짐 거치대 녹 방지 연마제 제거 관리법",
-    excerpt: "포스코 정품 SUS304 스테인리스 판별법, 식용유와 베이킹소다를 활용한 탄화규소 연마제 3단계 세척 및 물때 백화현상 차단 노하우.",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["올스텐식기건조대", "SUS304", "연마제제거법", "주방정리템", "신혼살림"]
-  },
-  {
-    category: "신혼가전",
-    title: "2026 폐가전 무상 방문수거 서비스 신청 요령 및 에너지소비효율 1등급 환급 실시간 서류 준비",
-    excerpt: "폐가전 배출 예약시스템(1599-0903) 단품·다량 배출 기준과 한국전력 고효율 가전 구매비용 10~20% 환급 포털 접수 실무.",
-    image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["폐가전무상수거", "에너지효율1등급", "한전가전환급", "친환경가전", "혼수알뜰구매"]
-  },
-  // --- 2026 심화 확장: 결혼준비 (Wedding Preparation & Etiquette) ---
-  {
-    category: "결혼준비",
-    title: "2026년 결혼식 사회자·축가·축도 섭외 및 감사 사례비(봉투) 가이드라인 — 지인 vs 전문 사회자",
-    excerpt: "매끄러운 예식 진행을 위한 큐시트 조율 미팅 팁, 전문 아나운서 사회자(25~40만 원) vs 절친 사회자(30만 원 상당 상품권) 사례 기준.",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["결혼식사회자", "축가사례비", "전문사회자견적", "결혼식큐시트", "웨딩에티켓"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼부부 양가 상견례 장소 선정 기준(코스 한정식 vs 일식 룸) 및 식사비 결제 타이밍·대화 에티켓",
-    excerpt: "양가 중간 이동 동선, 개인 서빙 코스 메뉴, 정치·종교·예단 등 민감 주제 회피법 및 신랑의 자연스러운 사전 식사비 결제 노하우.",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["상견례장소", "상견례한정식", "상견례대화법", "결혼준비순서", "양가인사예절"]
-  },
-  {
-    category: "결혼준비",
-    title: "2026년 웨딩촬영 캐주얼룩·한복 스냅 대여 vs 맞춤 견적 비교 — 야외 로드스냅 촬영 필수 준비물",
-    excerpt: "스튜디오 캐주얼 씬 맞춤 시밀러룩 배색 조합과 야외 로드스냅(노을·숲속 씬) 동행 헬퍼 섭외 및 촬영 허가 신청 체크리스트.",
-    image: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩로드스냅", "캐주얼웨딩촬영", "신혼한복대여", "야외스냅준비물", "웨딩스튜디오"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼여행 유럽 자유여행(파리·이탈리아·스위스) vs 패키지 2026 경비 비교 및 소매치기 방지 팁",
-    excerpt: "TGV 기차 조기 예약(얼리버드 3개월 전), 스위스패스 연속권 활용법, 도시세(City Tax) 현장 결제 대비 및 복대·스마트폰 스프링 줄 준비.",
-    image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["유럽신혼여행", "파리이탈리아허니문", "스위스패스", "허니문자유여행", "유럽여행경비"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼부부 혼인신고 시기(예식 직후 vs 아파트 청약 후 vs 1년 유예) 장단점 및 전입신고 확정일자 순서",
-    excerpt: "혼인신고에 따른 주택 수 합산과 청약 무주택 기간 단절 방지 전략, 디딤돌 소득 기준 충족 시점 및 대항력 유지를 위한 전입신고 원칙.",
-    image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["혼인신고시기", "청약무주택기간", "전입신고확정일자", "신혼청약전략", "대항력확보"]
-  },
-  {
-    category: "결혼준비",
-    title: "결혼식 당일 신랑신부 가방순이·부케순이 역할 체크리스트 및 헬퍼 이모님 봉투 전달 요령",
-    excerpt: "축의금 현금 가방 보관 및 식권 배부 안전 수칙, 부케 말리기 선물 타임라인과 본식 종료 직후 폐백 수임료 및 정산 동선.",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["가방순이역할", "부케순이", "헬퍼비전달", "결혼식당일체크리스트", "웨딩정산"]
-  },
-  {
-    category: "결혼준비",
-    title: "2026년 직장인 결혼 휴가(경조사 휴가) 규정 및 답례품(호두과자·쿠키·더치커피) 주문 수량과 전달 에티켓",
-    excerpt: "취업규칙상 본인 결혼 특별휴가 5일(주말 제외) 계산법, 출근 첫날 팀원 및 부서별 답례품 발주 수량(하객 수의 1.2배) 산정 공식.",
-    image: "https://images.unsplash.com/photo-1513279922550-250c24733189?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["결혼경조사휴가", "결혼답례품", "답례품수량", "직장결혼인사", "결혼답례문구"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼집 셀프 인테리어 도배·장판 vs 강마루 시공 견적 비교 — 을지로 방산시장 실전 발품 팁",
-    excerpt: "합지(광폭) vs 실크 도배지 평당 시공비, 2.2T 장판 vs 동화자연마루 그란데 강마루 시공 시 철거비 및 걸레받이 마감 네고 요령.",
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["방산시장도배", "실크벽지시공", "강마루장판비교", "신혼집인테리어견적", "을지로발품"]
-  },
-  {
-    category: "결혼준비",
-    title: "신혼부부 건강검진(보건소 예비부부 무료 검진) 항목 및 풍진·A/B형 간염 항체 접종 최적 시기",
-    excerpt: "청첩장이나 예식장 계약서 지참 시 지원되는 관할 보건소 무료 혈액·흉부X선 검진과 임신 계획 3개월 전 필수 항체 생성 접종 주기.",
-    image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["보건소예비부부검진", "신혼건강검진", "풍진항체접종", "산전검사", "임신준비"]
-  },
-  {
-    category: "결혼준비",
-    title: "웨딩홀 시식 예약 타이밍(본식 1~2개월 전) 및 양가 부모님 동행 시 체크해야 할 연회장 동선 5가지",
-    excerpt: "최대 4~6인 무료 시식권 활용법, 혼주 전용 룸 분리 여부, 뷔페 동선 혼잡도 및 어르신 선호 따뜻한 즉석 요리 코너 점검 팁.",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-    hashtags: ["웨딩홀시식", "연회장동선체크", "혼주룸", "웨딩뷔페시식", "본식최종점검"]
-  }
-];
-
-// In-memory quota cooldown tracker
-let geminiQuotaCooldownUntil = 0;
-
 /**
- * Generate rich, topic-specific E-E-A-T procedural article with tailored tables, steps, and FAQs
- */
-export function generateRichProceduralArticle(
-  topic: typeof TOPIC_POOL[0],
-  dateStr: string,
-  category: PostCategory,
-  targetTimeStr?: string
-): Post {
-  const slugId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
-  const mainTag = topic.hashtags[0] || "신혼가이드";
-  const subTag = topic.hashtags[1] || "핵심포인트";
-
-  let tableHeader: string[] = [];
-  let tableRows: string[][] = [];
-  let faqList: { q: string; a: string }[] = [];
-  let steps: string[] = [];
-
-  if (category === "신혼금융") {
-    tableHeader = ["구분 항목", "2026 기본 정책 기준", "우대 조건 및 감면 혜택", "실무 검증 서류"];
-    tableRows = [
-      ["소득 심사 요건", "부부합산 연 1.3억 ~ 2.0억 이하", "신생아 특례 및 맞벌이 완화 적용", "소득금액증명원, 원천징수영수증"],
-      ["자산 평가 기준", "순자산 5.11억 원 이하", "부동산·금융자산·차량가액 합산 검증", "기금e든든 자산심사 사전 조회"],
-      ["적용 금리 체계", "연 2.0% ~ 3.5% (소득 구간별)", "전자계약(0.1%p)+청약(최대0.5%p)+다자녀", "부동산거래 전자계약서, 청약통장증명서"],
-      ["상환 및 한도", "최대 4억 원 ~ 5억 원 한도", "체증식·원리금균등 분할상환 선택", "주민등록등본, 가족관계증명서"]
-    ];
-    steps = [
-      "1단계 (사전 자격 및 모의 산출): 주택도시기금 '기금e든든' 포털에서 부부 합산 소득, 부채 비율(DTI/DSR), 예상 우대금리 항목을 사전에 시뮬레이션합니다.",
-      "2단계 (서류 원스톱 발급 및 유효기간 확인): 정부24 및 국세청 홈택스에서 1개월 이내 발급된 소득금액증명원, 건강보험자격득실확인서, 재직증명서를 구비합니다.",
-      "3단계 (전자계약 체결 및 우대금리 확보): 국토교통부 부동산거래 전자계약시스템을 통해 매매/임대차 계약을 체결하여 0.1%p 금리 인하 혜택을 확정합니다.",
-      "4단계 (대출 심사 신청 및 잔금 실행): 잔금 지급일 30~45일 전 수탁은행(우리, 국민, 신한, 하나, 농협)에 대출을 접수하고 적격 심사를 완료합니다."
-    ];
-    faqList = [
-      {
-        q: "맞벌이 부부의 소득 산정 시 비과세 수당이나 상여금도 포함되나요?",
-        a: "국세청 소득금액증명원 상의 총지급액 중 비과세 소득(식대, 자가운전보조금 등)은 제외되며, 최근 2개년 평균 소득을 기준으로 심사합니다."
-      },
-      {
-        q: "신생아 특례 대출과 일반 디딤돌 대출 우대금리를 중복 적용받을 수 있나요?",
-        a: "2026년 기준 청약통장 가입기간 우대, 전자계약 우대(0.1%p), 자녀 출산 우대금리는 중복 합산이 가능하여 최저 연 1%대 금리 진입이 가능합니다."
-      },
-      {
-        q: "공동명의 주택 구입 시 대출 신청인은 어떻게 지정해야 유리한가요?",
-        a: "소득이 높거나 재직 기간이 길어 DTI 산정에 유리한 배우자를 주채무자로 지정하고, 상대 배우자를 담보제공자로 지정하여 진행하는 것이 일반적입니다."
-      }
-    ];
-  } else if (category === "신혼가전") {
-    tableHeader = ["가전/가구 품목", "주요 스펙 및 규격 기준", "2026 최신 트렌드 및 추천 기능", "설치 시 사전 체크리스트"];
-    tableRows = [
-      ["냉장고 / 김치냉장고", "키친핏(600L급) vs 프리스탠딩(850L급)", "오토오픈도어, 미세 정온 냉동, 맞춤보관실", "냉장고장 리폼 깊이(700mm) 및 도어 반경 확보"],
-      ["세탁건조기 올인원", "세탁 25kg / 건조 15kg 이상 대용량", "인버터 히트펌프, 자동 세제 투입, 코스 연동", "세탁실 진입로 폭(750mm) 및 단독 배수관 위치"],
-      ["로봇청소기", "직수형 오수/정수 자동 공급 및 집진", "온수 고온 스팀 물걸레 세척, 10,000Pa 이상 흡입", "싱크대 하부장 직수 배관 연결 및 전원 콘센트 유무"],
-      ["식기세척기 / 인덕션", "12~14인용 빌트인 / 3구 올프리", "100도 트루스팀, 저소음 BLDC, 자동 문열림", "싱크대 걸레받이 높이(150mm) 및 단독 누전차단기(20A)"]
-    ];
-    steps = [
-      "1단계 (신혼집 실측 및 도면 배치): 줄자 또는 레이저 측정기를 이용해 주방 냉장고장, 세탁실 도어 폭, 거실 아트월 거리를 오차 5mm 이내로 정밀 실측합니다.",
-      "2단계 (견적 비교 및 프로모션 공략): 백화점 웨딩마일리지 더블적립 주간, 대형 가전 플래그십 오픈점, 온라인 공식몰 다품목 패키지 견적을 3곳 이상 비교합니다.",
-      "3단계 (사전 시설 공사): 식기세척기 장내림, 냉장고장 리폼, 로봇청소기 직수관 매립, 인덕션 직결 배선 공사를 입주일 1~2주 전에 완료합니다.",
-      "4단계 (배송 지정일 설치 및 시운전): 가전 동시 입고를 진행하고, 외관 스크래치, 수평 레벨링, 급배수 누수 여부를 기사님 입회하에 점검합니다."
-    ];
-    faqList = [
-      {
-        q: "백화점과 오픈 매장 중 어디가 체감가가 더 저렴한가요?",
-        a: "5~7개 이상 대형 다품목 구매 시 신규 오픈 매장의 카드 캐시백 조건이 유리하며, 프리미엄 단품 위주 구매 시 백화점 상품권 환급이 유리합니다."
-      },
-      {
-        q: "키친핏 냉장고를 선택할 때 용량이 부족하지는 않나요?",
-        a: "맞벌이 2인 가구 기준 600L 키친핏으로 충분히 여유가 있으며, 냉동 식자재가 많다면 1도어 키친핏 변온고를 추가 구성하는 것을 추천합니다."
-      },
-      {
-        q: "에너지소비효율 1등급 환급금은 어떻게 신청하나요?",
-        a: "한국전력공사 고효율 가전 구매비용 지원사업 포털에 구매 영수증, 에너지 라벨 사진, 제조번호 명판을 등록하면 최대 한도 내에서 환급됩니다."
-      }
-    ];
-  } else {
-    tableHeader = ["준비 단계", "주요 계약 항목", "예산 절감 및 네고 핵심 팁", "필수 특약 및 주의사항"];
-    tableRows = [
-      ["웨딩홀 예약", "보증인원(150~300명), 대관료, 식대", "비수기(1·2·7·8월) 및 일요일 오후 예식 공략", "당일 계약 혜택, 보증인원 미달 시 식대 보전율 확인"],
-      ["스드메 패키지", "스튜디오 촬영, 본식 드레스, 헤어메이크업", "정찰제 및 드레스 추가금 상한선 사전 협의", "헬퍼비, 얼리스타트비, 원본/수정본 데이터 구매비 포함 여부"],
-      ["본식 스냅 & DVD", "1인 2캠 / 2인 3캠 4K 시네마틱", "대표 지정 촬영 무료 프로모션 활용", "촬영 작가 노쇼 방지 위약금 및 원본 제공 기한 명시"],
-      ["신혼여행 (허니문)", "항공권, 풀빌라 리조트, 액티비티", "조기 예약(얼리버드) 및 허니문 특전 포함", "천재지변 취소 규정, 유류할증료 변동분 포함 여부"]
-    ];
-    steps = [
-      "1단계 (총 예산 편성 및 우선순위 설정): 전체 결혼 준비 자금을 주거, 예식, 혼수, 신혼여행 4대 영역으로 분배하고 초과 방지 마지노선을 설정합니다.",
-      "2단계 (웨딩홀 투어 및 골든타임 선점): 예식 희망일 10~12개월 전 웨딩홀 3~4곳을 방문하여 시식, 주차 시설, 단독홀 여부를 비교 계약합니다.",
-      "3단계 (스드메 및 본식 연출 확정): 드레스 투어 3곳을 진행하고 본식 3개월 전 스튜디오 촬영 및 모바일 청첩장 제작을 마무리합니다.",
-      "4단계 (최종 점검 및 하객 관리): 예식 2주 전 최종 보증인원 확정, 축가/사회자 대본 검토, 식권 및 감사장 준비를 완료합니다."
-    ];
-    faqList = [
-      {
-        q: "스드메 계약 시 예기치 못한 추가금을 방지하는 방법은 무엇인가요?",
-        a: "드레스 피팅비, 헬퍼 출장비, 얼리 스타트비, 스튜디오 원본/수정본 데이터비, 드레스 라벨 업그레이드 비용을 계약서에 정찰가로 명시해야 합니다."
-      },
-      {
-        q: "모바일 청첩장은 언제 전달하는 것이 가장 정중한가요?",
-        a: "예식 4~6주 전에 직접 식사 자리를 가지며 종이 청첩장과 함께 모바일 링크를 전달하는 것이 하객들의 일정 조율에 가장 이상적입니다."
-      },
-      {
-        q: "예단과 예물 비용을 간소화할 때 양가 조율은 어떻게 해야 하나요?",
-        a: "양가 부모님의 입장을 미리 파악한 후, 현물 예단 대신 신혼집 가전·가구 지원이나 실속 있는 현금 예단으로 대체하는 선조율이 효과적입니다."
-      }
-    ];
-  }
-
-  const contentHtml = expandContentIfNeeded(
-    topic.title,
-    category,
-    topic.hashtags,
-    "",
-    slugId,
-    topic.image
-  );
-
-  const exactDateTime = targetTimeStr
-    ? `${dateStr} ${targetTimeStr}`
-    : generateRealisticPostDateTime(dateStr, slugId);
-
-  return {
-    id: slugId,
-    title: topic.title,
-    excerpt: topic.excerpt,
-    content: contentHtml,
-    category,
-    author: "버진로드",
-    date: exactDateTime,
-    image: topic.image,
-    readTime: "8분",
-    hashtags: topic.hashtags
-  };
-}
-
-// Generate an article: uses Gemini for live daily posts with graceful rate-limit handling, procedural engine otherwise
-function stripEmojis(str: string): string {
-  if (!str) return "";
-  return str
-    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}\u{2B50}\u{2B55}\u{FE00}-\u{FE0F}]/gu, "")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
-}
-
-async function generatePostContent(
-  topic: typeof TOPIC_POOL[0],
-  dateStr: string,
-  category: PostCategory,
-  isLiveTodayPost: boolean = false,
-  targetTimeStr?: string
-): Promise<Post> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const now = Date.now();
-
-  // For historical backfills or when Gemini quota is in cooldown, use instant rich procedural engine
-  if (!isLiveTodayPost || !apiKey || now < geminiQuotaCooldownUntil) {
-    return generateRichProceduralArticle(topic, dateStr, category, targetTimeStr);
-  }
-
-  try {
-    const ai = new GoogleGenAI({ apiKey });
-    const prompt = `
-[시스템 지시사항: 블로그 포스팅 자동화 탈피 및 전문 가이드 강화 프롬프트]
-
-당신은 기계적으로 정보를 전달하는 AI가 아닙니다. 당신은 지금부터 주어지는 [주제]에 대해 수년간 연구하고 조언해 온 '신혼 실무 가이드 전문가(버진로드 에디터)'입니다. 아래의 엄격한 작성 원칙을 준수하여 블로그 포스팅 초안을 작성하십시오.
-
-[주제 정보]
-- 타겟 키워드 및 주제: ${topic.title}
-- 카테고리: ${category}
-- 핵심 태그: ${topic.hashtags.join(", ")}
-- 발행 일자: ${dateStr}
-
-[엄격한 작성 원칙]
-
-1. AI 특유의 상투적 표현 절대 금지:
-"결론적으로", "알아보겠습니다", "필수적인", "현대 사회에서", "요즘 시대에는", "과언이 아닙니다", "중요한 역할을 합니다", "살펴보겠습니다", "지금부터" 등의 뻔한 도입부와 결론부 표현을 절대 사용하지 마십시오.
-
-2. 문장 길이의 다양화 (Burstiness & 리듬감):
-모든 문장의 길이를 비슷하게 쓰지 마십시오. 어떤 문장은 단답형으로 매우 짧고 명쾌하게 치고("결론은 명확합니다.", "완전 오산이었습니다."), 어떤 문장은 부연 설명을 위해 길게 이어지도록 리듬감을 만드십시오.
-
-3. 경험과 통찰 기반의 도입부 (E-E-A-T):
-글을 시작할 때 사전적 정의를 내리지 마십시오. 해당 주제와 관련해 독자들이 겪고 있을 구체적인 '답답함'이나 '시행착오'에 공감하며, 전문적이면서도 알기 쉽게 설명하십시오.
-
-4. 정보의 구조화와 실전 평가 혼합:
-불렛포인트(<ul>, <li>)나 표(<table>)를 사용하여 공식 기준과 수치를 깔끔하게 정리하되, 그 정보 아래에 반드시 "실제로 적용해 보니 이 방법이 가장 효율적이었다"라는 식의 구체적인 실무 팁을 한 줄씩 덧붙이십시오.
-
-5. 독자를 위한 실천 가이드 (Action Item):
-글의 마무리에는 뻔한 요약 대신, 독자가 당장 오늘 실행해 볼 수 있는 아주 작은 행동 지침(Action Item) 하나를 제안하고, 독자들의 의견을 묻는 질문으로 자연스럽게 끝맺으십시오.
-
-6. 이모지(그림문자) 전면 금지 및 특수문자 제한 사용:
-이모지(이모티콘, 유니코드 그림문자 등)는 일절 사용하지 마십시오. 꼭 필요한 경우에만 일반 특수문자 기호(※, -, ·, [ ], ★ 등)만을 정갈하게 사용하십시오.
-
-응답은 반드시 아래 JSON 형식으로만 반환하세요:
-{
-  "title": "${topic.title}",
-  "excerpt": "핵심 배경과 실전 분석 포인트를 담은 2~3문장의 도입 요약",
-  "content": "HTML 본문 (<div class=\"first-person-badge\">...</div>, <p class=\"story-lead\">...</p>, <h3>, <p>, <ul>, <li>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <strong>, <blockquote>, <div class=\"action-item-box\">...</div> 태그 활용)"
-}
-`;
-
-    const generatePromise = ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json"
-      }
-    });
-
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Gemini API timeout")), 25000)
-    );
-
-    const response = await Promise.race([generatePromise, timeoutPromise]);
-    const text = response.text || "";
-    const cleanedText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
-    let parsed: any;
-    try {
-      parsed = JSON.parse(cleanedText);
-    } catch {
-      const sanitized = cleanedText.replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
-      parsed = JSON.parse(sanitized);
-    }
-
-    if (parsed.title && parsed.content) {
-      const generatedId = `auto-${category === "신혼금융" ? "fin" : category === "신혼가전" ? "app" : "wed"}-${dateStr.replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
-      const exactDateTime = targetTimeStr
-        ? `${dateStr} ${targetTimeStr}`
-        : generateRealisticPostDateTime(dateStr, generatedId);
-
-      return {
-        id: generatedId,
-        title: stripEmojis(parsed.title),
-        excerpt: stripEmojis(parsed.excerpt || topic.excerpt),
-        content: stripEmojis(parsed.content),
-        category,
-        author: "버진로드",
-        date: exactDateTime,
-        image: topic.image,
-        readTime: `${Math.max(6, Math.ceil(parsed.content.length / 280))}분`,
-        hashtags: topic.hashtags
-      };
-    }
-  } catch (err: any) {
-    const errMsg = err?.message || String(err);
-    if (errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED")) {
-      geminiQuotaCooldownUntil = Date.now() + 10 * 60 * 1000; // 10 min cooldown
-      console.log(`[AutoPublisher] Gemini quota limit reached. Activated procedural fallback engine.`);
-    }
-  }
-
-  // Graceful fallback to rich procedural article
-  return generateRichProceduralArticle(topic, dateStr, category, targetTimeStr);
-}
-
-// Sync newly published post to Firestore database asynchronously
-function syncToFirestore(post: Post) {
-  const apiKey = "AIzaSyDneiaJczNqU2Od6c0lMe3AdSQKar5yGA4";
-  const firestoreUrl = `https://firestore.googleapis.com/v1/projects/gen-lang-client-0326874047/databases/ai-studio-9ae01718-7459-4ac4-90d0-d2a27c2a0cc1/documents/posts/${post.id}?key=${apiKey}`;
-  const firestoreBody = {
-    fields: {
-      title: { stringValue: post.title },
-      excerpt: { stringValue: post.excerpt },
-      content: { stringValue: post.content },
-      category: { stringValue: post.category },
-      author: { stringValue: post.author },
-      date: { stringValue: post.date },
-      image: { stringValue: post.image },
-      readTime: { stringValue: post.readTime },
-      hashtags: {
-        arrayValue: {
-          values: post.hashtags.map(t => ({ stringValue: t }))
-        }
-      },
-      secretToken: { stringValue: "virginroad-secure-secret-token-2026" }
-    }
-  };
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-  fetch(firestoreUrl, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(firestoreBody),
-    signal: controller.signal
-  })
-  .then(res => console.log(`[AutoPublisher] Synced post ${post.id} to Firestore (status ${res.status})`))
-  .catch(err => console.warn(`[AutoPublisher] Firestore sync skipped for ${post.id}:`, err.message))
-  .finally(() => clearTimeout(timeoutId));
-}
-
-/**
- * Main Auto Publisher Routine:
- * 1. Checks 7 days back up to today to ensure EVERY single day has exactly 1 post per category (신혼금융, 신혼가전, 결혼준비).
- * 2. Generates daily randomized schedules (with random HH:mm:ss and strict >=4h / 14,400s intervals) for today and upcoming days.
- * 3. Triggers posting when the current KST time reaches or passes the designated schedule item target time.
+ * Editorial Publishing Guard:
+ * Never synthesizes low-value template backfill posts.
+ * Tracks only verified appliance technical manuals in 1-post/day randomized schedule slots.
  */
 export async function runAutoPublisherService(): Promise<{
   publishedCount: number;
@@ -1077,158 +175,28 @@ export async function runAutoPublisherService(): Promise<{
   const kstNow = getKSTNow();
   const todayStr = getKSTDateString(kstNow);
   const currentTimeStr = getKSTTimeString(kstNow);
-  const currentSeconds = timeStrToSeconds(currentTimeStr);
-
-  const localPosts = loadLocalPosts();
   const store = loadScheduleStore();
   const messages: string[] = [];
-  let publishedCount = 0;
 
-  // 1. Backfill past missing days (up to 7 days back) — 1일 1포스팅 원칙
-  const pastDates: string[] = [];
-  for (let i = 7; i >= 1; i--) {
-    const d = new Date(kstNow.getTime() - i * 24 * 60 * 60 * 1000);
-    pastDates.push(getKSTDateString(d));
+  if (!store.schedules[todayStr] || store.schedules[todayStr].length === 0) {
+    store.schedules[todayStr] = generateDailyCategorySchedules(todayStr);
   }
 
-  for (const dateStr of pastDates) {
-    const postsOnDate = [
-      ...localPosts.filter(p => p.date && p.date.startsWith(dateStr)),
-      ...MOCK_POSTS.filter(p => p.date && p.date.startsWith(dateStr))
-    ];
-
-    if (postsOnDate.length > 0 && store.schedules[dateStr] && store.schedules[dateStr].length > 0) {
-      const firstPost = postsOnDate[0];
-      const schedItem = store.schedules[dateStr][0];
-      if (schedItem && !schedItem.published) {
-        schedItem.published = true;
-        schedItem.postId = firstPost.id;
-        schedItem.postTitle = firstPost.title;
-        schedItem.publishedAt = firstPost.date;
-        if (firstPost.date.includes(" ")) {
-          schedItem.targetTime = firstPost.date.split(" ")[1];
-        }
-      }
-    }
-
-    // If day has 0 posts across both local and mock posts, backfill exactly 1 post
-    if (postsOnDate.length === 0) {
-      if (!store.schedules[dateStr] || store.schedules[dateStr].length === 0) {
-        store.schedules[dateStr] = generateDailyCategorySchedules(dateStr);
-      }
-      const schedItem = store.schedules[dateStr][0];
-      const category = schedItem ? schedItem.category : CATEGORIES[0];
-      const targetTimeStr = schedItem ? schedItem.targetTime : getRandomPeakTime(`${dateStr}-${category}`);
-
-      console.log(`[AutoPublisher Backfill] Missing post for ${dateStr} (${category}). Auto-generating...`);
-      const usedTitles = new Set([
-        ...localPosts.map(p => normalizeTitle(p.title)),
-        ...MOCK_POSTS.map(p => normalizeTitle(p.title))
-      ]);
-      const categoryPool = TOPIC_POOL.filter(t => t.category === category);
-      const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
-      if (availableTopics.length === 0) {
-        console.log(`[AutoPublisher Backfill] ${category}: 새 주제가 없어 ${dateStr} 발행을 건너뜁니다.`);
-        continue;
-      }
-      const selectedTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
-
-      const newPost = await generatePostContent(selectedTopic, dateStr, category, false, targetTimeStr);
-      if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
-        localPosts.unshift(newPost);
-        saveLocalPosts(localPosts);
-        syncToFirestore(newPost);
-      }
-
-      if (schedItem) {
-        schedItem.published = true;
-        schedItem.postId = newPost.id;
-        schedItem.postTitle = newPost.title;
-        schedItem.publishedAt = `${dateStr} ${schedItem.targetTime}`;
-      }
-
-      publishedCount++;
-      const msg = `[AutoPublisher Backfill] Backfilled 1 post for ${dateStr} (${category}) at ${targetTimeStr}: "${newPost.title}"`;
-      messages.push(msg);
-    }
-  }
-
-  // 2. Ensure Schedule Exists for Today, Tomorrow, and Day After Tomorrow (1 post per day, randomized time)
-  const targetDates = [
-    todayStr,
-    getKSTDateString(new Date(kstNow.getTime() + 1 * 24 * 60 * 60 * 1000)),
-    getKSTDateString(new Date(kstNow.getTime() + 2 * 24 * 60 * 60 * 1000))
-  ];
-
-  for (const dStr of targetDates) {
-    if (!store.schedules[dStr] || store.schedules[dStr].length === 0) {
-      store.schedules[dStr] = generateDailyCategorySchedules(dStr);
-      console.log(`[AutoPublisher Schedule] Created 1-post randomized schedule for ${dStr}:`, 
-        store.schedules[dStr].map(s => `${s.category}@${s.targetTime}`).join(", "));
-    }
-  }
-
-  // 3. Process Today's Schedule (1 post per day)
   const todaySchedules = store.schedules[todayStr] || [];
-  for (const item of todaySchedules) {
-    // Check if post already published today (either in localPosts or in MOCK_POSTS)
-    const existingToday = localPosts.find(p => p.date && p.date.startsWith(todayStr)) ||
-      MOCK_POSTS.find(p => p.date && p.date.startsWith(todayStr) && parsePostTimestamp(p.date, p.id) <= kstNow.getTime());
+  const existingToday = MOCK_POSTS.find(
+    (p) =>
+      p.date &&
+      p.date.startsWith(todayStr) &&
+      parsePostTimestamp(p.date, p.id) <= kstNow.getTime()
+  );
 
-    if (existingToday && !item.published) {
-      item.published = true;
-      item.postId = existingToday.id;
-      item.postTitle = existingToday.title;
-      item.publishedAt = existingToday.date;
-      if (existingToday.date.includes(" ")) {
-        item.targetTime = existingToday.date.split(" ")[1];
-      }
-      continue;
-    }
-
-    const itemTargetSeconds = timeStrToSeconds(item.targetTime);
-
-    // If targetTime has arrived/passed and not yet published
-    if (!item.published && currentSeconds >= itemTargetSeconds) {
-      console.log(`[AutoPublisher Today] Target time ${item.targetTime} reached for ${item.category} on ${todayStr}. Publishing post...`);
-
-      const usedTitles = new Set([
-        ...localPosts.map(p => normalizeTitle(p.title)),
-        ...MOCK_POSTS.map(p => normalizeTitle(p.title))
-      ]);
-      const categoryPool = TOPIC_POOL.filter(t => t.category === item.category);
-      const availableTopics = categoryPool.filter(t => !usedTitles.has(normalizeTitle(t.title)));
-      // 새 주제가 남아 있지 않으면 발행하지 않는다 (같은 글을 "최신판"으로 다시 발행하지 않음).
-      if (availableTopics.length === 0) {
-        console.log(`[AutoPublisher Today] ${item.category}: 새 주제가 없어 오늘 발행을 건너뜁니다.`);
-        continue;
-      }
-      const selectedTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
-
-      const newPost = await generatePostContent(selectedTopic, todayStr, item.category, true, item.targetTime);
-      if (!localPosts.some(p => p.id === newPost.id || normalizeTitle(p.title) === normalizeTitle(newPost.title))) {
-        localPosts.unshift(newPost);
-        saveLocalPosts(localPosts);
-        syncToFirestore(newPost);
-
-        // Auto-submit newly published post, category, and homepage to Google Search Console & IndexNow
-        const postSlug = slugify(newPost.title) || newPost.id;
-        const postPath = `/post/${postSlug}`;
-        const categoryPath = `/category/${encodeURIComponent(item.category)}`;
-        submitUrlsToSearchConsole([postPath, categoryPath, ""])
-          .then(res => console.log(`[Google Indexing Auto-Submit] Successfully notified Search Console for post: ${postPath} (${res.message})`))
-          .catch(err => console.warn(`[Google Indexing Warning] Error submitting ${postPath}:`, err.message));
-      }
-
-      item.published = true;
-      item.postId = newPost.id;
-      item.postTitle = newPost.title;
-      item.publishedAt = newPost.date;
-
-      publishedCount++;
-      const msg = `[AutoPublisher Live] Published ${item.category} at ${item.targetTime} KST: "${newPost.title}"`;
-      console.log(msg);
-      messages.push(msg);
+  if (existingToday && todaySchedules[0] && !todaySchedules[0].published) {
+    todaySchedules[0].published = true;
+    todaySchedules[0].postId = existingToday.id;
+    todaySchedules[0].postTitle = existingToday.title;
+    todaySchedules[0].publishedAt = existingToday.date;
+    if (existingToday.date.includes(" ")) {
+      todaySchedules[0].targetTime = existingToday.date.split(" ")[1];
     }
   }
 
@@ -1236,12 +204,12 @@ export async function runAutoPublisherService(): Promise<{
   saveScheduleStore(store);
 
   return {
-    publishedCount,
+    publishedCount: 0,
     messages,
     todayStatus: {
       date: todayStr,
       currentTimeKST: currentTimeStr,
-      schedules: store.schedules[todayStr] || []
-    }
+      schedules: todaySchedules,
+    },
   };
 }
